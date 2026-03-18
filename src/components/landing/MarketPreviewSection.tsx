@@ -12,7 +12,7 @@ const generateChartData = (points: number, trend: "up" | "down" | "volatile") =>
   return data;
 };
 
-const MiniChart = ({ data, color }: { data: number[]; color: string }) => {
+const MiniChart = ({ data, up }: { data: number[]; up: boolean }) => {
   const path = useMemo(() => {
     const w = 200;
     const h = 60;
@@ -25,16 +25,18 @@ const MiniChart = ({ data, color }: { data: number[]; color: string }) => {
       .join(" ");
   }, [data]);
 
+  const gradId = `grad-${up ? "up" : "down"}-${Math.random().toString(36).slice(2, 6)}`;
+
   return (
     <svg viewBox="0 0 200 60" className="w-full h-12">
       <defs>
-        <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={up ? "hsl(var(--profit))" : "hsl(var(--loss))"} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={up ? "hsl(var(--profit))" : "hsl(var(--loss))"} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={path + " L 200 60 L 0 60 Z"} fill={`url(#grad-${color})`} />
-      <path d={path} fill="none" stroke={color} strokeWidth="2" />
+      <path d={path + " L 200 60 L 0 60 Z"} fill={`url(#${gradId})`} />
+      <path d={path} fill="none" stroke={up ? "hsl(var(--profit))" : "hsl(var(--loss))"} strokeWidth="2" />
     </svg>
   );
 };
@@ -51,7 +53,7 @@ const MarketPreviewSection = () => {
 
   return (
     <section className="py-24">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -66,7 +68,7 @@ const MarketPreviewSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
           {pairs.map((pair, i) => (
             <motion.div
               key={pair.name}
@@ -74,18 +76,18 @@ const MarketPreviewSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass-card p-5"
+              className="glass-card p-4 sm:p-5"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h4 className="font-semibold font-display">{pair.name}</h4>
-                  <div className="text-lg font-bold font-display mt-1">${pair.price}</div>
+                  <h4 className="font-semibold font-display text-sm sm:text-base">{pair.name}</h4>
+                  <div className="text-base sm:text-lg font-bold font-display mt-1">${pair.price}</div>
                 </div>
-                <span className={`text-sm font-medium px-2 py-1 rounded-md ${pair.up ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"}`}>
+                <span className={`text-xs sm:text-sm font-medium px-2 py-1 rounded-md ${pair.up ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"}`}>
                   {pair.change}
                 </span>
               </div>
-              <MiniChart data={charts[i]} color={pair.up ? "hsl(152,69%,53%)" : "hsl(0,72%,56%)"} />
+              <MiniChart data={charts[i]} up={pair.up} />
             </motion.div>
           ))}
         </div>
