@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { AnimatePresence } from "framer-motion";
 
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -31,41 +33,52 @@ import AdminSettings from "./pages/admin/AdminSettings.tsx";
 
 const queryClient = new QueryClient();
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        {/* User Dashboard */}
+        <Route path="/dashboard" element={<Overview />} />
+        <Route path="/dashboard/wallet" element={<WalletPage />} />
+        <Route path="/dashboard/trading" element={<TradingPage />} />
+        <Route path="/dashboard/copy-trading" element={<CopyTradingPage />} />
+        <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
+        <Route path="/dashboard/settings" element={<SettingsPage />} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<AdminOverview />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/finances" element={<FinancialManagement />} />
+        <Route path="/admin/trading" element={<AdminTradingControl />} />
+        <Route path="/admin/copy-trading" element={<AdminCopyTrading />} />
+        <Route path="/admin/content" element={<ContentManagement />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
+
+        {/* Catch-all */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-
-          {/* User Dashboard */}
-          <Route path="/dashboard" element={<Overview />} />
-          <Route path="/dashboard/wallet" element={<WalletPage />} />
-          <Route path="/dashboard/trading" element={<TradingPage />} />
-          <Route path="/dashboard/copy-trading" element={<CopyTradingPage />} />
-          <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
-          <Route path="/dashboard/settings" element={<SettingsPage />} />
-
-          {/* Admin */}
-          <Route path="/admin" element={<AdminOverview />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/finances" element={<FinancialManagement />} />
-          <Route path="/admin/trading" element={<AdminTradingControl />} />
-          <Route path="/admin/copy-trading" element={<AdminCopyTrading />} />
-          <Route path="/admin/content" element={<ContentManagement />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AnimatedRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

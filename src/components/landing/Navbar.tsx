@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -21,13 +23,13 @@ const Navbar = () => {
         scrolled ? "bg-background/80 backdrop-blur-xl border-b border-border" : ""
       }`}
     >
-      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold font-display">TradeX</span>
-        </div>
+        </Link>
 
         <div className="hidden md:flex items-center gap-8">
           {["Markets", "Copy Trading", "Features", "About"].map((item) => (
@@ -37,21 +39,29 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm">Log In</Button>
-          <Button variant="hero" size="sm">Get Started</Button>
+        <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/login">Log In</Link>
+          </Button>
+          <Button variant="hero" size="sm" asChild>
+            <Link to="/register">Get Started</Link>
+          </Button>
         </div>
 
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex md:hidden items-center gap-2">
+          <ThemeToggle />
+          <button className="text-foreground p-1" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-6 pb-6"
+          className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 pb-6"
         >
           <div className="flex flex-col gap-4 pt-2">
             {["Markets", "Copy Trading", "Features", "About"].map((item) => (
@@ -60,8 +70,12 @@ const Navbar = () => {
               </a>
             ))}
             <div className="flex gap-3 pt-2">
-              <Button variant="ghost" size="sm" className="flex-1">Log In</Button>
-              <Button variant="hero" size="sm" className="flex-1">Get Started</Button>
+              <Button variant="ghost" size="sm" className="flex-1" asChild>
+                <Link to="/login">Log In</Link>
+              </Button>
+              <Button variant="hero" size="sm" className="flex-1" asChild>
+                <Link to="/register">Get Started</Link>
+              </Button>
             </div>
           </div>
         </motion.div>
