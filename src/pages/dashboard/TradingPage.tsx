@@ -77,8 +77,9 @@ const TradingPage = () => {
   const [price, setPrice] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLedgerTab, setActiveLedgerTab] = useState("Open Positions");
+  const [isTradeLoading, setIsTradeLoading] = useState(false);
 
-  const { user, balance, formatCurrency } = useStore();
+  const { user, balance, formatCurrency, fetchAppData } = useStore();
   const [activeTrades, setActiveTrades] = useState<any[]>([]);
   const [tradeHistory, setTradeHistory] = useState<any[]>([]);
   
@@ -102,6 +103,38 @@ const TradingPage = () => {
         }));
         setActiveTrades(mapped.filter(t => t.status === 'Open'));
         setTradeHistory(mapped.filter(t => t.status === 'Closed'));
+        // Load pending orders
+        const { data: pending } = await supabase.from('trades').select('*').eq('user_id', user.id).eq('status', 'Pending');
+        if (pending) {
+            setPendingOrders(pending.map(p => ({
+                id: p.id,
+                pair: p.pair,
+                type: p.type,
+                amount: p.amount,
+                price: p.entry_price,
+                time: p.time,
+                orderType: p.order_type
+            })));
+        }
+    }
+  };
+
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    try {
+        setIsTradeLoading(true);
+        // Refund margin if it was locked? In this simplified model, we'll just delete/cancel.
+        const { error } = await supabase.from('trades').delete().eq('id', orderId);
+        if (!error) {
+            toast.success("Order Cancelled");
+            fetchUserTrades();
+            fetchAppData();
+        }
+    } catch(err) {
+        toast.error("Failed to cancel order");
+    } finally {
+        setIsTradeLoading(false);
     }
   };
 
@@ -123,10 +156,9 @@ const TradingPage = () => {
   }, [user?.id]);
   
   const dynamicPairs = useMemo(() => {
-     if (dbPairs.length === 0) return allPairs;
-     return dbPairs.map(dbP => {
+     const pairs = dbPairs.length > 0 ? dbPairs.map(dbP => {
         const staticP = allPairs.find(p => p.name === dbP.name);
-        if (staticP) return staticP;
+        if (staticP) return { ...staticP, dbId: dbP.id };
         return {
            name: dbP.name,
            price: 1520.4,
@@ -135,10 +167,54 @@ const TradingPage = () => {
            low: 1500.0,
            volume: "100M",
            symbol: `BINANCE:${dbP.name.replace("/", "")}`,
-           category: "CRYPTO" as MarketCategory
+           category: "CRYPTO" as MarketCategory,
+           dbId: dbP.id
         };
-     });
+     }) : allPairs;
+     return pairs;
   }, [dbPairs]);
+
+  // Price & PnL Simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // 1. Randomly fluctuate active trade current prices to simulate PnL
+      setActiveTrades(prev => prev.map(trade => {
+        const volatility = 0.0005; 
+        const change = 1 + (Math.random() * volatility * 2 - volatility);
+        const newPrice = trade.currentPrice * change;
+        const pnl = trade.type === 'Buy' 
+          ? (newPrice - trade.entryPrice) * (trade.amount / trade.entryPrice)
+          : (trade.entryPrice - newPrice) * (trade.amount / trade.entryPrice);
+        
+        return { ...trade, currentPrice: newPrice, pnl };
+      }));
+
+      // 2. Simulate Order Book movement
+      setOrderBook(prev => ({
+         bids: prev.bids.map(b => ({ ...b, amount: Math.max(0.1, b.amount + (Math.random() * 0.2 - 0.1)) })),
+         asks: prev.asks.map(a => ({ ...a, amount: Math.max(0.1, a.amount + (Math.random() * 0.2 - 0.1)) }))
+      }));
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [activeTrades.length]);
+
+  const [orderBook, setOrderBook] = useState({
+     bids: [
+        { price: 65240.5, amount: 1.24 },
+        { price: 65239.0, amount: 3.52 },
+        { price: 65238.1, amount: 0.89 },
+        { price: 65237.5, amount: 5.11 },
+        { price: 65236.2, amount: 2.34 },
+     ],
+     asks: [
+        { price: 65242.8, amount: 0.45 },
+        { price: 65243.5, amount: 1.89 },
+        { price: 65244.2, amount: 4.12 },
+        { price: 65245.0, amount: 0.77 },
+        { price: 65246.5, amount: 2.56 },
+     ]
+  });
 
   const currentPair = dynamicPairs.find((p) => p.name === selectedPair) || dynamicPairs[0];
 
@@ -151,26 +227,42 @@ const TradingPage = () => {
   const totalUsdt = amount && price ? (parseFloat(amount) * parseFloat(price)).toFixed(2) : "0.00";
 
   const handleExecuteTrade = async () => {
-
     if (!amount || isNaN(parseFloat(amount))) {
       toast.error("Please enter a valid amount");
       return;
     }
 
     const tradeTotal = parseFloat(amount) * currentPair.price;
-    if (side === "buy" && tradeTotal > balance.available) {
-      toast.error("Insufficient balance");
+    const { data: b } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
+
+    if (side === "buy" && tradeTotal > (b?.fiat_balance || 0)) {
+      toast.error("Insufficient fiat balance to open position");
+      return;
+    }
+
+    if (side === "sell" && (b?.fiat_balance || 0) < tradeTotal * 0.1) {
+      toast.error("Insufficient margin (fiat) to open sell position");
       return;
     }
 
     try {
-        // 1. Deduct from fiat, add to trading balance in DB
-        const { data: b } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
+        setIsTradeLoading(true);
+        const isPending = orderType !== "market";
+        
+        // 1. Update balances
+        const updateB: any = {};
         if (side === "buy") {
-            const updateB = {
-                fiat_balance: Math.max(0, (b?.fiat_balance || 0) - tradeTotal),
-                trading_balance: (b?.trading_balance || 0) + tradeTotal
-            };
+            // For both market and limit buys, we lock the cash
+            updateB.fiat_balance = Math.max(0, (b?.fiat_balance || 0) - tradeTotal);
+            if (!isPending) updateB.trading_balance = (b?.trading_balance || 0) + tradeTotal;
+        } else {
+            // Sell logic: We still use 10% fiat as maintenance margin for shorts
+            const marginRequired = tradeTotal * 0.1;
+            updateB.fiat_balance = Math.max(0, (b?.fiat_balance || 0) - marginRequired);
+            if (!isPending) updateB.trading_balance = (b?.trading_balance || 0) + tradeTotal;
+        }
+        
+        if (Object.keys(updateB).length > 0) {
             await supabase.from('balances').update(updateB).eq('user_id', user?.id);
         }
 
@@ -179,50 +271,63 @@ const TradingPage = () => {
             pair: selectedPair,
             type: side === "buy" ? "Buy" : "Sell",
             amount: tradeTotal,
-            entry_price: parseFloat(price),
-            current_price: parseFloat(price),
+            entry_price: isPending ? parseFloat(price) : currentPair.price,
+            current_price: currentPair.price,
             order_type: orderType,
-            status: 'Open'
+            status: isPending ? 'Pending' : 'Open',
+            time: new Date().toISOString()
         });
         
         if (!error) {
-           toast.success(`${side === "buy" ? "Buy" : "Sell"} order executed`, {
-               description: `Successfully filled ${amount} ${selectedPair.split('/')[0]}.`
+           toast.success(isPending ? "Limit Order Placed" : `${side === "buy" ? "Buy" : "Sell"} order executed`, {
+               description: isPending ? `Searching for liquidity at ${price}...` : `Successfully filled ${amount} ${selectedPair.split('/')[0]}.`
            });
            setAmount("");
-           fetchUserTrades();
+           await fetchUserTrades();
+           await fetchAppData(); // Sync UI balances immediately
         } else {
            toast.error(error.message);
         }
     } catch(err: any) {
         toast.error("Executing trade failed.");
+    } finally {
+        setIsTradeLoading(false);
     }
   };
 
   const handleCloseTrade = async (tradeId: string) => {
     try {
+        setIsTradeLoading(true);
         const trade = activeTrades.find(t => t.id === tradeId);
         if (!trade) return;
 
-        // 1. Return to fiat balance in DB
+        // 1. Calculate PnL and return to fiat balance
         const { data: b } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
         const pnl = trade.pnl || 0;
         const totalReturn = trade.amount + pnl;
 
         await supabase.from('balances').update({
-            fiat_balance: (b?.fiat_balance || 0) + totalReturn,
+            fiat_balance: Math.max(0, (b?.fiat_balance || 0) + totalReturn),
             trading_balance: Math.max(0, (b?.trading_balance || 0) - trade.amount)
         }).eq('user_id', user?.id);
 
-        const { error } = await supabase.from('trades').update({ status: 'Closed' }).eq('id', tradeId);
+        const { error } = await supabase.from('trades').update({ 
+           status: 'Closed',
+           pnl: pnl,
+           current_price: trade.currentPrice
+        }).eq('id', tradeId);
+
         if (!error) {
-           toast.success("Position Closed", { description: `Trade settled at current market price.` });
-           fetchUserTrades();
+           toast.success("Position Closed", { description: `Trade settled at ${formatCurrency(trade.currentPrice)}.` });
+           await fetchUserTrades();
+           await fetchAppData();
         } else {
            toast.error(error.message);
         }
     } catch(err: any) {
         toast.error("Failed to close position");
+    } finally {
+        setIsTradeLoading(false);
     }
   };
 
@@ -545,10 +650,52 @@ const TradingPage = () => {
                   )}
 
                   {activeLedgerTab === "Pending Orders" && (
-                     <div className="py-24 text-center">
-                        <Target className="w-12 h-12 text-muted-foreground/10 mx-auto mb-6" />
-                        <h4 className="text-lg font-black text-foreground mb-2">No Limit Orders</h4>
-                        <p className="text-xs font-bold text-muted-foreground max-w-sm mx-auto uppercase tracking-wider italic opacity-50">You have no active limit or stop orders in the current queue.</p>
+                     <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                           <thead className="bg-secondary/30 border-b border-border">
+                              <tr className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                                 <th className="px-6 py-4">Instrument</th>
+                                 <th className="px-6 py-4">Type</th>
+                                 <th className="px-6 py-4">Price</th>
+                                 <th className="px-6 py-4">Size</th>
+                                 <th className="px-6 py-4 text-right">Actions</th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-border">
+                              {pendingOrders.length === 0 ? (
+                                 <tr>
+                                    <td colSpan={5} className="py-20 text-center">
+                                       <Target className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
+                                        <p className="text-sm font-bold text-muted-foreground">No pending orders.</p>
+                                     </td>
+                                  </tr>
+                              ) : pendingOrders.map((order) => (
+                                 <tr key={order.id} className="hover:bg-secondary/20 transition-colors">
+                                    <td className="px-6 py-5">
+                                       <div className="text-sm font-bold text-foreground">{order.pair}</div>
+                                       <div className="text-[10px] text-muted-foreground">{new Date(order.time).toLocaleString()}</div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                       <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-secondary">
+                                          {order.orderType} {order.type}
+                                       </span>
+                                    </td>
+                                    <td className="px-6 py-5 text-sm font-bold">{order.price.toLocaleString()}</td>
+                                    <td className="px-6 py-5 text-sm font-bold">{formatCurrency(order.amount)}</td>
+                                    <td className="px-6 py-5 text-right">
+                                       <Button 
+                                          variant="ghost" 
+                                          size="sm" 
+                                          onClick={() => handleCancelOrder(order.id)}
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-[10px] font-bold uppercase tracking-widest"
+                                       >
+                                          Cancel
+                                       </Button>
+                                    </td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </table>
                      </div>
                   )}
                </div>
@@ -711,16 +858,17 @@ const TradingPage = () => {
                     </div>
 
                     <div className="space-y-3 pt-2">
-                       <Button
-                        onClick={handleExecuteTrade}
-                        className={`w-full h-12 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all ${
-                           side === "sell" 
-                           ? "bg-red-600 hover:bg-red-700 text-white" 
-                           : "bg-green-600 hover:bg-green-700 text-white"
-                        }`}
-                       >
-                         {side} {selectedPair.split("/")[0]}
-                       </Button>
+                        <Button
+                         onClick={handleExecuteTrade}
+                         disabled={isTradeLoading}
+                         className={`w-full h-12 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all ${
+                            side === "sell" 
+                            ? "bg-red-600 hover:bg-red-700 text-white" 
+                            : "bg-green-600 hover:bg-green-700 text-white"
+                         } disabled:opacity-50`}
+                        >
+                          {isTradeLoading ? "Processing..." : `${side} ${selectedPair.split("/")[0]}`}
+                        </Button>
 
                        <div className="flex items-start gap-2 justify-center py-2 px-3 rounded-xl bg-secondary border border-border">
                           <ShieldCheck className="w-4 h-4 text-primary shrink-0 opacity-80" />

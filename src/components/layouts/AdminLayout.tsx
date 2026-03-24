@@ -46,7 +46,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
-    <div className="flex flex-col h-full bg-sidebar-background border-r border-border relative overflow-hidden">
+    <div className="flex flex-col h-full bg-sidebar border-r border-border relative overflow-hidden">
       <div className="p-8 pb-10 flex flex-col items-center gap-5 relative z-10 border-b border-border bg-primary/[0.03]">
         <Link to="/admin" className="flex flex-col items-center gap-3 group" onClick={onNavigate}>
           <img src="/logo.png" alt="Clarity Trade Logo" className="w-14 h-14 object-contain drop-shadow-gold transition-all duration-500 group-hover:scale-110 group-hover:-rotate-3" />
