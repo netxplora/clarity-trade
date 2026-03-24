@@ -1,0 +1,36 @@
+{
+  "users": [],
+  "current_user_id": null,
+  "system_settings": {
+    "platformFeePercent": 2,
+    "feeWalletAddress": "",
+    "feeWalletNetwork": "ERC-20",
+    "feeCollectedTotal": 0,
+    "feeEnabled": true,
+    "minWithdrawalAmount": 10,
+    "maxWithdrawalAmount": 50000,
+    "kycRequiredForWithdrawal": true,
+    "copyTradingEnabled": true,
+    "minCopyAllocation": 100,
+    "commissionAutoDeduct": 10
+  },
+  "balances": [],
+  "transactions": [],
+  "active_sessions": [],
+  "audit_logs": [],
+  "copy_trades": [],
+  "settings": {
+    "platformFeePercent": 2,
+    "feeWalletAddress": "",
+    "feeWalletNetwork": "ERC-20",
+    "feeCollectedTotal": 0,
+    "feeEnabled": true,
+    "minWithdrawalAmount": 10,
+    "maxWithdrawalAmount": 50000,
+    "kycRequiredForWithdrawal": true,
+    "copyTradingEnabled": true,
+    "minCopyAllocation": 100,
+    "commissionAutoDeduct": 10
+  },
+  "fee_ledger": []
+}

@@ -1,36 +1,66 @@
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowUpRight, Rocket } from "lucide-react";
 
 const CTASection = () => {
   return (
-    <section className="py-24">
-      <div className="container mx-auto px-6">
+    <section className="bg-[#0B0F14] relative overflow-hidden text-center py-20 lg:py-32" id="cta">
+      {/* Background Hero */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 scale-[1.02]"
+          style={{ backgroundImage: "url('/images/hero-trading-bg.png')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/80 to-[#0B0F14]" />
+      </div>
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="glass-card glass-glow p-12 md:p-16 text-center max-w-4xl mx-auto relative overflow-hidden"
+          className="max-w-4xl mx-auto"
         >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/20 rounded-full blur-[80px]" />
-          <div className="relative">
-            <h2 className="text-3xl md:text-5xl font-bold font-display mb-4">
-              Ready to Start <span className="text-gradient-primary">Trading</span>?
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-lg mx-auto mb-8">
-              Join 12,000+ traders already growing their portfolios. Fund with crypto and start in minutes.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button variant="hero" size="lg" className="text-base px-8 py-6">
-                Create Free Account <ArrowRight className="w-5 h-5 ml-1" />
-              </Button>
-              <Button variant="hero-outline" size="lg" className="text-base px-8 py-6">
-                Explore Traders
-              </Button>
-            </div>
+          <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-10 border border-[#D4AF37]/20 shadow-xl">
+             <Rocket className="w-10 h-10 text-[#D4AF37]" />
+          </div>
+          
+          <span className="heading-gold">Ready to Start?</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-8 drop-shadow-lg">
+             Begin Your Journey to <br className="hidden md:block" />
+             <span className="text-[#D4AF37]">Wealth and Success</span>
+          </h2>
+          
+          <p className="p-hyip-dark mb-12 max-w-2xl mx-auto">
+            Join thousands of traders who are already earning profit passively. 
+            Create your account today and start trading global markets with ease.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+             <Link to="/register" className="btn-gold !h-14 px-12 text-base flex items-center justify-center gap-3 w-full sm:w-auto hover:shadow-gold transition-shadow">
+                Register Free Account <ArrowUpRight className="w-5 h-5" />
+             </Link>
+             <Link to="/login" className="btn-gold-outline !h-14 px-12 text-base w-full sm:w-auto flex items-center justify-center">
+                Sign In Now
+             </Link>
+          </div>
+          
+          <div className="mt-16 text-gray-400 text-xs font-bold uppercase tracking-widest flex flex-wrap items-center justify-center gap-10">
+             <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500" /> Instant Registration
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500" /> Secure Encryption
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500" /> 24/7 Live Support
+             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Decorative patterns */}
+      <div className="absolute top-[-50%] left-[-20%] w-[100%] h-[150%] bg-[#D4AF37]/[0.02] blur-[150px] pointer-events-none rounded-full" />
+      <div className="absolute bottom-[-50%] right-[-20%] w-[100%] h-[150%] bg-[#D4AF37]/[0.02] blur-[150px] pointer-events-none rounded-full" />
     </section>
   );
 };

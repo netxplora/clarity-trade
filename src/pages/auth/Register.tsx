@@ -1,121 +1,189 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import SocialAuth from "@/components/auth/SocialAuth";
 
 const Register = () => {
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get("ref");
+    if (ref) setReferralCode(ref);
+  }, [location]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/dashboard";
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: `${firstName} ${lastName}`.trim(),
+            referral_code: referralCode,
+          }
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success("Account created securely. Dashboard initialized.");
+      window.location.href = "/dashboard";
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred during registration.");
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center bg-card">
-        <div className="absolute inset-0 grid-pattern opacity-30" />
-        <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-[100px]" />
-        <div className="relative text-center px-12">
-          <div className="flex items-center gap-3 justify-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-              <TrendingUp className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <span className="text-3xl font-bold font-display">TradeX</span>
-          </div>
-          <h2 className="text-2xl font-bold font-display mb-4">Start Your Trading Journey</h2>
-          <p className="text-muted-foreground max-w-sm mx-auto">
-            Create an account, fund with crypto, and start earning in minutes.
-          </p>
+    <div className="min-h-screen flex flex-row-reverse bg-background font-sans">
+      {/* Right side — Decorative */}
+      <div className="hidden lg:flex lg:w-[50%] relative flex-col items-center justify-center p-20 overflow-hidden bg-[#0A0A0A]">
+        <div className="absolute inset-0 bg-[url('/images/hero-trading-bg.png')] bg-cover bg-center opacity-20 object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent" />
+        
+        <div className="relative z-10 w-full max-w-lg">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
+          >
+            <h1 className="text-5xl font-bold font-playfair text-white mb-6 leading-tight">
+               Built for the <br />
+               <span className="text-transparent bg-clip-text bg-gradient-gold">Next Generation</span>
+            </h1>
+            <p className="text-lg text-white/50 leading-relaxed">
+               Open an institutional-grade account in minutes. Securely deposit fiat or crypto and trade across 150+ global markets.
+            </p>
+          </motion.div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6">
+      {/* Left side — Form */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 relative bg-white">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+           initial={{ opacity: 0, x: -20 }}
+           animate={{ opacity: 1, x: 0 }}
+           transition={{ duration: 0.6 }}
+           className="w-full max-w-md relative z-10"
         >
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold font-display">TradeX</span>
+          <div className="flex items-center gap-3 mb-10">
+            <Link to="/" className="w-12 h-12 transition-transform hover:scale-105">
+                <img src="/logo.png" alt="Clarity Trade Logo" className="w-full h-full object-contain drop-shadow-gold" />
+            </Link>
           </div>
 
-          <h1 className="text-3xl font-bold font-display mb-2">Create account</h1>
-          <p className="text-muted-foreground mb-8">Join thousands of profitable traders</p>
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold font-playfair text-foreground mb-3">Create an account</h2>
+            <p className="text-muted-foreground text-sm">Fill in your details to start trading immediately.</p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="h-12 bg-secondary border-border"
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground">First Name</label>
+                  <input 
+                     type="text" 
+                     required
+                     value={firstName}
+                     onChange={(e) => setFirstName(e.target.value)}
+                     placeholder="John" 
+                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm" 
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground">Last Name</label>
+                  <input 
+                     type="text" 
+                     required
+                     value={lastName}
+                     onChange={(e) => setLastName(e.target.value)}
+                     placeholder="Doe" 
+                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm" 
+                  />
+               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="h-12 bg-secondary border-border"
-              />
+               <label className="text-sm font-semibold text-foreground">Email address</label>
+               <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com" 
+                  className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm" 
+               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="h-12 bg-secondary border-border"
-              />
+               <label className="text-sm font-semibold text-foreground">Password</label>
+               <div className="relative">
+                 <input 
+                    type={showPassword ? "text" : "password"} 
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••" 
+                    className="w-full h-12 bg-secondary border border-border rounded-xl px-4 pr-12 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm tracking-widest" 
+                 />
+                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                 </button>
+               </div>
+               <p className="text-xs text-muted-foreground mt-2">Must be at least 8 characters.</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Min. 8 characters"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="h-12 bg-secondary border-border pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
+               <label className="text-sm font-semibold text-foreground">Referral Code (Optional)</label>
+               <input 
+                  type="text" 
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  placeholder="E.g. JD777" 
+                  className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm uppercase font-bold" 
+               />
             </div>
 
-            <Button variant="hero" type="submit" className="w-full h-12 text-base">
-              Create Account <ArrowRight className="w-5 h-5 ml-1" />
+            <div className="flex items-start gap-3 mt-4">
+               <input type="checkbox" className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary/40 bg-secondary" required />
+               <p className="text-xs text-muted-foreground">
+                  By creating an account, you agree to our <Link to="/terms-of-service" className="text-primary hover:underline">Terms of Service</Link> and <Link to="/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link>.
+               </p>
+            </div>
+
+            <Button variant="hero" disabled={isLoading} className="w-full h-12 rounded-xl text-white shadow-gold mt-4 font-semibold text-sm">
+                {isLoading ? "Creating Account..." : "Sign Up"}
+                {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          <div className="mt-8">
+            <SocialAuth mode="register" />
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-10">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">
-              Sign in
+            <Link to="/login" className="font-semibold text-primary hover:text-primary/80 transition-colors">
+               Sign In
             </Link>
           </p>
         </motion.div>

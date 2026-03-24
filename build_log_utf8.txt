@@ -1,0 +1,150 @@
+﻿[36mvite v8.0.0 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Γ£ô 2219 modules transformed.
+node.exe : [31mΓ£ù[39m 
+Build failed in 5.45s
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (  
+  [31mΓ£ù[39m Build fa   
+ iled in 5.45s:String)    
+ [], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+[31merror during build:
+[31mBuild failed with 1 
+error:
+
+[31m[PARSE_ERROR] 
+Error:[0m Identifier 
+`handleKycReject` has 
+already been declared
+     [38;5;246mΓò¡[0m[3
+8;5;246mΓöÇ[0m[38;5;246m
+[[0m src/pages/admin/User
+Management.tsx:34:8 
+[38;5;246m][0m
+     [38;5;246mΓöé[0m
+ [38;5;246m 34 Γöé[0m 
+[38;5;249m 
+[0m[38;5;249m 
+[0m[38;5;249m 
+[0m[38;5;249m [0m[38;5
+;249mc[0m[38;5;249mo[0m
+[38;5;249mn[0m[38;5;249
+ms[0m[38;5;249mt[0m[38
+;5;249m [0mhandleKycRejec
+t[38;5;249m [0m[38;5;24
+9m=[0m[38;5;249m [0m[3
+8;5;249ma[0m[38;5;249ms
+[0m[38;5;249my[0m[38;5;
+249mn[0m[38;5;249mc[0m
+[38;5;249m [0m[38;5;249m
+([0m[38;5;249mi[0m[38;
+5;249md[0m[38;5;249m,[0
+m[38;5;249m [0m[38;5;24
+9mn[0m[38;5;249ma[0m[3
+8;5;249mm[0m[38;5;249me
+[0m[38;5;249m)[0m[38;5;
+249m [0m[38;5;249m=[0m
+[38;5;249m>[0m[38;5;249m
+ [0m[38;5;249m{[0m
+ [38;5;240m    Γöé[0m   
+        ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö
+Ç  
+ [38;5;240m    Γöé[0m   
+               Γò░ΓöÇΓöÇΓö
+ÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ 
+`handleKycReject` has 
+already been declared here
+ [38;5;240m    Γöé[0m 
+ [38;5;246m135 Γöé[0m 
+[38;5;249m 
+[0m[38;5;249m 
+[0m[38;5;249m 
+[0m[38;5;249m [0m[38;5
+;249mc[0m[38;5;249mo[0m
+[38;5;249mn[0m[38;5;249
+ms[0m[38;5;249mt[0m[38
+;5;249m [0mhandleKycRejec
+t[38;5;249m [0m[38;5;24
+9m=[0m[38;5;249m [0m[3
+8;5;249ma[0m[38;5;249ms
+[0m[38;5;249my[0m[38;5;
+249mn[0m[38;5;249mc[0m
+[38;5;249m [0m[38;5;249m
+([0m[38;5;249mi[0m[38;
+5;249md[0m[38;5;249m,[0
+m[38;5;249m [0m[38;5;24
+9mn[0m[38;5;249ma[0m[3
+8;5;249mm[0m[38;5;249me
+[0m[38;5;249m)[0m[38;5;
+249m [0m[38;5;249m=[0m
+[38;5;249m>[0m[38;5;249m
+ [0m[38;5;249m{[0m
+ [38;5;240m    Γöé[0m   
+        ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö
+Ç  
+ [38;5;240m    Γöé[0m   
+               Γò░ΓöÇΓöÇΓö
+ÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ It 
+can not be redeclared here
+[38;5;246mΓöÇΓöÇΓöÇΓöÇΓöÇ
+Γò»[0m
+[31m
+    at aggregateBindingErr
+orsIntoJsError (file:///C:
+/Users/ADMIN/Documents/pro
+ject/Site/clarity-trade/no
+de_modules/rolldown/dist/s
+hared/error-CP8smW_P.mjs:4
+8:18)
+    at 
+unwrapBindingResult (file:
+///C:/Users/ADMIN/Document
+s/project/Site/clarity-tra
+de/node_modules/rolldown/d
+ist/shared/error-CP8smW_P.
+mjs:18:128)
+    at #build (file:///C:/
+Users/ADMIN/Documents/proj
+ect/Site/clarity-trade/nod
+e_modules/rolldown/dist/sh
+ared/rolldown-build-4YnQkA
+76.mjs:3311:34)
+    at async 
+buildEnvironment (file:///
+C:/Users/ADMIN/Documents/p
+roject/Site/clarity-trade/
+node_modules/vite/dist/nod
+e/chunks/node.js:32794:64)
+    at async Object.build 
+(file:///C:/Users/ADMIN/Do
+cuments/project/Site/clari
+ty-trade/node_modules/vite
+/dist/node/chunks/node.js:
+33216:19)
+    at async 
+Object.buildApp (file:///C
+:/Users/ADMIN/Documents/pr
+oject/Site/clarity-trade/n
+ode_modules/vite/dist/node
+/chunks/node.js:33213:153)
+    at async 
+CAC.<anonymous> (file:///C
+:/Users/ADMIN/Documents/pr
+oject/Site/clarity-trade/n
+ode_modules/vite/dist/node
+/cli.js:778:3) {
+  errors: [Getter/Setter]
+}[39m

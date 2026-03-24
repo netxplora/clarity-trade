@@ -1,0 +1,275 @@
+﻿node.exe : npm verbose 
+cli C:\Program 
+Files\nodejs\node.exe 
+C:\Program Files\nodejs\no
+de_modules\npm\bin\npm-cli
+.js
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (n  
+  pm verbose cli...\bin   
+ \npm-cli.js:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+npm info using npm@10.9.2
+npm info using 
+node@v22.16.0
+npm verbose title npm 
+install
+npm verbose argv 
+"install" "--no-audit" 
+"--no-fund" "--loglevel" 
+"verbose"
+npm verbose logfile 
+logs-max:10 dir:C:\Users\A
+DMIN\AppData\Local\npm-cac
+he\_logs\2026-03-18T06_20_
+27_719Z-
+npm verbose logfile C:\Use
+rs\ADMIN\AppData\Local\npm
+-cache\_logs\2026-03-18T06
+_20_27_719Z-debug-0.log
+npm http cache https://reg
+istry.npmjs.org/framer-mot
+ion 58ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/@emotion%2
+fis-prop-valid 19ms 
+(cache hit)
+npm http cache https://reg
+istry.npmjs.org/react 
+23ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/react-dom 
+36ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/motion-dom
+ 21ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/motion-uti
+ls 25ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/@testing-l
+ibrary%2fdom 8ms (cache 
+hit)
+npm http cache https://reg
+istry.npmjs.org/lz-string 
+12ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/aria-query
+ 14ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/pretty-for
+mat 22ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/@babel%2fc
+ode-frame 34ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/@types%2fa
+ria-query 32ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/dom-access
+ibility-api 16ms (cache 
+hit)
+npm http cache https://reg
+istry.npmjs.org/dequal 
+13ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/@babel%2fh
+elper-validator-identifier
+ 17ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/react-is 
+31ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/ansi-regex
+ 102ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/ansi-style
+s 102ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/picomatch 
+12ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/vite 
+105ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/@types%2fn
+ode 38ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/jiti 14ms 
+(cache hit)
+npm http cache https://reg
+istry.npmjs.org/less 10ms 
+(cache hit)
+npm http cache https://reg
+istry.npmjs.org/lightningc
+ss 5ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/sass 8ms 
+(cache hit)
+npm http cache https://reg
+istry.npmjs.org/sass-embed
+ded 21ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/stylus 
+6ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/sugarss 
+5ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/postcss 
+10ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/terser 
+10ms (cache hit)
+npm http cache https://reg
+istry.npmjs.org/tsx 17ms 
+(cache hit)
+npm http cache https://reg
+istry.npmjs.org/yaml 9ms 
+(cache hit)
+npm verbose stack Error: 
+could not resolve
+npm verbose stack     at 
+PlaceDep.failPeerConflict 
+(C:\Program Files\nodejs\n
+ode_modules\npm\node_modul
+es\@npmcli\arborist\lib\pl
+ace-dep.js:503:25)
+npm verbose stack     at 
+new PlaceDep (C:\Program F
+iles\nodejs\node_modules\n
+pm\node_modules\@npmcli\ar
+borist\lib\place-dep.js:15
+7:21)
+npm verbose stack     at 
+#buildDepStep (C:\Program 
+Files\nodejs\node_modules\
+npm\node_modules\@npmcli\a
+rborist\lib\arborist\build
+-ideal-tree.js:920:18)
+npm verbose stack     at 
+async 
+Arborist.buildIdealTree 
+(C:\Program Files\nodejs\n
+ode_modules\npm\node_modul
+es\@npmcli\arborist\lib\ar
+borist\build-ideal-tree.js
+:181:7)
+npm verbose stack     at 
+async Promise.all (index 
+1)
+npm verbose stack     at 
+async Arborist.reify 
+(C:\Program Files\nodejs\n
+ode_modules\npm\node_modul
+es\@npmcli\arborist\lib\ar
+borist\reify.js:131:5)
+npm verbose stack     at 
+async Install.exec 
+(C:\Program Files\nodejs\n
+ode_modules\npm\lib\comman
+ds\install.js:150:5)
+npm verbose stack     at 
+async Npm.exec 
+(C:\Program Files\nodejs\n
+ode_modules\npm\lib\npm.js
+:207:9)
+npm verbose stack     at 
+async module.exports 
+(C:\Program Files\nodejs\n
+ode_modules\npm\lib\cli\en
+try.js:74:5)
+npm error code ERESOLVE
+npm error ERESOLVE could 
+not resolve
+npm error
+npm error While 
+resolving: 
+lovable-tagger@1.1.13
+npm error Found: 
+vite@8.0.0
+npm error 
+node_modules/vite
+npm error   dev 
+vite@"^8.0.0" from the 
+root project
+npm error   peer 
+vite@"^8.0.0" from 
+@vitejs/plugin-react@6.0.0
+npm error   node_modules/@
+vitejs/plugin-react
+npm error     dev @vitejs/
+plugin-react@"^6.0.0" 
+from the root project
+npm error   2 more 
+(@vitest/mocker, vitest)
+npm error
+npm error Could not 
+resolve dependency:
+npm error peer 
+vite@">=5.0.0 <8.0.0" 
+from lovable-tagger@1.1.13
+npm error node_modules/lov
+able-tagger
+npm error   dev 
+lovable-tagger@"^1.1.13" 
+from the root project
+npm error
+npm error Conflicting 
+peer dependency: 
+vite@7.3.1
+npm error 
+node_modules/vite
+npm error   peer 
+vite@">=5.0.0 <8.0.0" 
+from lovable-tagger@1.1.13
+npm error   node_modules/l
+ovable-tagger
+npm error     dev 
+lovable-tagger@"^1.1.13" 
+from the root project
+npm error
+npm error Fix the 
+upstream dependency 
+conflict, or retry
+npm error this command 
+with --force or 
+--legacy-peer-deps
+npm error to accept an 
+incorrect (and 
+potentially broken) 
+dependency resolution.
+npm error
+npm error
+npm error For a full 
+report see:
+npm error C:\Users\ADMIN\A
+ppData\Local\npm-cache\_lo
+gs\2026-03-18T06_20_27_719
+Z-eresolve-report.txt
+npm verbose cwd C:\Users\A
+DMIN\Documents\project\Sit
+e\clarity-trade
+npm verbose os Windows_NT 
+10.0.22000
+npm verbose node v22.16.0
+npm verbose npm  v10.9.2
+npm verbose exit 1
+npm verbose code 1
+npm error A complete log 
+of this run can be found 
+in: C:\Users\ADMIN\AppData
+\Local\npm-cache\_logs\202
+6-03-18T06_20_27_719Z-debu
+g-0.log

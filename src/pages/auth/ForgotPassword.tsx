@@ -3,74 +3,77 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSent, setIsSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setIsLoading(true);
+    setTimeout(() => {
+        setIsLoading(false);
+        setIsSent(true);
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center bg-secondary/30 font-sans p-6">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+         initial={{ opacity: 0, scale: 0.95 }}
+         animate={{ opacity: 1, scale: 1 }}
+         transition={{ duration: 0.5 }}
+         className="w-full max-w-md bg-white rounded-3xl p-8 md:p-12 shadow-huge border border-border"
       >
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold font-display">TradeX</span>
+        <div className="flex justify-center mb-8">
+            <Link to="/" className="w-14 h-14 transition-transform hover:scale-105">
+                <img src="/logo.png" alt="Clarity Trade Logo" className="w-full h-full object-contain drop-shadow-gold" />
+            </Link>
         </div>
 
-        {!sent ? (
-          <>
-            <h1 className="text-3xl font-bold font-display mb-2">Reset password</h1>
-            <p className="text-muted-foreground mb-8">
-              Enter your email and we'll send you a reset link.
+        <div className="text-center mb-10">
+            <h1 className="text-2xl font-bold font-playfair text-foreground mb-3">Reset your password</h1>
+            <p className="text-muted-foreground text-sm">
+                {!isSent ? "Enter your email address and we'll send you a link to reset your password." : "We've sent a password reset link to your email address."}
             </p>
+        </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 bg-secondary border-border"
-                />
-              </div>
-              <Button variant="hero" type="submit" className="w-full h-12 text-base">
-                Send Reset Link
-              </Button>
+        {!isSent ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+               <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground">Email address</label>
+                  <input 
+                     type="email" 
+                     required
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     placeholder="name@company.com" 
+                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm" 
+                  />
+               </div>
+
+               <Button variant="hero" disabled={isLoading} className="w-full h-12 rounded-xl text-white shadow-gold mt-4 font-semibold text-sm">
+                  {isLoading ? "Sending Link..." : "Send Reset Link"}
+                  {!isLoading && <Mail className="w-4 h-4 ml-2" />}
+               </Button>
             </form>
-          </>
         ) : (
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-              <Mail className="w-8 h-8 text-primary" />
+            <div className="flex flex-col items-center gap-6">
+                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-green-600 mb-2">
+                    <Mail className="w-8 h-8" />
+                </div>
+                <Button variant="outline" className="w-full h-12 rounded-xl border-border hover:bg-secondary text-sm font-semibold" onClick={() => setIsSent(false)}>
+                    Try another email
+                </Button>
             </div>
-            <h1 className="text-3xl font-bold font-display mb-2">Check your email</h1>
-            <p className="text-muted-foreground mb-8">
-              We've sent a password reset link to <span className="text-foreground font-medium">{email}</span>
-            </p>
-          </div>
         )}
 
-        <Link
-          to="/login"
-          className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground mt-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to sign in
-        </Link>
+        <div className="mt-10 text-center">
+            <Link to="/login" className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Sign In
+            </Link>
+        </div>
       </motion.div>
     </div>
   );

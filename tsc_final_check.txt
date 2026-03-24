@@ -1,0 +1,2 @@
+﻿src/pages/dashboard/AnalyticsPage.tsx(42,30): error TS2551: Property 'addAreaSeries' does not exist on type 'IChartApi'. Did you mean 'addSeries'?
+src/pages/dashboard/AnalyticsPage.tsx(185,87): error TS2339: Property 'timestamp' does not exist on type 'Trade'.

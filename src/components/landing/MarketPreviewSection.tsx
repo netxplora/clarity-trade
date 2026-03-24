@@ -1,95 +1,100 @@
 import { motion } from "framer-motion";
-import { useMemo } from "react";
+import { TrendingUp, TrendingDown, Globe, Coins, Gem, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const generateChartData = (points: number, trend: "up" | "down" | "volatile") => {
-  const data: number[] = [];
-  let value = 50 + Math.random() * 30;
-  for (let i = 0; i < points; i++) {
-    const change = (Math.random() - (trend === "down" ? 0.6 : 0.4)) * 4;
-    value = Math.max(10, Math.min(90, value + change));
-    data.push(value);
-  }
-  return data;
-};
-
-const MiniChart = ({ data, up }: { data: number[]; up: boolean }) => {
-  const path = useMemo(() => {
-    const w = 200;
-    const h = 60;
-    return data
-      .map((v, i) => {
-        const x = (i / (data.length - 1)) * w;
-        const y = h - (v / 100) * h;
-        return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-      })
-      .join(" ");
-  }, [data]);
-
-  const gradId = `grad-${up ? "up" : "down"}-${Math.random().toString(36).slice(2, 6)}`;
-
-  return (
-    <svg viewBox="0 0 200 60" className="w-full h-12">
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={up ? "hsl(var(--profit))" : "hsl(var(--loss))"} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={up ? "hsl(var(--profit))" : "hsl(var(--loss))"} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={path + " L 200 60 L 0 60 Z"} fill={`url(#${gradId})`} />
-      <path d={path} fill="none" stroke={up ? "hsl(var(--profit))" : "hsl(var(--loss))"} strokeWidth="2" />
-    </svg>
-  );
-};
-
-const pairs = [
-  { name: "BTC/USDT", price: "67,432.50", change: "+2.34%", up: true, trend: "up" as const },
-  { name: "ETH/USDT", price: "3,521.80", change: "+1.12%", up: true, trend: "up" as const },
-  { name: "SOL/USDT", price: "178.45", change: "-0.87%", up: false, trend: "down" as const },
-  { name: "BNB/USDT", price: "612.30", change: "+3.56%", up: true, trend: "volatile" as const },
+const markets = [
+  { category: "Crypto", pairs: [
+    { name: "BTC/USDT", price: "$64,281.40", change: "+5.24%", up: true, volume: "$1.2B" },
+    { name: "ETH/USDT", price: "$3,542.80", change: "+3.18%", up: true, volume: "$842M" },
+    { name: "SOL/USDT", price: "$155.20", change: "-1.42%", up: false, volume: "$312M" },
+  ]},
+  { category: "Forex", pairs: [
+    { name: "EUR/USD", price: "1.0855", change: "+0.12%", up: true, volume: "$5.4B" },
+    { name: "GBP/USD", price: "1.2641", change: "+0.08%", up: true, volume: "$3.2B" },
+    { name: "USD/JPY", price: "156.84", change: "-0.24%", up: false, volume: "$4.1B" },
+  ]},
+  { category: "Commodities", pairs: [
+    { name: "GOLD", price: "$2,342.60", change: "+0.86%", up: true, volume: "$2.1B" },
+    { name: "SILVER", price: "$27.85", change: "+1.24%", up: true, volume: "$890M" },
+    { name: "OIL (WTI)", price: "$82.45", change: "-0.58%", up: false, volume: "$1.4B" },
+  ]},
 ];
 
+const categoryIcons: Record<string, typeof Coins> = { Crypto: Coins, Forex: Globe, Commodities: Gem };
+
 const MarketPreviewSection = () => {
-  const charts = useMemo(() => pairs.map((p) => generateChartData(40, p.trend)), []);
-
   return (
-    <section className="py-24">
-      <div className="container mx-auto px-4 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-3xl md:text-5xl font-bold font-display mb-4">
-            Live <span className="text-gradient-primary">Markets</span>
+    <section className="section-bg-light" id="markets">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16 px-4">
+          <span className="heading-gold">Live Market Overview</span>
+          <h2 className="title-hyip text-gray-900">
+            Institutional-Grade Markets <span className="text-[#D4AF37]">Active Now</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Real-time market data at your fingertips.
+          <p className="p-hyip">
+            Explore diverse trading opportunities across multiple asset classes with 
+            real-time price updates and lightning-fast execution.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
-          {pairs.map((pair, i) => (
-            <motion.div
-              key={pair.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-4 sm:p-5"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h4 className="font-semibold font-display text-sm sm:text-base">{pair.name}</h4>
-                  <div className="text-base sm:text-lg font-bold font-display mt-1">${pair.price}</div>
+        {/* Market Categories Grid */}
+        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
+          {markets.map((market, mi) => {
+            const Icon = categoryIcons[market.category];
+            return (
+              <motion.div
+                key={market.category}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: mi * 0.1 }}
+                className="hyip-card !p-0 overflow-hidden group shadow-sm hover:shadow-lg transition-all duration-300"
+              >
+                {/* Category Header */}
+                <div className="p-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50/30 group-hover:bg-gray-50/50 transition-colors">
+                  <div className="w-12 h-12 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
+                    <Icon className="w-6 h-6 text-[#D4AF37]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-lg uppercase tracking-wide">{market.category}</h3>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[10px] uppercase font-bold text-green-600">Trading Live</span>
+                    </div>
+                  </div>
                 </div>
-                <span className={`text-xs sm:text-sm font-medium px-2 py-1 rounded-md ${pair.up ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"}`}>
-                  {pair.change}
-                </span>
-              </div>
-              <MiniChart data={charts[i]} up={pair.up} />
-            </motion.div>
-          ))}
+
+                {/* Pairs List */}
+                <div className="divide-y divide-gray-50">
+                  {market.pairs.map((pair) => (
+                    <div key={pair.name} className="px-6 py-5 flex items-center justify-between hover:bg-gray-50/30 transition-colors group/pair cursor-pointer">
+                      <div>
+                        <div className="font-bold text-gray-900 text-sm flex items-center gap-1 group-hover/pair:text-[#D4AF37] transition-colors">
+                           {pair.name}
+                        </div>
+                        <div className="text-[10px] uppercase font-semibold text-gray-400 mt-0.5 tracking-wider">Vol: {pair.volume}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900 text-sm tabular-nums">{pair.price}</div>
+                        <div className={`text-[10px] font-bold flex items-center justify-end gap-1 mt-1 ${pair.up ? 'text-green-500' : 'text-red-500'}`}>
+                          {pair.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {pair.change}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer Link */}
+                <div className="p-4 bg-gray-50/30 border-t border-gray-50">
+                  <Link to="/crypto" className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider flex items-center justify-center gap-2 group/link px-4 py-2 hover:bg-[#D4AF37]/10 border border-transparent hover:border-[#D4AF37]/30 rounded transition-all">
+                    Explore All Assets <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

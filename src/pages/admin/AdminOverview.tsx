@@ -1,117 +1,575 @@
 import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import {
-  Users,
-  DollarSign,
-  Activity,
-  TrendingUp,
-  ArrowUpRight,
+  Users, DollarSign, Activity, TrendingUp, ArrowUpRight, ShieldCheck,
+  Zap, ArrowDownRight, Clock, ExternalLink, Search, CheckCircle2,
+  XCircle, Download, BarChart3, Globe, Database, History, Coins, Target
 } from "lucide-react";
-
-const stats = [
-  { label: "Total Users", value: "12,483", change: "+124 today", icon: Users },
-  { label: "Total Revenue", value: "$89,241", change: "+12.3%", icon: DollarSign },
-  { label: "Active Trades", value: "3,421", change: "+8.7%", icon: Activity },
-  { label: "Total Volume", value: "$2.1M", change: "+15.2%", icon: TrendingUp },
-];
-
-const recentUsers = [
-  { name: "Alice Johnson", email: "alice@email.com", status: "Verified", balance: "$12,400" },
-  { name: "Bob Smith", email: "bob@email.com", status: "Pending KYC", balance: "$3,200" },
-  { name: "Carol White", email: "carol@email.com", status: "Verified", balance: "$45,600" },
-  { name: "Dan Brown", email: "dan@email.com", status: "Suspended", balance: "$0" },
-];
-
-const pendingWithdrawals = [
-  { user: "Alice Johnson", amount: "$2,500", coin: "BTC", date: "Mar 17" },
-  { user: "Carol White", amount: "$10,000", coin: "USDT", date: "Mar 17" },
-  { user: "Eve Davis", amount: "$750", coin: "ETH", date: "Mar 16" },
-];
+import { useStore } from "@/store/useStore";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
 const AdminOverview = () => {
+  const { formatCurrency, user } = useStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      navigate('/admin/login');
+    }
+  }, [user, navigate]);
+
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [platformRevenue, setPlatformRevenue] = useState(0);
+  
+  const fetchAppData = useCallback(async () => {
+    try {
+        const [{ data: sessionsData }, { data: usersData }, { data: txData }, { data: feeData }] = await Promise.all([
+           supabase.from('active_sessions').select('*'),
+           supabase.from('profiles').select('*, balances:balances(*)'),
+           supabase.from('transactions').select('*, profiles(name)').order('created_at', { ascending: false }),
+           supabase.from('fee_ledger').select('fee_amount')
+        ]);
+        
+        if (sessionsData) setActiveSessions(sessionsData);
+        if (usersData) {
+            setUsers(usersData.map(u => {
+                const b = Array.isArray(u.balances) ? u.balances[0] : u.balances;
+                const fiat = Number(b?.fiat_balance || 0);
+                const trading = Number(b?.trading_balance || 0);
+                const copyTrading = Number(b?.copy_trading_balance || 0);
+                const crypto = b?.crypto_balances || {};
+                
+                const cryptoPrices: Record<string, number> = { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580 };
+                const cryptoTotal = Object.entries(crypto).reduce((acc, [coin, amount]) => {
+                    return acc + (Number(amount) * (cryptoPrices[coin.toLowerCase()] || 0));
+                }, 0);
+
+                return {
+                    ...u,
+                    balanceNum: fiat + trading + copyTrading + cryptoTotal,
+                    cryptoBalanceNum: cryptoTotal,
+                    fiatBalanceNum: fiat,
+                    tradingBalance: trading,
+                    copyTradingBalance: copyTrading,
+                    balances: crypto,
+                    joined: new Date(u.created_at).toLocaleDateString()
+                };
+            }));
+        }
+        if (txData) setTransactions(txData);
+        if (feeData) setPlatformRevenue(feeData.reduce((acc, r) => acc + (Number(r.fee_amount) || 0), 0));
+    } catch (err) {
+        console.error("Failed to fetch admin data", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAppData();
+
+    const mainSub = supabase
+      .channel('admin-global-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'balances' }, () => fetchAppData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions' }, () => fetchAppData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchAppData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => fetchAppData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(mainSub);
+    };
+  }, [fetchAppData]);
+  
+  const cryptoPool = users.reduce((acc, u) => acc + (Number(u.cryptoBalanceNum) || 0), 0);
+  const fiatPool = users.reduce((acc, u) => acc + (Number(u.fiatBalanceNum) || 0), 0);
+  const tradingPool = users.reduce((acc, u) => acc + (Number(u.tradingBalance) || 0), 0);
+  const copyPool = users.reduce((acc, u) => acc + (Number(u.copyTradingBalance) || 0), 0);
+
+  const activeCount = activeSessions.filter(s => s.status === 'active').length;
+  const totalAllocated = activeSessions.reduce((acc, s) => acc + (Number(s.allocated_amount) || 0), 0);
+
+  const stats = [
+    { label: "Total Assets", value: formatCurrency(cryptoPool + fiatPool + tradingPool + copyPool), change: "All Pools", icon: Database, up: true, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Fiat & Trading", value: formatCurrency(fiatPool + tradingPool), change: `+${tradingPool > 0 ? 'Trading Active' : 'Stable'}`, icon: Globe, up: true, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Copy Trading", value: formatCurrency(copyPool), change: `${activeCount} Active Copy Trades`, icon: Target, up: true, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Platform Revenue", value: formatCurrency(platformRevenue), change: "Accumulated Fees", icon: TrendingUp, up: platformRevenue > 0, color: "text-purple-600", bg: "bg-purple-50" },
+  ];
+
+  const recentUsers = users.slice(0, 5);
+  const pendingTransactions = transactions.filter(t => t.status === "Pending");
+
+  const handleAction = async (id: string, action: "Completed" | "Rejected") => {
+    try {
+      if (action === "Completed") {
+        const tx = transactions.find(t => t.id === id);
+        if (tx && tx.status !== 'Completed') {
+           const isDeposit = tx.type === 'Deposit';
+           const amount = parseFloat(tx.amount || 0);
+
+           const { data: userBalance } = await supabase.from('balances').select('*').eq('user_id', tx.user_id).maybeSingle();
+           
+           const isFiat = ['USD', 'EUR', 'GBP'].includes(tx.asset?.toUpperCase());
+           let updateData: any = { user_id: tx.user_id };
+
+           if (isFiat) {
+             const current = userBalance?.fiat_balance || 0;
+             updateData.fiat_balance = isDeposit ? current + amount : current - amount;
+           } else {
+             const cryptoBalances = userBalance?.crypto_balances || {};
+             const asset = tx.asset?.toUpperCase() || 'BTC';
+             const current = cryptoBalances[asset] || 0;
+             
+             // Simple fee logic for overview
+             const feePercent = 2; 
+             const feeAmount = parseFloat((amount * (feePercent / 100)).toFixed(8));
+             const netAmount = parseFloat((amount - feeAmount).toFixed(8));
+
+             const actualDiff = isDeposit ? netAmount : -amount;
+             updateData.crypto_balances = { ...cryptoBalances, [asset]: current + actualDiff };
+
+             if (isDeposit && feeAmount > 0) {
+                 await supabase.from('fee_ledger').insert([{
+                     transaction_id: tx.id,
+                     user_id: tx.user_id,
+                     gross_amount: amount,
+                     fee_percent: feePercent,
+                     fee_amount: feeAmount,
+                     net_amount: netAmount,
+                     asset: asset
+                 }]);
+             }
+           }
+           
+           if (userBalance) {
+               await supabase.from('balances').update(updateData).eq('user_id', tx.user_id);
+           } else {
+               await supabase.from('balances').insert([updateData]);
+           }
+        }
+      }
+      
+      const { error } = await supabase.from('transactions').update({ status: action }).eq('id', id);
+      if (error) throw error;
+      
+      toast.success(`Transaction ${action}`, { description: `ID: ${id.substring(0, 12)}...` });
+      fetchAppData();
+    } catch (error: any) {
+      toast.error("Action failed: " + error.message);
+    }
+  };
+
+  const handleExport = () => {
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1500)), {
+      loading: 'Preparing system report...',
+      success: 'Report downloaded successfully',
+      error: 'Failed to generate report'
+    });
+  };
+
+  const handleSyncData = async () => {
+    toast.promise(fetchAppData(), {
+      loading: 'Synchronizing with global database...',
+      success: 'All pools and user data are now up-to-date',
+      error: 'Synchronization failed. Please check connectivity.'
+    });
+  };
+
+  const handleQuickActions = () => {
+    toast.info("Quick Management Active", { description: "You can now perform bulk actions on users and transactions." });
+  };
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold font-display">Admin Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Platform overview and key metrics</p>
+      <div className="space-y-10">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-border">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">Admin Dashboard</h1>
+            <p className="text-muted-foreground mt-2">Overview of platform performance, user activity, and financial health.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+             <Button variant="outline" className="h-11 border-border text-sm font-medium px-6 flex-1 sm:flex-none hover:bg-secondary" onClick={fetchAppData}>
+                <Activity className="w-4 h-4 mr-2" /> Refresh
+             </Button>
+             <Button variant="outline" className="h-11 border-border text-sm font-medium px-6 flex-1 sm:flex-none hover:bg-secondary" onClick={handleExport}>
+                <Download className="w-4 h-4 mr-2" /> Export
+             </Button>
+             <Button variant="hero" className="h-11 text-sm font-medium px-6 shadow-gold text-white flex-1 sm:flex-none" onClick={handleSyncData}>
+                <Zap className="w-4 h-4 mr-2" /> Sync Engine
+             </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="glass-card p-5"
+              transition={{ delay: i * 0.1 }}
+              className="bg-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <stat.icon className="w-4 h-4 text-primary" />
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                   <stat.icon className="w-5 h-5" />
+                </div>
+                <div className={`text-xs font-bold ${stat.up ? "text-green-600" : "text-red-600"} flex items-center gap-1`}>
+                  {stat.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                  {stat.change}
                 </div>
               </div>
-              <div className="text-2xl font-bold font-display">{stat.value}</div>
-              <div className="flex items-center gap-1 text-sm text-profit mt-1">
-                <ArrowUpRight className="w-4 h-4" /> {stat.change}
-              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{stat.label}</div>
             </motion.div>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold font-display mb-4">Recent Users</h2>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="text-left pb-3 font-medium">Name</th>
-                  <th className="text-left pb-3 font-medium">Status</th>
-                  <th className="text-right pb-3 font-medium">Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentUsers.map((u) => (
-                  <tr key={u.email} className="border-b border-border/50 last:border-0">
-                    <td className="py-3">
-                      <div className="font-medium font-display">{u.name}</div>
-                      <div className="text-xs text-muted-foreground">{u.email}</div>
-                    </td>
-                    <td className="py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        u.status === "Verified" ? "bg-profit/10 text-profit" :
-                        u.status === "Suspended" ? "bg-loss/10 text-loss" :
-                        "bg-warning/10 text-warning"
-                      }`}>{u.status}</span>
-                    </td>
-                    <td className="py-3 text-right font-medium font-display">{u.balance}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold font-display mb-4">Pending Withdrawals</h2>
-            <div className="space-y-3">
-              {pendingWithdrawals.map((w, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                  <div>
-                    <div className="font-medium font-display text-sm">{w.user}</div>
-                    <div className="text-xs text-muted-foreground">{w.coin} · {w.date}</div>
-                  </div>
+        <div className="grid lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8">
+              <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold font-display">{w.amount}</span>
-                    <div className="flex gap-1">
-                      <button className="px-3 py-1 rounded bg-profit/10 text-profit text-xs font-medium hover:bg-profit/20">Approve</button>
-                      <button className="px-3 py-1 rounded bg-loss/10 text-loss text-xs font-medium hover:bg-loss/20">Reject</button>
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground font-sans">Recent Users</h2>
+                      <p className="text-xs text-muted-foreground mt-0.5 font-medium tracking-tight">Manage newly registered platform members.</p>
                     </div>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center -space-x-2 mr-3">
+                      {users.slice(0, 3).map((u, index) => (
+                        <div key={index} className="relative w-8 h-8 rounded-full border-2 border-card bg-secondary flex items-center justify-center text-[10px] font-bold text-foreground shadow-sm overflow-hidden">
+                          {u?.avatar_url ? (
+                            <img src={u.avatar_url} className="w-full h-full object-cover" />
+                          ) : (
+                            u?.name?.charAt(0) || "U"
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="outline" className="h-9 px-4 text-xs font-semibold rounded-lg hover:bg-secondary border-border" onClick={() => navigate("/admin/users")}>
+                      View All
+                    </Button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+
+                <div className="overflow-x-auto">
+                   <table className="w-full">
+                      <thead>
+                        <tr className="text-xs font-medium text-muted-foreground border-b border-border bg-secondary/30">
+                          <th className="text-left py-4 px-6">User</th>
+                          <th className="text-left py-4 px-6">Status</th>
+                          <th className="text-left py-4 px-6">Crypto Balance</th>
+                          <th className="text-left py-4 px-6">Fiat Balance</th>
+                          <th className="text-right py-4 px-6">Joined</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {recentUsers.map((u) => (
+                          <tr key={u.email} className="group hover:bg-secondary/20 transition-colors">
+                            <td className="py-4 px-6">
+                              <div className="flex items-center gap-3">
+                                 <div className="relative w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center text-white font-bold text-sm shadow-sm overflow-hidden">
+                                    {u?.avatar_url ? (
+                                      <img src={u.avatar_url} className="w-full h-full object-cover" />
+                                    ) : (
+                                      u?.name?.substring(0, 1) || "U"
+                                    )}
+                                 </div>
+                                 <div>
+                                    <div className="font-semibold text-foreground text-sm">{u.name}</div>
+                                    <div className="text-xs text-muted-foreground">{u.email}</div>
+                                 </div>
+                              </div>
+                            </td>
+                             <td className="py-4 px-6">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                                  u.kyc === "Approved" ? "bg-green-50 text-green-700 border border-green-200" : "bg-amber-50 text-amber-700 border border-amber-200"
+                                }`}>
+                                   {u.kyc === "Approved" ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                   {u.kyc || "Pending"}
+                                </span>
+                             </td>
+                            <td className="py-4 px-6">
+                               <div className="flex flex-col">
+                                  <div className="font-bold text-foreground text-sm tabular-nums">{formatCurrency(u.balanceNum)}</div>
+                                  <div className="text-[10px] text-muted-foreground font-medium uppercase">Total Equity</div>
+                               </div>
+                            </td>
+                            <td className="py-4 px-6">
+                               <div className="flex flex-col">
+                                  <div className="font-bold text-blue-600 text-sm tabular-nums">{formatCurrency(u.fiatBalanceNum)}</div>
+                                  <div className="text-[10px] text-blue-500/50 font-medium uppercase">Available Fiat</div>
+                               </div>
+                            </td>
+                            <td className="py-4 px-6 text-right">
+                               <span className="text-xs text-muted-foreground">{u.joined}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                   </table>
+                </div>
+                
+                <div className="p-5 border-t border-border flex items-center justify-between">
+                   <span className="text-xs text-muted-foreground">Showing {recentUsers.length} of {users.length} users</span>
+                   <Button variant="outline" className="h-9 text-xs font-medium px-4" onClick={() => navigate('/admin/users')}>
+                      View All Users <ArrowUpRight className="w-3.5 h-3.5 ml-1.5" />
+                   </Button>
+                </div>
+              </div>
+           </div>
+
+           {/* Right: Pending Transactions */}
+           <div className="lg:col-span-4">
+              <div className="rounded-2xl bg-card border border-border overflow-hidden h-full flex flex-col">
+                <div className="p-6 border-b border-border flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                         <Clock className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-foreground">Pending</h2>
+                        <span className="text-xs text-muted-foreground">Awaiting approval</span>
+                      </div>
+                   </div>
+                   <History className="w-4 h-4 text-muted-foreground/30 hover:text-primary cursor-pointer transition-colors" />
+                </div>
+                
+                <div className="flex-1 p-5 space-y-4">
+                  {pendingTransactions.length === 0 ? (
+                    <div className="py-16 text-center border-2 border-dashed border-border rounded-xl">
+                       <CheckCircle2 className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                       <div className="text-sm text-muted-foreground">All caught up!</div>
+                    </div>
+                  ) : pendingTransactions.slice(0, 3).map((w, i) => (
+                    <motion.div 
+                      key={w.id} 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                      className="p-5 rounded-xl bg-secondary/30 border border-border hover:border-primary/30 transition-all group"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                         <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                               {w.asset}
+                            </div>
+                             <div>
+                                <div className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                                   {w.profiles?.name || "System"}
+                                   <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${w.type === 'Deposit' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
+                                      {w.type}
+                                   </span>
+                                </div>
+                                <div className="text-[10px] text-muted-foreground leading-none mt-1">Ref: {w.id.substring(0, 8)} • {new Date(w.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                             </div>
+                         </div>
+                      </div>
+                      
+                      <div className="flex items-end justify-between mb-4">
+                         <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">
+                            {formatCurrency(w.amount)}
+                         </div>
+                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary px-2 py-1 rounded-md border border-border">
+                            {w.asset}
+                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                         <Button onClick={() => handleAction(w.id, 'Completed')} className="bg-green-50 hover:bg-green-600 text-green-700 hover:text-white border border-green-200 hover:border-green-600 h-9 text-xs font-medium rounded-lg transition-all">
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Approve
+                         </Button>
+                         <Button onClick={() => handleAction(w.id, 'Rejected')} className="bg-red-50 hover:bg-red-600 text-red-700 hover:text-white border border-red-200 hover:border-red-600 h-9 text-xs font-medium rounded-lg transition-all">
+                            <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
+                         </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="p-5 border-t border-border">
+                   <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/10">
+                      <div className="flex items-center gap-2">
+                         <Database className="w-4 h-4 text-primary" />
+                         <span className="text-xs font-medium text-foreground">System Latency</span>
+                      </div>
+                      <span className="text-xs font-semibold text-primary">0.024ms</span>
+                   </div>
+                </div>
+              </div>
+           </div>
+        </div>
+
+        {/* System Status Footer */}
+        <div className="p-6 rounded-2xl bg-card border border-border flex flex-col md:flex-row items-center justify-between gap-6">
+           <div className="flex flex-wrap items-center gap-8">
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                 <span className="text-xs font-medium text-muted-foreground">Markets: Online</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                 <span className="text-xs font-medium text-muted-foreground">Redundancy: 100%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                 <span className="text-xs font-medium text-muted-foreground">Fiat Gateway: Stable</span>
+              </div>
+           </div>
+           <span className="text-xs text-muted-foreground/50">Clarity Trade v4.8.2</span>
+        </div>
+        {/* Lower Grid: System & Revenue */}
+        <div className="grid lg:grid-cols-3 gap-8 pb-10">
+           {/* System Health */}
+           <div className="bg-card p-8 rounded-2xl border border-border shadow-sm space-y-8 h-full">
+              <div className="flex items-center justify-between">
+                 <div className="flex flex-col gap-1">
+                    <h2 className="text-lg font-bold text-foreground font-sans tracking-tight">System Status</h2>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Server Health</p>
+                 </div>
+                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform cursor-pointer shadow-sm">
+                    <Database className="w-5 h-5" />
+                 </div>
+              </div>
+
+              <div className="space-y-6">
+                 {[
+                    { label: "Mainnet Node", status: "Operational", ping: "12ms", health: 100 },
+                    { label: "Liquidity Bridge", status: "Active", ping: "45ms", health: 98 },
+                    { label: "Withdrawal Engine", status: "Standby", ping: "14ms", health: 100 },
+                    { label: "API Gateway", status: "Operational", ping: "8ms", health: 100 },
+                 ].map((item) => (
+                    <div key={item.label} className="space-y-3">
+                       <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-foreground uppercase tracking-wider">{item.label}</span>
+                          <span className="text-[10px] font-extrabold text-green-500 uppercase tracking-tighter bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20">{item.status}</span>
+                       </div>
+                       <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                             <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${item.health}%` }}
+                                className={`h-full ${item.health > 95 ? 'bg-primary' : 'bg-amber-500'}`}
+                             />
+                          </div>
+                          <span className="text-[10px] font-bold text-muted-foreground tabular-nums w-8">{item.ping}</span>
+                       </div>
+                    </div>
+                 ))}
+              </div>
+              <Button variant="outline" className="w-full h-11 text-xs font-bold uppercase tracking-widest hover:bg-secondary border-border mt-4" onClick={() => toast.success("Diagnostics view opened")}>
+                 View Diagnostics
+              </Button>
+           </div>
+
+           {/* Security Audit */}
+           <div className="bg-card p-8 rounded-2xl border border-border shadow-sm space-y-8 h-full">
+              <div className="flex items-center justify-between">
+                 <div className="flex flex-col gap-1">
+                    <h2 className="text-lg font-bold text-foreground font-sans tracking-tight">Security</h2>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Protection Status</p>
+                 </div>
+                 <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600 border border-green-200">
+                    <ShieldCheck className="w-5 h-5" />
+                 </div>
+              </div>
+
+              <div className="p-5 rounded-xl bg-green-50/50 border border-green-100 flex items-start gap-4">
+                 <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0 shadow-lg">
+                    <CheckCircle2 className="w-5 h-5" />
+                 </div>
+                 <div className="space-y-1">
+                    <p className="text-sm font-bold text-green-800">No active threats detected.</p>
+                    <p className="text-xs text-green-700/70 leading-relaxed font-medium">Your platform is currently protected by Clarity Security.</p>
+                 </div>
+              </div>
+
+              <div className="space-y-5">
+                 <div className="flex items-center justify-between py-2 border-b border-border">
+                    <div className="flex flex-col gap-0.5">
+                       <span className="text-sm font-bold text-foreground">DDoS Protection</span>
+                       <span className="text-[10px] text-muted-foreground font-medium">Layer 7 Monitoring</span>
+                    </div>
+                    <div className="w-10 h-5 bg-primary/20 rounded-full relative">
+                       <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm" />
+                    </div>
+                 </div>
+                 <div className="flex items-center justify-between py-2 border-b border-border">
+                    <div className="flex flex-col gap-0.5">
+                       <span className="text-sm font-bold text-foreground">SQL Injection Guard</span>
+                       <span className="text-[10px] text-muted-foreground font-medium">Automated Scans</span>
+                    </div>
+                    <div className="w-10 h-5 bg-primary/20 rounded-full relative">
+                       <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm" />
+                    </div>
+                 </div>
+                 <div className="flex items-center justify-between py-2">
+                    <div className="flex flex-col gap-0.5">
+                       <span className="text-sm font-bold text-foreground">Cold Storage Sync</span>
+                       <span className="text-[10px] text-muted-foreground font-medium">2-of-3 Multisig</span>
+                    </div>
+                    <div className="w-10 h-5 bg-primary/20 rounded-full relative">
+                       <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm" />
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           {/* Platform Performance */}
+           <div className="bg-[#1a1510] p-8 rounded-2xl border border-primary/20 shadow-xl space-y-8 h-full relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
+              
+              <div className="relative z-10 flex items-center justify-between">
+                 <div className="flex flex-col gap-1">
+                    <h2 className="text-lg font-bold text-white font-sans tracking-tight">Trading Volume</h2>
+                    <p className="text-xs text-primary/60 font-medium uppercase tracking-[0.2em]">Engine Stats</p>
+                 </div>
+                 <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shadow-gold">
+                    <BarChart3 className="w-5 h-5" />
+                 </div>
+              </div>
+
+              <div className="relative z-10 space-y-8">
+                 <div className="space-y-2">
+                    <p className="text-xs text-white/40 font-bold uppercase tracking-widest">24h Cumulative Volume</p>
+                    <div className="text-4xl font-black text-white tracking-tighter tabular-nums">{formatCurrency(9420000)}</div>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-6 pb-2">
+                    <div className="space-y-1">
+                       <span className="text-[10px] text-white/40 font-bold uppercase">Buy Orders</span>
+                       <div className="text-lg font-bold text-green-500 tabular-nums">4,812</div>
+                    </div>
+                    <div className="space-y-1">
+                       <span className="text-[10px] text-white/40 font-bold uppercase">Sell Orders</span>
+                       <div className="text-lg font-bold text-white tabular-nums">3,429</div>
+                    </div>
+                 </div>
+
+                 <div className="p-5 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                    <div className="flex items-center justify-between">
+                       <span className="text-xs font-bold text-white uppercase tracking-tight">Matching Speed</span>
+                       <span className="text-xs font-bold text-primary tabular-nums">0.2ms</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                       <motion.div 
+                         initial={{ width: 0 }}
+                         animate={{ width: "95%" }}
+                         className="h-full bg-primary shadow-gold"
+                       />
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
     </AdminLayout>

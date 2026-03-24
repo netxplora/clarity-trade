@@ -1,81 +1,67 @@
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ShieldCheck, Zap, Globe } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 grid-pattern opacity-40" />
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+    <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
+      <div className="absolute inset-0 z-0 bg-[#0B0F14]">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-2000 scale-[1.02] opacity-70"
+          style={{ backgroundImage: "url('/images/hero-trading-bg.png')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F14] via-[#0B0F14]/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F14] via-transparent to-transparent" />
+      </div>
 
-      <div className="container relative z-10 mx-auto px-6 pt-32 pb-20">
-        <div className="max-w-4xl mx-auto text-center">
+      <div className="container mx-auto px-6 relative z-10 py-20">
+        <div className="max-w-3xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 mb-8"
           >
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <span className="text-sm text-primary font-medium">Live Trading · Copy Top Traders · Earn</span>
-          </motion.div>
+            <span className="heading-gold">Fast & Secure Trading Platform</span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-8">
+              Grow Your Wealth with <br />
+              <span className="text-[#D4AF37]">Smart Investments</span>
+            </h1>
+            <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl">
+              Clarity Trade provides institutional-grade access to global markets. 
+              Trade crypto, forex, and commodities with lightning-fast execution 
+              and copying the world's most successful traders.
+            </p>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold font-display leading-tight mb-6"
-          >
-            Trade Smarter.{" "}
-            <span className="text-gradient-primary">Copy the Best.</span>
-            <br />
-            Grow Your Wealth.
-          </motion.h1>
+            <div className="flex flex-wrap gap-5">
+              <Link to="/register" className="btn-gold flex items-center gap-2 group">
+                Get Started Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link to="/about-us" className="btn-gold-outline">
+                Learn More
+              </Link>
+            </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
-          >
-            Join thousands of traders earning profits through copy trading.
-            Fund with crypto, follow expert traders, and watch your portfolio grow — all in one platform.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Button variant="hero" size="lg" className="text-base px-8 py-6">
-              Start Trading <ArrowRight className="w-5 h-5 ml-1" />
-            </Button>
-            <Button variant="hero-outline" size="lg" className="text-base px-8 py-6">
-              Copy Traders
-            </Button>
-          </motion.div>
-
-          {/* Stats bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-20 glass-card glass-glow p-6 grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            {[
-              { label: "Active Traders", value: "12,400+" },
-              { label: "Total Volume", value: "$2.1B+" },
-              { label: "Avg. ROI (Copy)", value: "+34.7%" },
-              { label: "Countries", value: "180+" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold font-display text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center gap-8 mt-16 pt-10 border-t border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
+                </div>
+                <span className="text-sm font-medium text-gray-400">Secure Assets</span>
               </div>
-            ))}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-[#D4AF37]" />
+                </div>
+                <span className="text-sm font-medium text-gray-400">Instant Execution</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+                  <Globe className="w-5 h-5 text-[#D4AF37]" />
+                </div>
+                <span className="text-sm font-medium text-gray-400">Global Reach</span>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

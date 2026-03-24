@@ -1,62 +1,79 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "David Kim",
-    role: "Crypto Investor",
-    text: "Copy trading changed everything for me. I went from losing money to consistent profits just by following top traders.",
+    name: "David Chen",
+    role: "Portfolio Manager",
+    text: "Clarity Trade has transformed how I manage client portfolios. The multi-asset execution is seamless, and the copy trading feature lets me offer structured strategies to retail clients effortlessly.",
     rating: 5,
+    avatar: "DC",
   },
   {
-    name: "Emma Thompson",
-    role: "Day Trader",
-    text: "The platform is incredibly intuitive. Charts load fast, execution is instant, and the analytics are best-in-class.",
+    name: "Amara Okafor",
+    role: "Independent Trader",
+    text: "I've used several platforms over the years, but the speed and reliability here is unmatched. The gold-standard security gives me confidence to hold significant capital on the platform.",
     rating: 5,
+    avatar: "AO",
   },
   {
-    name: "Carlos Mendez",
-    role: "Pro Trader",
-    text: "As a signal provider, I earn commissions while helping others. The copy trading engine is remarkably accurate.",
+    name: "Lena Petrov",
+    role: "Forex Specialist",
+    text: "The forex execution is institutional-grade. Tight spreads, deep liquidity, and the analytics tools help me make better decisions. This platform genuinely respects professional traders.",
     rating: 5,
+    avatar: "LP",
   },
 ];
 
 const TestimonialsSection = () => {
   return (
-    <section className="py-24 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
-      <div className="container relative mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-3xl md:text-5xl font-bold font-display mb-4">
-            Trusted by <span className="text-gradient-primary">Thousands</span>
+    <section className="section-bg-white" id="testimonials">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
+          <span className="heading-gold">Real Client Testimonials</span>
+          <h2 className="title-hyip text-gray-900">
+            Trusted by <span className="text-[#D4AF37]">Thousands of Traders</span>
           </h2>
-        </motion.div>
+          <p className="p-hyip">
+            Join a global community of traders who have found success and 
+            security with our intuitive and powerful platform.
+          </p>
+        </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {testimonials.map((t, i) => (
+        {/* Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {testimonials.map((testimonial, i) => (
             <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              key={testimonial.name}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-              className="glass-card p-6"
+              transition={{ delay: i * 0.1 }}
+              className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm relative group hover:shadow-md transition-shadow h-full flex flex-col"
             >
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: t.rating }).map((_, j) => (
-                  <Star key={j} className="w-4 h-4 text-warning fill-warning" />
+              <div className="absolute top-6 right-8 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity">
+                <Quote className="w-12 h-12 text-[#D4AF37]" />
+              </div>
+              
+              <div className="flex gap-1 mb-6">
+                {[...Array(testimonial.rating)].map((_, j) => (
+                  <Star key={j} className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />
                 ))}
               </div>
-              <p className="text-muted-foreground mb-5 leading-relaxed">"{t.text}"</p>
-              <div>
-                <div className="font-semibold font-display">{t.name}</div>
-                <div className="text-sm text-muted-foreground">{t.role}</div>
+
+              <div className="flex-grow">
+                 <p className="text-gray-600 italic leading-relaxed mb-8">"{testimonial.text}"</p>
+              </div>
+
+              <div className="flex items-center gap-4 pt-6 border-t border-gray-50 mt-auto">
+                <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] font-extrabold text-sm border border-[#D4AF37]/20">
+                   {testimonial.avatar}
+                </div>
+                <div>
+                   <h4 className="font-extrabold text-gray-900 text-base">{testimonial.name}</h4>
+                   <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">{testimonial.role}</span>
+                </div>
               </div>
             </motion.div>
           ))}

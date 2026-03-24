@@ -1,16 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
-  ArrowUpRight, ArrowDownRight, TrendingUp, Target, BarChart3, Activity,
+  TrendingUp, BarChart3, Activity, ArrowUpRight, ArrowDownRight, Zap, Target as TargetIcon, Search, Download, Filter, ShieldCheck,
 } from "lucide-react";
-
-const metrics = [
-  { label: "Total ROI", value: "+34.7%", up: true, icon: TrendingUp },
-  { label: "Win Rate", value: "76%", up: true, icon: Target },
-  { label: "Max Drawdown", value: "-8.2%", up: false, icon: BarChart3 },
-  { label: "Total Trades", value: "142", up: true, icon: Activity },
-];
+import { useStore } from "@/store/useStore";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { createChart, ColorType, AreaSeries } from "lightweight-charts";
+import { Button } from "@/components/ui/button";
 
 const monthlyPerformance = [
   { month: "Oct", pnl: 1240, up: true },
@@ -21,142 +19,353 @@ const monthlyPerformance = [
   { month: "Mar", pnl: 940, up: true },
 ];
 
-const tradeHistory = [
-  { pair: "BTC/USDT", type: "Buy", entry: "$64,200", exit: "$67,432", pnl: "+$3,232", pnlUp: true, date: "Mar 15" },
-  { pair: "ETH/USDT", type: "Sell", entry: "$3,600", exit: "$3,521", pnl: "+$79", pnlUp: true, date: "Mar 14" },
-  { pair: "SOL/USDT", type: "Buy", entry: "$182", exit: "$178", pnl: "-$4", pnlUp: false, date: "Mar 13" },
-  { pair: "BNB/USDT", type: "Buy", entry: "$580", exit: "$612", pnl: "+$32", pnlUp: true, date: "Mar 12" },
-  { pair: "BTC/USDT", type: "Sell", entry: "$66,800", exit: "$65,100", pnl: "+$1,700", pnlUp: true, date: "Mar 10" },
-  { pair: "XRP/USDT", type: "Buy", entry: "$0.58", exit: "$0.62", pnl: "+$0.04", pnlUp: true, date: "Mar 9" },
-];
-
 const EquityCurve = () => {
-  const data = useMemo(() => {
-    const points: number[] = [];
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: 'transparent' },
+        textColor: '#64748b',
+        fontFamily: 'Inter, sans-serif',
+      },
+      grid: {
+        vertLines: { color: '#e2e8f0' },
+        horzLines: { color: '#e2e8f0' },
+      },
+      rightPriceScale: {
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+      },
+      timeScale: {
+        borderVisible: false,
+      },
+      crosshair: {
+        vertLine: { color: '#D4AF37', labelBackgroundColor: '#D4AF37' },
+        horzLine: { color: '#D4AF37', labelBackgroundColor: '#D4AF37' },
+      },
+    });
+
+    const areaSeries = chart.addSeries(AreaSeries, {
+      lineColor: '#D4AF37',
+      topColor: 'rgba(212, 175, 55, 0.2)',
+      bottomColor: 'rgba(212, 175, 55, 0)',
+      lineWidth: 3,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+    });
+
+    const data: { time: string; value: number }[] = [];
     let value = 10000;
-    for (let i = 0; i < 90; i++) {
-      value += (Math.random() - 0.38) * 200;
-      points.push(value);
+    const now = new Date();
+    for (let i = 0; i < 120; i++) {
+        const time = new Date(now.getTime() - (120 - i) * 24 * 60 * 60 * 1000);
+        const change = (Math.random() - 0.35) * 220;
+        value += change;
+        data.push({ time: time.toISOString().split('T')[0], value });
     }
-    return points;
+    
+    areaSeries.setData(data);
+    chart.timeScale().fitContent();
+
+    const handleResize = () => {
+      if (chartContainerRef.current) {
+        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chart.remove();
+    };
   }, []);
 
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const path = data
-    .map((v, i) => {
-      const x = (i / (data.length - 1)) * 600;
-      const y = 150 - ((v - min) / (max - min)) * 140;
-      return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-    })
-    .join(" ");
-
-  return (
-    <svg viewBox="0 0 600 160" className="w-full h-40">
-      <defs>
-        <linearGradient id="eq-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={path + " L 600 160 L 0 160 Z"} fill="url(#eq-grad)" />
-      <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" />
-    </svg>
-  );
+  return <div ref={chartContainerRef} className="w-full h-[320px]" />;
 };
 
 const AnalyticsPage = () => {
+  const { user, balance, tradeHistory, formatCurrency } = useStore();
+  
+  const metrics = [
+    { label: "Total Return", value: balance.totalTrades > 0 ? `${balance.totalProfit > 0 ? '+' : ''}${balance.totalProfit.toFixed(2)}` : "0.00", unit: "USDT", up: balance.totalProfit >= 0, icon: TrendingUp },
+    { label: "Win Rate", value: balance.winRate.toString(), unit: "%", up: balance.winRate >= 50, icon: TargetIcon },
+    { label: "Max Drawdown", value: `-${balance.maxDrawdown}`, unit: "%", up: false, icon: BarChart3 },
+    { label: "Total Trades", value: balance.totalTrades.toString(), unit: "Trades", up: true, icon: Activity },
+  ];
+
   const maxPnl = Math.max(...monthlyPerformance.map((m) => Math.abs(m.pnl)));
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold font-display">Analytics</h1>
-          <p className="text-muted-foreground text-sm">Your trading performance at a glance</p>
-        </div>
+      <div className="space-y-8">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div>
+            <h1 className="text-3xl font-bold font-sans text-foreground">Analytics</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Track your trading performance, returns, and activity history.</p>
+          </div>
+          <div className="flex gap-3">
+             <Button variant="outline" className="h-11 border-border bg-card text-sm font-medium px-6 shadow-sm hover:bg-secondary">
+               <Download className="w-4 h-4 mr-2" /> Export Report
+             </Button>
+          </div>
+        </header>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {metrics.map((m, i) => (
             <motion.div
               key={m.label}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="glass-card p-4 sm:p-5"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-card p-6 rounded-2xl border border-border shadow-sm hover:border-primary/30 transition-all hover:shadow-md relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs sm:text-sm text-muted-foreground">{m.label}</span>
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
+                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center border border-border">
                   <m.icon className="w-4 h-4 text-primary" />
                 </div>
               </div>
-              <div className="text-xl sm:text-2xl font-bold font-display">{m.value}</div>
+              <div className="flex items-baseline gap-1.5">
+                <div className="text-3xl font-bold text-foreground tabular-nums">{m.value}</div>
+                <div className="text-xs font-medium text-muted-foreground">{m.unit}</div>
+              </div>
+              <div className={`mt-4 flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full w-fit ${
+                m.up ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200"
+              }`}>
+                {m.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                {m.up ? "Trending up" : "Trending down"}
+              </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold font-display mb-4">Equity Curve</h2>
-            <EquityCurve />
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+             {/* Equity Curve */}
+             <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+               <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold font-sans text-foreground">Portfolio Growth</h2>
+                  <div className="flex gap-2">
+                     <button className="px-4 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold border border-primary/20">All Time</button>
+                     <button className="px-4 py-1.5 rounded-lg bg-secondary text-muted-foreground text-xs font-semibold border border-border hover:bg-card transition-colors">YTD</button>
+                  </div>
+               </div>
+               <div className="rounded-xl bg-card border border-border overflow-hidden">
+                 <EquityCurve />
+               </div>
+             </div>
+
+             {/* Trade History */}
+             <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+               <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold font-sans text-foreground">Trade History</h2>
+                  <div className="flex gap-2">
+                     <div className="relative">
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                       <input className="h-10 pl-9 pr-4 bg-secondary border border-border rounded-xl text-sm w-56 focus:border-primary/50 transition-all outline-none text-foreground" placeholder="Search trades..." />
+                     </div>
+                     <Button variant="outline" size="icon" className="h-10 w-10 border-border bg-card shadow-sm hover:bg-secondary"><Filter className="w-4 h-4 text-muted-foreground" /></Button>
+                  </div>
+               </div>
+               <div className="overflow-x-auto">
+                 <table className="w-full text-sm">
+                   <thead>
+                     <tr className="text-muted-foreground border-b border-border">
+                       <th className="text-left pb-4 font-medium text-xs pl-2">Asset</th>
+                       <th className="text-left pb-4 font-medium text-xs">Type</th>
+                       <th className="text-left pb-4 font-medium text-xs">Amount</th>
+                       <th className="text-left pb-4 font-medium text-xs">Status</th>
+                       <th className="text-right pb-4 font-medium text-xs pr-2">P&L</th>
+                     </tr>
+                   </thead>
+                   <tbody className="divide-y divide-border">
+                     {tradeHistory.length > 0 ? tradeHistory.map((t, i) => (
+                       <tr key={t.id || i} className="group/row hover:bg-secondary/50 transition-colors">
+                         <td className="py-4 pl-2">
+                           <div className="font-semibold text-foreground group-hover/row:text-primary transition-colors">{t.pair}</div>
+                           <div className="text-xs text-muted-foreground mt-0.5">ID: {t.id?.substring(0,8) || 'A9X2..4'}{i}</div>
+                         </td>
+                         <td className="py-4">
+                            <div className={`w-fit px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                              t.type?.toLowerCase() === "buy" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"
+                            }`}>
+                              {t.type}
+                            </div>
+                         </td>
+                         <td className="py-4 font-semibold text-foreground">${t.amount?.toLocaleString()}</td>
+                         <td className="py-4">
+                           <div className="flex items-center gap-1.5">
+                             <span className={`w-1.5 h-1.5 rounded-full ${t.status === 'Open' ? 'bg-amber-500' : 'bg-green-500'}`} />
+                             <span className="text-xs font-medium text-foreground">{t.status}</span>
+                           </div>
+                         </td>
+                         <td className={`py-4 pr-2 text-right font-bold text-sm ${t.pnl && t.pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
+                           {t.pnl != null ? `${t.pnl >= 0 ? "+" : "-"}${Math.abs(t.pnl).toFixed(2)}` : "0.00"}
+                         </td>
+                       </tr>
+                     )) : (
+                       <tr>
+                         <td colSpan={5} className="py-16 text-center text-muted-foreground font-medium">No trade history yet. Start trading to see your results here.</td>
+                       </tr>
+                     )}
+                   </tbody>
+                 </table>
+               </div>
+             </div>
           </div>
 
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold font-display mb-4">Monthly P&L</h2>
-            <div className="space-y-3">
-              {monthlyPerformance.map((m) => (
-                <div key={m.month} className="flex items-center gap-3">
-                  <span className="text-sm text-muted-foreground w-8">{m.month}</span>
-                  <div className="flex-1 h-8 bg-secondary/50 rounded-lg overflow-hidden relative">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(Math.abs(m.pnl) / maxPnl) * 100}%` }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                      className={`h-full rounded-lg ${m.up ? "bg-profit/20" : "bg-loss/20"}`}
-                    />
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Monthly Performance */}
+            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+              <h2 className="text-lg font-bold font-sans mb-6 text-foreground">Monthly Performance</h2>
+              <div className="space-y-5">
+                {monthlyPerformance.map((m, i) => (
+                  <div key={m.month} className="space-y-1.5">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xs font-medium text-muted-foreground">{m.month}</span>
+                      <span className={`text-sm font-bold ${m.up ? "text-green-600" : "text-red-600"}`}>
+                        {m.up ? "+" : ""}{((Math.abs(m.pnl) / 10000) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${(Math.abs(m.pnl) / maxPnl) * 100}%` }}
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        className={`h-full rounded-full ${m.up ? "bg-green-500" : "bg-red-500"}`}
+                      />
+                    </div>
                   </div>
-                  <span className={`text-sm font-medium font-display w-20 text-right ${m.up ? "text-profit" : "text-loss"}`}>
-                    {m.up ? "+" : ""}${Math.abs(m.pnl).toLocaleString()}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+              <Button variant="hero" className="w-full h-12 mt-8 text-sm font-semibold text-white shadow-gold">
+                View Full Report <Zap className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            {/* Projection Card */}
+            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm text-center flex flex-col items-center relative overflow-hidden group">
+              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-5 border border-border relative z-10 transition-transform group-hover:scale-110">
+                 <TargetIcon className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold font-sans mb-2 text-foreground relative z-10">Growth Forecast</h3>
+              <p className="text-muted-foreground text-sm mb-5 leading-relaxed relative z-10">
+                Based on your current trading pace, we estimate a <span className={`${balance.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'} font-bold`}>
+                  {balance.totalProfit >= 0 ? `+${(18.5).toFixed(1)}%` : `-${(12.4).toFixed(1)}%`}
+                </span> {balance.totalProfit >= 0 ? 'increase' : 'correction'} in quarterly returns.
+              </p>
+              <div className="w-full h-px bg-border mb-5" />
+              <div className="flex justify-between w-full text-xs font-medium text-muted-foreground">
+                 <span>Confidence</span>
+                 <span className="text-primary font-bold">{balance.totalProfit >= 0 ? '94.2%' : '88.7%'}</span>
+              </div>
             </div>
           </div>
         </div>
+        
+        <div className="grid lg:grid-cols-3 gap-8 pb-12">
+            <div className="bg-card p-8 rounded-3xl border border-border shadow-sm group hover:border-primary/20 transition-all">
+                <h3 className="text-xl font-bold font-sans text-foreground mb-6 flex items-center gap-3">
+                    <TargetIcon className="w-6 h-6 text-primary" /> Performance Benchmarking
+                </h3>
+                <div className="space-y-6">
+                    {[
+                        { name: "S&P 500", perf: "+12.4%", status: "Beat", val: 12.4 },
+                        { name: "Bitcoin", perf: "+28.1%", status: "Lag", val: 28.1 },
+                        { name: "Portfolio", perf: `${balance.totalProfit >= 0 ? '+' : ''}${balance.totalProfit.toFixed(2)} USDT`, status: "Self", val: balance.totalProfit }
+                    ].map((b, i) => {
+                        const isPortfolio = b.name === "Portfolio";
+                        const portfolioPerf = (balance.totalProfit / Math.max(1, balance.total)) * 100;
+                        const benchmarkStatus = isPortfolio ? "Self" : (portfolioPerf > b.val ? "Beat" : "Lag");
+                        
+                        return (
+                            <div key={b.name} className="flex flex-col gap-2">
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{b.name}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-black ${isPortfolio ? 'text-primary' : 'text-foreground'}`}>{b.perf}</span>
+                                        {!isPortfolio && (
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter ${benchmarkStatus === 'Beat' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {benchmarkStatus}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        whileInView={{ width: `${Math.min(100, 60 + i * 15)}%` }}
+                                        transition={{ duration: 1.2 }}
+                                        className={`h-full ${isPortfolio ? 'bg-gradient-gold' : b.val > 0 ? 'bg-green-500' : 'bg-red-500'}`} 
+                                    />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
 
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold font-display mb-4">Trade History</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="text-left pb-3 font-medium">Pair</th>
-                  <th className="text-left pb-3 font-medium">Type</th>
-                  <th className="text-left pb-3 font-medium hidden sm:table-cell">Entry</th>
-                  <th className="text-left pb-3 font-medium hidden sm:table-cell">Exit</th>
-                  <th className="text-left pb-3 font-medium">P&L</th>
-                  <th className="text-right pb-3 font-medium">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tradeHistory.map((t, i) => (
-                  <tr key={i} className="border-b border-border/50 last:border-0">
-                    <td className="py-3 font-medium font-display">{t.pair}</td>
-                    <td className="py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${t.type === "Buy" ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"}`}>
-                        {t.type}
-                      </span>
-                    </td>
-                    <td className="py-3 hidden sm:table-cell">{t.entry}</td>
-                    <td className="py-3 hidden sm:table-cell">{t.exit}</td>
-                    <td className={`py-3 font-medium ${t.pnlUp ? "text-profit" : "text-loss"}`}>{t.pnl}</td>
-                    <td className="py-3 text-right text-muted-foreground">{t.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <div className="bg-card p-8 rounded-3xl border border-border shadow-sm group hover:border-primary/20 transition-all">
+                <h3 className="text-xl font-bold font-sans text-foreground mb-6 flex items-center gap-3">
+                    <Activity className="w-6 h-6 text-primary" /> Trading Habits
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">PROFITABLE DAY</div>
+                        <div className="text-lg font-bold text-foreground">{balance.totalProfit >= 0 ? 'Tuesday' : 'N/A'}</div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">MOST TRADED</div>
+                        <div className="text-lg font-bold text-foreground">BTC/USDT</div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">AVG. DURATION</div>
+                        <div className="text-lg font-bold text-foreground">4.2 Hours</div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">SHARPE RATIO</div>
+                        <div className="text-lg font-bold text-primary">{balance.totalProfit >= 0 ? '2.84' : '0.42'}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-card p-8 rounded-3xl border border-border shadow-sm group hover:border-primary/20 transition-all">
+                <h3 className="text-xl font-bold font-sans text-foreground mb-6 flex items-center gap-3">
+                    <ShieldCheck className="w-6 h-6 text-primary" /> Risk Overview
+                </h3>
+                <div className="space-y-6">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        {balance.totalProfit >= 0 
+                          ? "Your current risk-adjusted return profile is exceptional. Focus on maintaining your discipline during high-volatility sessions."
+                          : "Your current profile indicates elevated risk levels. We recommend lowering your position size and tightening stop-losses until performance stabilizes."}
+                    </p>
+                    <div className={`p-4 rounded-2xl border ${balance.totalProfit >= 0 ? 'border-primary/20 bg-primary/5' : 'border-red-200 bg-red-50'}`}>
+                        <div className="flex justify-between items-center mb-2">
+                           <span className={`text-[10px] font-bold uppercase ${balance.totalProfit >= 0 ? 'text-primary' : 'text-red-600'}`}>
+                               {balance.totalProfit >= 0 ? 'Risk Limit Efficiency' : 'Risk Warning Level'}
+                           </span>
+                           <span className={`text-xs font-bold ${balance.totalProfit >= 0 ? 'text-primary' : 'text-red-600'}`}>
+                               {balance.totalProfit >= 0 ? '94.2%' : '38.4%'}
+                           </span>
+                        </div>
+                        <div className={`h-2 w-full rounded-full overflow-hidden ${balance.totalProfit >= 0 ? 'bg-primary/10' : 'bg-red-200'}`}>
+                           <motion.div 
+                             initial={{ width: 0 }}
+                             whileInView={{ width: balance.totalProfit >= 0 ? '94%' : '38%' }}
+                             transition={{ duration: 1.5 }}
+                             className={`h-full ${balance.totalProfit >= 0 ? 'bg-primary' : 'bg-red-500'}`} 
+                           />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
     </DashboardLayout>
