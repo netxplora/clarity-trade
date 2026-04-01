@@ -3,12 +3,13 @@ import { PublicPageHeader } from "@/components/landing/PublicPageHeader";
 import { Users, Copy, ArrowRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import SubscriptionPlansSection from "@/components/landing/SubscriptionPlansSection";
 
 export default function CopyTrading() {
   const steps = [
     { title: "Select a Pro", desc: "Filter by ROI, risk score, and asset class.", icon: Users },
     { title: "Allocate Funds", desc: "Set risk limits, stop losses, and take profit margins.", icon: Copy },
-    { title: "Mirror Trades", desc: "Our engine executes their trades on your account in less than 5ms.", icon: ArrowRight },
+    { title: "Mirror Trades", desc: "Our system executes their trades on your account in less than 5ms.", icon: ArrowRight },
     { title: "Earn & Grow", desc: "Pay them a performance fee only on profitable trades.", icon: Star },
   ];
 
@@ -59,12 +60,12 @@ export default function CopyTrading() {
                     </div>
                     <h2 className="text-4xl lg:text-5xl font-playfair font-black text-foreground italic leading-tight uppercase">Why Lead Traders <span className="text-primary">Choose Us?</span></h2>
                     <p className="text-lg text-muted-foreground leading-relaxed">
-                        We don't just provide a platform; we provide the most advanced copy-engine in the financial industry. For lead traders, this means seamless scaling and fair attribution.
+                        We don't just provide a platform; we provide the most advanced copy trading technology in the financial industry. For lead traders, this means seamless scaling and fair attribution.
                     </p>
                     <div className="grid gap-6 pt-4">
                         {[
                             { title: "Ultra-Low Latency", desc: "Proprietary bridge technology mirroring trades in under 5ms globally." },
-                            { title: "Fair Calculation Engine", desc: "Equity-based lot sizing ensures proportional profits for all copiers." },
+                            { title: "Fair Calculation System", desc: "Equity-based lot sizing ensures proportional profits for all copiers." },
                             { title: "Risk Safeguards", desc: "Pre-execution risk checks prevent mirroring invalid or high-leverage orders." }
                         ].map((item) => (
                             <div key={item.title} className="flex gap-4 group">
@@ -115,6 +116,8 @@ export default function CopyTrading() {
                 ))}
             </div>
         </div>
+
+        <SubscriptionPlansSection />
 
         {/* FAQ Preview */}
         <div className="max-w-4xl mx-auto space-y-4">

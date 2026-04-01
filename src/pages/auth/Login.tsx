@@ -1,17 +1,29 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import SocialAuth from "@/components/auth/SocialAuth";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // We don't know the role yet, so we'll fetch it or just go to dashboard
+        supabase.from('profiles').select('role').eq('id', session.user.id).single().then(({ data: profile }) => {
+          if (profile?.role === 'admin') navigate("/admin");
+          else navigate("/dashboard");
+        });
+      }
+    });
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +41,15 @@ const Login = () => {
         return;
       }
 
+      const { user } = data;
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single();
+
       toast.success("Successfully authenticated!");
-      window.location.href = "/dashboard";
+      if (profile?.role === 'admin') {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (err: any) {
        toast.error(err.message || "An error occurred during authentication.");
        setIsLoading(false);
@@ -69,33 +88,30 @@ const Login = () => {
            transition={{ duration: 0.6 }}
            className="w-full max-w-md relative z-10"
         >
-          <div className="flex items-center gap-3 mb-12">
-            <Link to="/" className="w-12 h-12 transition-transform hover:scale-105">
+          <div className="flex flex-col items-center mb-10 text-center">
+            <Link to="/" className="w-16 h-16 transition-transform hover:scale-105 mb-6">
                 <img src="/logo.png" alt="Clarity Trade Logo" className="w-full h-full object-contain drop-shadow-gold" />
             </Link>
-          </div>
-
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold font-playfair text-foreground mb-3">Sign in securely</h2>
-            <p className="text-muted-foreground text-sm">Enter your email and password to access your account.</p>
+            <h2 className="text-3xl font-bold font-playfair text-zinc-950 mb-3">Sign in securely</h2>
+            <p className="text-zinc-700 text-sm max-w-[280px] font-medium">Enter your email and password to access your account.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-               <label className="text-sm font-semibold text-foreground">Email address</label>
+            <div className="space-y-2.5">
+               <label className="text-[13px] font-bold text-zinc-900">Email address</label>
                <input 
                   type="email" 
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com" 
-                  className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm" 
+                  className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
                />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
                <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold text-foreground">Password</label>
+                  <label className="text-[13px] font-bold text-zinc-900">Password</label>
                   <Link to="/forgot-password" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">Forgot password?</Link>
                </div>
                <div className="relative">
@@ -105,9 +121,9 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••" 
-                    className="w-full h-12 bg-secondary border border-border rounded-xl px-4 pr-12 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm tracking-widest" 
+                    className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 pr-12 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm tracking-widest text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
                  />
-                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                  </button>
                </div>
@@ -119,13 +135,11 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="mt-8">
-            <SocialAuth mode="login" />
-          </div>
 
-          <p className="text-center text-sm text-muted-foreground mt-10">
+
+          <p className="text-center text-sm text-zinc-900 mt-10 font-medium">
             Don't have an account?{" "}
-            <Link to="/register" className="font-semibold text-primary hover:text-primary/80 transition-colors">
+            <Link to="/auth/register" className="font-bold text-primary hover:text-primary/80 transition-colors">
                Create one
             </Link>
           </p>

@@ -99,9 +99,9 @@ const ContentManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="space-y-10 p-2 lg:p-6 font-sans">
+      <div className="space-y-8 lg:space-y-12 mb-10">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
           <div>
              <h1 className="text-3xl font-bold text-foreground">Content Management</h1>
              <p className="text-muted-foreground text-sm mt-2">Manage blog posts, announcements, and platform content.</p>
@@ -109,14 +109,14 @@ const ContentManagement = () => {
            <div className="flex items-center gap-3">
               <Button 
                 variant="outline" 
-                className="h-11 border-border bg-card text-sm font-medium px-6 shadow-sm hover:bg-secondary"
+                className="h-10 border-border bg-card text-[10px] font-black uppercase tracking-widest px-6 shadow-sm hover:bg-secondary"
                 onClick={() => toast.info("Search focused", { description: "Use the filter bar for refined results." })}
               >
                  <Search className="w-4 h-4 mr-2" /> Search
               </Button>
               <Button 
                 variant="hero" 
-                className="h-11 text-sm font-medium px-6 text-white shadow-gold"
+                className="h-10 text-[10px] font-black uppercase tracking-widest px-6 shadow-gold text-white"
                 onClick={() => toast.success("Editor ready", { description: "You are now in drafting mode." })}
               >
                  <Plus className="w-4 h-4 mr-2" /> New Post
@@ -146,9 +146,9 @@ const ContentManagement = () => {
                            initial={{ opacity: 0, y: 10 }}
                            animate={{ opacity: 1, y: 0 }}
                            transition={{ delay: i * 0.1 }}
-                           className="glass-card p-6 group hover:border-primary/20 transition-all duration-500 bg-secondary/10 flex items-center gap-6"
+                           className="bg-card p-6 rounded-3xl border border-border group hover:shadow-md transition-shadow flex items-center gap-6"
                         >
-                           <div className="w-16 h-16 rounded-2xl bg-secondary/50 border border-white/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-huge">
+                           <div className="w-16 h-16 rounded-2xl bg-secondary border border-border flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
                               <FileText className="w-8 h-8" />
                            </div>
                            <div className="flex-1">
@@ -163,10 +163,10 @@ const ContentManagement = () => {
                               </div>
                            </div>
                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button variant="outline" className="h-10 w-10 p-0 border-white/5 bg-secondary/50 text-white rounded-xl" onClick={() => toast.success("Post open in editor")}>
+                              <Button variant="outline" className="h-10 w-10 p-0 border-border bg-secondary text-foreground rounded-xl hover:bg-primary/10 hover:text-primary transition-colors hover:border-primary/20" onClick={() => toast.success("Post open in editor")}>
                                  <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" className="h-10 w-10 p-0 border-white/5 bg-secondary/50 text-loss rounded-xl hover:bg-loss/10" onClick={() => toast.success("Post moved to trash")}>
+                              <Button variant="outline" className="h-10 w-10 p-0 border-border bg-secondary text-loss rounded-xl hover:bg-loss/10 transition-colors" onClick={() => toast.success("Post moved to trash")}>
                                  <Trash2 className="w-4 h-4" />
                               </Button>
                            </div>
@@ -198,14 +198,14 @@ const ContentManagement = () => {
                            initial={{ opacity: 0, x: 20 }}
                            animate={{ opacity: 1, x: 0 }}
                            transition={{ delay: 0.3 + i * 0.1 }}
-                           className={`p-6 rounded-[2rem] border relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 bg-secondary/20 border-white/5`}
+                           className={`p-6 rounded-3xl border relative overflow-hidden group transition-all hover:-translate-y-1 bg-card shadow-sm hover:shadow-md border-border`}
                         >
                            <div className="flex flex-col gap-4 relative z-10">
                               <div className="flex items-center justify-between">
-                                 <div className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest text-primary bg-primary/10`}>
+                                 <div className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest text-primary bg-primary/10`}>
                                     {a.type}
                                  </div>
-                                  <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</span>
+                                  <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</span>
                               </div>
                               <h4 className={`text-sm font-bold tracking-widest uppercase transition-colors group-hover:text-white text-muted-foreground`}>
                                  {a.title}
@@ -227,7 +227,7 @@ const ContentManagement = () => {
                 </div>
 
 
-                <div className="p-8 rounded-[2rem] bg-secondary/5 border border-white/5 flex flex-col items-center text-center">
+                <div className="p-8 rounded-3xl bg-secondary/30 border border-border flex flex-col items-center text-center">
                     <Zap className="w-8 h-8 text-primary/40 mb-4" />
                      <div className="text-xs font-medium text-muted-foreground mb-4">Content Performance</div>
                      <div className="text-xl font-bold text-foreground">Total Reach: 18.4K</div>

@@ -94,10 +94,10 @@ const AdminOverview = () => {
   const totalAllocated = activeSessions.reduce((acc, s) => acc + (Number(s.allocated_amount) || 0), 0);
 
   const stats = [
-    { label: "Total Assets", value: formatCurrency(cryptoPool + fiatPool + tradingPool + copyPool), change: "All Pools", icon: Database, up: true, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Fiat & Trading", value: formatCurrency(fiatPool + tradingPool), change: `+${tradingPool > 0 ? 'Trading Active' : 'Stable'}`, icon: Globe, up: true, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Copy Trading", value: formatCurrency(copyPool), change: `${activeCount} Active Copy Trades`, icon: Target, up: true, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Platform Revenue", value: formatCurrency(platformRevenue), change: "Accumulated Fees", icon: TrendingUp, up: platformRevenue > 0, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Total Assets", value: formatCurrency(cryptoPool + fiatPool + tradingPool + copyPool), change: "All Assets", icon: Database, up: true, color: "text-primary", bg: "bg-primary/20" },
+    { label: "Cash & Trading", value: formatCurrency(fiatPool + tradingPool), change: `+${tradingPool > 0 ? 'Trading Active' : 'Stable'}`, icon: Globe, up: true, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Copy Trading", value: formatCurrency(copyPool), change: `${activeCount} Active Trades`, icon: Target, up: true, color: "text-green-500", bg: "bg-green-500/10" },
+    { label: "Total Fees", value: formatCurrency(platformRevenue), change: "Platform Income", icon: TrendingUp, up: platformRevenue > 0, color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
 
   const recentUsers = users.slice(0, 5);
@@ -173,9 +173,9 @@ const AdminOverview = () => {
 
   const handleSyncData = async () => {
     toast.promise(fetchAppData(), {
-      loading: 'Synchronizing with global database...',
-      success: 'All pools and user data are now up-to-date',
-      error: 'Synchronization failed. Please check connectivity.'
+      loading: 'Syncing data...',
+      success: 'All asset balances and user data are now up-to-date',
+      error: 'Failed to sync platform data. Please check connectivity.'
     });
   };
 
@@ -185,22 +185,26 @@ const AdminOverview = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-10">
+      <div className="space-y-8 lg:space-y-12 mb-10">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-border">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-2">Overview of platform performance, user activity, and financial health.</p>
+            <div className="flex items-center gap-2 text-primary mb-1">
+               <ShieldCheck className="w-4 h-4" />
+               <span className="text-[10px] font-black tracking-wider uppercase">Admin Dashboard</span>
+            </div>
+            <h1 className="text-3xl font-bold font-sans text-foreground">Overview</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Monitor platform status and user activity.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-             <Button variant="outline" className="h-11 border-border text-sm font-medium px-6 flex-1 sm:flex-none hover:bg-secondary" onClick={fetchAppData}>
+             <Button variant="outline" className="h-12 border-border text-[10px] font-black uppercase tracking-widest px-6 flex-1 sm:flex-none hover:bg-secondary" onClick={fetchAppData}>
                 <Activity className="w-4 h-4 mr-2" /> Refresh
              </Button>
-             <Button variant="outline" className="h-11 border-border text-sm font-medium px-6 flex-1 sm:flex-none hover:bg-secondary" onClick={handleExport}>
+             <Button variant="outline" className="h-12 border-border text-[10px] font-black uppercase tracking-widest px-6 flex-1 sm:flex-none hover:bg-secondary" onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" /> Export
              </Button>
-             <Button variant="hero" className="h-11 text-sm font-medium px-6 shadow-gold text-white flex-1 sm:flex-none" onClick={handleSyncData}>
-                <Zap className="w-4 h-4 mr-2" /> Sync Engine
+             <Button variant="hero" className="h-12 text-[10px] font-black uppercase tracking-widest px-6 shadow-gold text-white flex-1 sm:flex-none" onClick={handleSyncData}>
+                <Zap className="w-4 h-4 mr-2" /> Sync Data
              </Button>
           </div>
         </div>
@@ -213,38 +217,40 @@ const AdminOverview = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group"
+              className="bg-card p-6 rounded-3xl border border-border shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+              <div className="flex items-center justify-between mb-5 relative z-10">
+                <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
                    <stat.icon className="w-5 h-5" />
                 </div>
-                <div className={`text-xs font-bold ${stat.up ? "text-green-600" : "text-red-600"} flex items-center gap-1`}>
+                <div className={`text-[10px] font-black uppercase tracking-widest ${stat.up ? "text-green-500" : "text-red-500"} flex items-center gap-1 bg-secondary/50 px-2 py-1 rounded-lg border border-border`}>
                   {stat.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                   {stat.change}
                 </div>
               </div>
-              <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{stat.label}</div>
+              <div className="relative z-10">
+                <div className="text-2xl font-black text-foreground tracking-tight mb-0.5">{stat.value}</div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{stat.label}</div>
+              </div>
             </motion.div>
           ))}
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8">
-              <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-primary" />
+            <div className="lg:col-span-8 bg-card p-4 sm:p-6 rounded-3xl border border-border shadow-sm flex flex-col min-h-[500px]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <Users className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-foreground font-sans">Recent Users</h2>
-                      <p className="text-xs text-muted-foreground mt-0.5 font-medium tracking-tight">Manage newly registered platform members.</p>
+                      <h2 className="text-xl font-black text-foreground font-sans tracking-tight">Recent Users</h2>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 opacity-60">New Account Activity</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex items-center -space-x-2 mr-3">
+                    <div className="hidden sm:flex items-center -space-x-2 mr-3 px-3 py-1 bg-secondary/50 rounded-full border border-border">
                       {users.slice(0, 3).map((u, index) => (
                         <div key={index} className="relative w-8 h-8 rounded-full border-2 border-card bg-secondary flex items-center justify-center text-[10px] font-bold text-foreground shadow-sm overflow-hidden">
                           {u?.avatar_url ? (
@@ -255,100 +261,92 @@ const AdminOverview = () => {
                         </div>
                       ))}
                     </div>
-                    <Button variant="outline" className="h-9 px-4 text-xs font-semibold rounded-lg hover:bg-secondary border-border" onClick={() => navigate("/admin/users")}>
-                      View All
+                    <Button variant="outline" className="h-10 px-6 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-secondary border-border" onClick={() => navigate("/admin/users")}>
+                      Explore All Users
                     </Button>
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                   <table className="w-full">
+                <div className="flex-1 overflow-x-auto">
+                   <table className="w-full text-sm min-w-[600px]">
                       <thead>
-                        <tr className="text-xs font-medium text-muted-foreground border-b border-border bg-secondary/30">
-                          <th className="text-left py-4 px-6">User</th>
-                          <th className="text-left py-4 px-6">Status</th>
-                          <th className="text-left py-4 px-6">Crypto Balance</th>
-                          <th className="text-left py-4 px-6">Fiat Balance</th>
-                          <th className="text-right py-4 px-6">Joined</th>
+                        <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
+                          <th className="text-left pb-4">User Info</th>
+                          <th className="text-left pb-4">KYC Status</th>
+                          <th className="text-left pb-4">Account Value</th>
+                          <th className="text-left pb-4">Cash Balance</th>
+                          <th className="text-right pb-4">Joined</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
                         {recentUsers.map((u) => (
                           <tr key={u.email} className="group hover:bg-secondary/20 transition-colors">
-                            <td className="py-4 px-6">
-                              <div className="flex items-center gap-3">
-                                 <div className="relative w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center text-white font-bold text-sm shadow-sm overflow-hidden">
-                                    {u?.avatar_url ? (
-                                      <img src={u.avatar_url} className="w-full h-full object-cover" />
-                                    ) : (
-                                      u?.name?.substring(0, 1) || "U"
-                                    )}
-                                 </div>
-                                 <div>
-                                    <div className="font-semibold text-foreground text-sm">{u.name}</div>
-                                    <div className="text-xs text-muted-foreground">{u.email}</div>
-                                 </div>
-                              </div>
-                            </td>
-                             <td className="py-4 px-6">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                                  u.kyc === "Approved" ? "bg-green-50 text-green-700 border border-green-200" : "bg-amber-50 text-amber-700 border border-amber-200"
-                                }`}>
-                                   {u.kyc === "Approved" ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                   {u.kyc || "Pending"}
-                                </span>
+                              <td className="py-5">
+                                <div className="flex items-center gap-4">
+                                  <div className="relative w-12 h-12 rounded-2xl bg-gradient-gold flex items-center justify-center text-white font-black text-sm shadow-sm overflow-hidden border border-white/10 group-hover:scale-105 transition-transform">
+                                     {u?.avatar_url ? (
+                                       <img src={u.avatar_url} className="w-full h-full object-cover" />
+                                     ) : (
+                                       u?.name?.substring(0, 1) || "U"
+                                     )}
+                                  </div>
+                                  <div>
+                                     <div className="font-bold text-foreground text-sm tracking-tight">{u.name}</div>
+                                     <div className="text-[9px] font-black text-muted-foreground/40 uppercase mt-1 tracking-tighter truncate max-w-[120px]">{u.email}</div>
+                                  </div>
+                                </div>
+                              </td>
+                               <td className="py-5">
+                                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-[0.1em] border ${
+                                    u.kyc === "Approved" ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                  }`}>
+                                     {u.kyc === "Approved" ? <ShieldCheck className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                                     {u.kyc || "Pending"}
+                                  </span>
+                               </td>
+                             <td className="py-5 font-bold text-foreground tabular-nums text-sm">
+                                {formatCurrency(u.balanceNum)}
                              </td>
-                            <td className="py-4 px-6">
-                               <div className="flex flex-col">
-                                  <div className="font-bold text-foreground text-sm tabular-nums">{formatCurrency(u.balanceNum)}</div>
-                                  <div className="text-[10px] text-muted-foreground font-medium uppercase">Total Equity</div>
-                               </div>
-                            </td>
-                            <td className="py-4 px-6">
-                               <div className="flex flex-col">
-                                  <div className="font-bold text-blue-600 text-sm tabular-nums">{formatCurrency(u.fiatBalanceNum)}</div>
-                                  <div className="text-[10px] text-blue-500/50 font-medium uppercase">Available Fiat</div>
-                               </div>
-                            </td>
-                            <td className="py-4 px-6 text-right">
-                               <span className="text-xs text-muted-foreground">{u.joined}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                   </table>
-                </div>
-                
-                <div className="p-5 border-t border-border flex items-center justify-between">
-                   <span className="text-xs text-muted-foreground">Showing {recentUsers.length} of {users.length} users</span>
-                   <Button variant="outline" className="h-9 text-xs font-medium px-4" onClick={() => navigate('/admin/users')}>
-                      View All Users <ArrowUpRight className="w-3.5 h-3.5 ml-1.5" />
-                   </Button>
-                </div>
+                             <td className="py-5 font-bold text-primary tabular-nums text-sm">
+                                {formatCurrency(u.fiatBalanceNum)}
+                             </td>
+                             <td className="py-5 text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums uppercase tracking-tighter">
+                                {u.joined}
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
+                    </table>
+                 </div>
+                 <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Showing {recentUsers.length} of {users.length} members</span>
+                    <Button variant="ghost" className="h-9 px-4 text-xs font-bold text-primary hover:bg-primary/10 transition-all uppercase tracking-widest" onClick={() => navigate('/admin/users')}>
+                       User Management <ArrowUpRight className="w-4 h-4 ml-2" />
+                    </Button>
+                 </div>
               </div>
-           </div>
 
-           {/* Right: Pending Transactions */}
-           <div className="lg:col-span-4">
-              <div className="rounded-2xl bg-card border border-border overflow-hidden h-full flex flex-col">
-                <div className="p-6 border-b border-border flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                         <Clock className="w-5 h-5 text-amber-600" />
+            {/* Right: Pending Transactions */}
+            <div className="lg:col-span-4 space-y-8">
+              <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-huge flex flex-col min-h-[480px] relative overflow-hidden">
+                <div className="flex items-center justify-between mb-10 relative z-10">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                         <Clock className="w-6 h-6 text-amber-500" />
                       </div>
                       <div>
-                        <h2 className="text-lg font-bold text-foreground">Pending</h2>
-                        <span className="text-xs text-muted-foreground">Awaiting approval</span>
+                        <h2 className="text-xl font-black text-foreground font-sans tracking-tight">Tasks</h2>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Pending Approvals</span>
                       </div>
                    </div>
-                   <History className="w-4 h-4 text-muted-foreground/30 hover:text-primary cursor-pointer transition-colors" />
+                   <History className="w-5 h-5 text-muted-foreground/30 hover:text-primary cursor-pointer transition-colors" />
                 </div>
                 
-                <div className="flex-1 p-5 space-y-4">
+                <div className="flex-1 space-y-6 relative z-10">
                   {pendingTransactions.length === 0 ? (
-                    <div className="py-16 text-center border-2 border-dashed border-border rounded-xl">
+                    <div className="py-16 text-center border-2 border-dashed border-border rounded-3xl group hover:border-primary/40 transition-all">
                        <CheckCircle2 className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-                       <div className="text-sm text-muted-foreground">All caught up!</div>
+                       <div className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">All caught up!</div>
                     </div>
                   ) : pendingTransactions.slice(0, 3).map((w, i) => (
                     <motion.div 
@@ -356,85 +354,95 @@ const AdminOverview = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 + i * 0.1 }}
-                      className="p-5 rounded-xl bg-secondary/30 border border-border hover:border-primary/30 transition-all group"
+                      className="p-6 rounded-[2rem] bg-secondary/30 border border-border hover:border-primary/30 transition-all group relative overflow-hidden"
                     >
-                      <div className="flex items-center justify-between mb-3">
-                         <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                      <div className="flex items-center justify-between mb-4">
+                         <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-primary shadow-gold flex items-center justify-center text-white text-[10px] font-black uppercase tracking-widest">
                                {w.asset}
                             </div>
                              <div>
-                                <div className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                                <div className="text-sm font-bold text-foreground flex items-center gap-2">
                                    {w.profiles?.name || "System"}
-                                   <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${w.type === 'Deposit' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
+                                   <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${w.type === 'Deposit' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                                       {w.type}
                                    </span>
                                 </div>
-                                <div className="text-[10px] text-muted-foreground leading-none mt-1">Ref: {w.id.substring(0, 8)} • {new Date(w.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                <div className="text-[9px] font-bold text-muted-foreground/40 mt-1 uppercase tracking-widest">ID: {w.id.substring(0, 8)} • {new Date(w.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                              </div>
                          </div>
                       </div>
                       
-                      <div className="flex items-end justify-between mb-4">
-                         <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">
+                      <div className="flex items-end justify-between mb-6">
+                         <div className="text-3xl font-black text-foreground tabular-nums tracking-tighter">
                             {formatCurrency(w.amount)}
                          </div>
-                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary px-2 py-1 rounded-md border border-border">
+                         <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-card px-2.5 py-1.5 rounded-xl border border-border shadow-sm">
                             {w.asset}
                          </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
-                         <Button onClick={() => handleAction(w.id, 'Completed')} className="bg-green-50 hover:bg-green-600 text-green-700 hover:text-white border border-green-200 hover:border-green-600 h-9 text-xs font-medium rounded-lg transition-all">
-                            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Approve
+                      <div className="grid grid-cols-2 gap-3">
+                         <Button onClick={() => handleAction(w.id, 'Completed')} className="bg-green-500 shadow-gold hover:shadow-gold-lg text-white border-0 h-10 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
+                            <CheckCircle2 className="w-4 h-4 mr-2" /> Approve
                          </Button>
-                         <Button onClick={() => handleAction(w.id, 'Rejected')} className="bg-red-50 hover:bg-red-600 text-red-700 hover:text-white border border-red-200 hover:border-red-600 h-9 text-xs font-medium rounded-lg transition-all">
-                            <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
+                         <Button onClick={() => handleAction(w.id, 'Rejected')} className="bg-secondary hover:bg-red-500/10 hover:text-red-500 border border-border h-10 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
+                            <XCircle className="w-4 h-4 mr-2" /> Reject
                          </Button>
                       </div>
                     </motion.div>
                   ))}
                 </div>
 
-                <div className="p-5 border-t border-border">
-                   <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/10">
-                      <div className="flex items-center gap-2">
-                         <Database className="w-4 h-4 text-primary" />
-                         <span className="text-xs font-medium text-foreground">System Latency</span>
+                <div className="p-8 border-t border-border bg-secondary/10">
+                   <div className="flex items-center justify-between p-5 rounded-2xl bg-primary/5 border border-primary/10 shadow-sm relative overflow-hidden group">
+                      <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                      <div className="flex items-center gap-3 relative z-10">
+                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Database className="w-5 h-5 text-primary" />
+                         </div>
+                         <div>
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Server Speed</span>
+                            <div className="text-xs font-black text-foreground">Healthy</div>
+                         </div>
                       </div>
-                      <span className="text-xs font-semibold text-primary">0.024ms</span>
+                      <span className="text-sm font-black text-primary tracking-tight relative z-10">0.024ms</span>
                    </div>
                 </div>
               </div>
            </div>
         </div>
-
-        {/* System Status Footer */}
-        <div className="p-6 rounded-2xl bg-card border border-border flex flex-col md:flex-row items-center justify-between gap-6">
-           <div className="flex flex-wrap items-center gap-8">
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                 <span className="text-xs font-medium text-muted-foreground">Markets: Online</span>
+         {/* System Status Footer */}
+        <div className="p-8 rounded-[2.5rem] bg-card border border-border flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm relative overflow-hidden group">
+           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+           <div className="flex flex-wrap items-center gap-10 relative z-10">
+              <div className="flex items-center gap-3">
+                 <div className="w-3 h-3 rounded-full bg-green-500 shadow-glow animate-pulse" />
+                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Market Status: Online</span>
               </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                 <span className="text-xs font-medium text-muted-foreground">Redundancy: 100%</span>
+              <div className="flex items-center gap-3">
+                 <div className="w-3 h-3 rounded-full bg-primary shadow-glow animate-pulse" />
+                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Network Status: 100%</span>
               </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                 <span className="text-xs font-medium text-muted-foreground">Fiat Gateway: Stable</span>
+              <div className="flex items-center gap-3">
+                 <div className="w-3 h-3 rounded-full bg-blue-500 shadow-glow animate-pulse" />
+                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Payments: Working</span>
               </div>
            </div>
-           <span className="text-xs text-muted-foreground/50">Clarity Trade v4.8.2</span>
+           <div className="flex items-center gap-3 relative z-10">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em]">Clarity Trade Security v4.8.2</span>
+           </div>
         </div>
+
         {/* Lower Grid: System & Revenue */}
         <div className="grid lg:grid-cols-3 gap-8 pb-10">
-           {/* System Health */}
-           <div className="bg-card p-8 rounded-2xl border border-border shadow-sm space-y-8 h-full">
+           {/* System Status */}
+           <div className="bg-card border border-border p-8 rounded-3xl shadow-sm space-y-8 h-full">
               <div className="flex items-center justify-between">
                  <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-bold text-foreground font-sans tracking-tight">System Status</h2>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Server Health</p>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Health Monitor</p>
                  </div>
                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform cursor-pointer shadow-sm">
                     <Database className="w-5 h-5" />
@@ -443,10 +451,10 @@ const AdminOverview = () => {
 
               <div className="space-y-6">
                  {[
-                    { label: "Mainnet Node", status: "Operational", ping: "12ms", health: 100 },
-                    { label: "Liquidity Bridge", status: "Active", ping: "45ms", health: 98 },
-                    { label: "Withdrawal Engine", status: "Standby", ping: "14ms", health: 100 },
-                    { label: "API Gateway", status: "Operational", ping: "8ms", health: 100 },
+                    { label: "Blockchain Service", status: "Operational", ping: "12ms", health: 100 },
+                    { label: "Trade Matching", status: "Active", ping: "45ms", health: 98 },
+                    { label: "Withdrawals", status: "Standby", ping: "14ms", health: 100 },
+                    { label: "Payments API", status: "Operational", ping: "8ms", health: 100 },
                  ].map((item) => (
                     <div key={item.label} className="space-y-3">
                        <div className="flex items-center justify-between">
@@ -471,25 +479,25 @@ const AdminOverview = () => {
               </Button>
            </div>
 
-           {/* Security Audit */}
-           <div className="bg-card p-8 rounded-2xl border border-border shadow-sm space-y-8 h-full">
+           {/* Security */}
+           <div className="bg-card border border-border p-8 rounded-3xl shadow-sm space-y-8 h-full">
               <div className="flex items-center justify-between">
                  <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-bold text-foreground font-sans tracking-tight">Security</h2>
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Protection Status</p>
                  </div>
-                 <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600 border border-green-200">
+                 <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/20">
                     <ShieldCheck className="w-5 h-5" />
                  </div>
               </div>
 
-              <div className="p-5 rounded-xl bg-green-50/50 border border-green-100 flex items-start gap-4">
+              <div className="p-5 rounded-xl bg-green-500/5 border border-green-500/10 flex items-start gap-4">
                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0 shadow-lg">
                     <CheckCircle2 className="w-5 h-5" />
                  </div>
                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-green-800">No active threats detected.</p>
-                    <p className="text-xs text-green-700/70 leading-relaxed font-medium">Your platform is currently protected by Clarity Security.</p>
+                    <p className="text-sm font-bold text-foreground">No active threats detected.</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">Your platform is currently protected.</p>
                  </div>
               </div>
 
@@ -497,7 +505,7 @@ const AdminOverview = () => {
                  <div className="flex items-center justify-between py-2 border-b border-border">
                     <div className="flex flex-col gap-0.5">
                        <span className="text-sm font-bold text-foreground">DDoS Protection</span>
-                       <span className="text-[10px] text-muted-foreground font-medium">Layer 7 Monitoring</span>
+                       <span className="text-[10px] text-muted-foreground font-medium">Monitoring Active</span>
                     </div>
                     <div className="w-10 h-5 bg-primary/20 rounded-full relative">
                        <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm" />
@@ -505,7 +513,7 @@ const AdminOverview = () => {
                  </div>
                  <div className="flex items-center justify-between py-2 border-b border-border">
                     <div className="flex flex-col gap-0.5">
-                       <span className="text-sm font-bold text-foreground">SQL Injection Guard</span>
+                       <span className="text-sm font-bold text-foreground">Security Guard</span>
                        <span className="text-[10px] text-muted-foreground font-medium">Automated Scans</span>
                     </div>
                     <div className="w-10 h-5 bg-primary/20 rounded-full relative">
@@ -514,8 +522,8 @@ const AdminOverview = () => {
                  </div>
                  <div className="flex items-center justify-between py-2">
                     <div className="flex flex-col gap-0.5">
-                       <span className="text-sm font-bold text-foreground">Cold Storage Sync</span>
-                       <span className="text-[10px] text-muted-foreground font-medium">2-of-3 Multisig</span>
+                       <span className="text-sm font-bold text-foreground">Secure Storage</span>
+                       <span className="text-[10px] text-muted-foreground font-medium">Sync Active</span>
                     </div>
                     <div className="w-10 h-5 bg-primary/20 rounded-full relative">
                        <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm" />
@@ -524,14 +532,14 @@ const AdminOverview = () => {
               </div>
            </div>
 
-           {/* Platform Performance */}
-           <div className="bg-[#1a1510] p-8 rounded-2xl border border-primary/20 shadow-xl space-y-8 h-full relative overflow-hidden group">
+           {/* Performance */}
+           <div className="bg-card border border-border p-8 rounded-3xl shadow-sm space-y-8 h-full relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
               
               <div className="relative z-10 flex items-center justify-between">
                  <div className="flex flex-col gap-1">
-                    <h2 className="text-lg font-bold text-white font-sans tracking-tight">Trading Volume</h2>
-                    <p className="text-xs text-primary/60 font-medium uppercase tracking-[0.2em]">Engine Stats</p>
+                    <h2 className="text-lg font-bold text-foreground font-sans tracking-tight">Trade Activity</h2>
+                    <p className="text-xs text-primary font-medium uppercase tracking-[0.2em]">Platform Stats</p>
                  </div>
                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shadow-gold">
                     <BarChart3 className="w-5 h-5" />
@@ -540,27 +548,27 @@ const AdminOverview = () => {
 
               <div className="relative z-10 space-y-8">
                  <div className="space-y-2">
-                    <p className="text-xs text-white/40 font-bold uppercase tracking-widest">24h Cumulative Volume</p>
-                    <div className="text-4xl font-black text-white tracking-tighter tabular-nums">{formatCurrency(9420000)}</div>
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">24h volume</p>
+                    <div className="text-4xl font-black text-foreground tracking-tighter tabular-nums">{formatCurrency(9420000)}</div>
                  </div>
 
                  <div className="grid grid-cols-2 gap-6 pb-2">
                     <div className="space-y-1">
-                       <span className="text-[10px] text-white/40 font-bold uppercase">Buy Orders</span>
+                       <span className="text-[10px] text-muted-foreground font-bold uppercase">Buy Orders</span>
                        <div className="text-lg font-bold text-green-500 tabular-nums">4,812</div>
                     </div>
                     <div className="space-y-1">
-                       <span className="text-[10px] text-white/40 font-bold uppercase">Sell Orders</span>
-                       <div className="text-lg font-bold text-white tabular-nums">3,429</div>
+                       <span className="text-[10px] text-muted-foreground font-bold uppercase">Sell Orders</span>
+                       <div className="text-lg font-bold text-foreground tabular-nums">3,429</div>
                     </div>
                  </div>
 
-                 <div className="p-5 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                 <div className="p-5 rounded-xl bg-background border border-border space-y-3">
                     <div className="flex items-center justify-between">
-                       <span className="text-xs font-bold text-white uppercase tracking-tight">Matching Speed</span>
+                       <span className="text-xs font-bold text-foreground uppercase tracking-tight">Response Time</span>
                        <span className="text-xs font-bold text-primary tabular-nums">0.2ms</span>
                     </div>
-                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
                        <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: "95%" }}

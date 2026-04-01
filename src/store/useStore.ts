@@ -19,13 +19,23 @@ export type CopyTrader = {
   id: string;
   name: string;
   roi: number;
-  riskScore: number;
+  risk_score: number;
   followers: number;
-  drawdown: number;
-  winRate: number;
-  totalTrades: number;
+  max_drawdown: number;
+  win_rate: number;
+  total_trades: number;
   status: 'Active' | 'Paused' | 'Not Copied';
-  invested: number;
+  invested?: number;
+  categories?: string[];
+  ranking_score?: number;
+  ranking_level?: string;
+  is_trending?: boolean;
+  min_amount?: number;
+  avatar_url?: string;
+  dedicated_features?: string[];
+  monthly_roi?: number;
+  drawdown?: number;
+  min_plan?: string;
 };
 
 export type Transaction = {
@@ -79,6 +89,7 @@ export type AppUser = {
   theme_preference: 'light' | 'dark' | 'system';
   admin_theme_preference: 'light' | 'dark' | 'system';
   avatar_url?: string;
+  current_plan: string;
 };
 
 export type ProTraderApplication = {
@@ -180,8 +191,16 @@ interface AppState {
   setCurrency: (currency: string, persists?: boolean) => void;
   setExchangeRates: (rates: Record<string, number>) => void;
   formatCurrency: (amount: number, asset?: string) => string;
+  getPlanLevel: (planName?: string) => number;
   setRoleTheme: (theme: 'light' | 'dark' | 'system', role: 'user' | 'admin') => void;
 }
+
+const PLAN_HIERARCHY: Record<string, number> = {
+  'Starter': 0,
+  'Silver': 1,
+  'Gold': 2,
+  'Elite': 3
+};
 
 export const useStore = create<AppState>((set, get) => ({
   user: null,
@@ -240,6 +259,16 @@ export const useStore = create<AppState>((set, get) => ({
 
     const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£' };
     return `${symbols[displayCurrency] || '$'}${converted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  },
+
+  getPlanLevel: (planName) => {
+    const hierarchy: Record<string, number> = {
+      'Starter': 0,
+      'Silver': 1,
+      'Gold': 2,
+      'Elite': 3
+    };
+    return hierarchy[planName || 'Starter'] ?? 0;
   },
 
   balance: {
@@ -321,12 +350,7 @@ export const useStore = create<AppState>((set, get) => ({
     };
   }),
   
-  availableTraders: [
-    { id: 't1', name: "Alex Morgan", roi: 127.4, riskScore: 4, followers: 2341, drawdown: 12.5, winRate: 68.4, totalTrades: 1240, status: 'Not Copied', invested: 0 },
-    { id: 't2', name: "Sarah Chen", roi: 89.6, riskScore: 2, followers: 5690, drawdown: 8.2, winRate: 74.2, totalTrades: 890, status: 'Not Copied', invested: 0 },
-    { id: 't3', name: "Marcus Rivera", roi: 203.1, riskScore: 8, followers: 1205, drawdown: 25.4, winRate: 52.8, totalTrades: 2450, status: 'Not Copied', invested: 0 },
-    { id: 't4', name: "Elena Rostova", roi: 45.2, riskScore: 1, followers: 8902, drawdown: 4.1, winRate: 85.1, totalTrades: 420, status: 'Not Copied', invested: 0 },
-  ],
+  availableTraders: [],
   
   copiedTraders: [],
   

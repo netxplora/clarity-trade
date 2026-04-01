@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight, ChevronDown, User, LogIn } from "lucide-react";
+import { Menu, X, ArrowUpRight, ChevronDown, User, LogIn, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import GoogleTranslate from "@/components/ui/GoogleTranslate";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import { useStore } from "@/store/useStore";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { user } = useStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -60,19 +62,31 @@ const Navbar = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <div className={`transition-colors hidden sm:flex items-center ${(!scrolled && isHome) ? 'text-white border-white/20' : 'text-gray-900 border-gray-200'}`}>
-             <GoogleTranslate />
+          <div className="transition-colors hidden sm:flex items-center">
+             <LanguageSwitcher variant={(!scrolled && isHome) ? "transparent" : "default"} />
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-             <Link to="/login" className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest px-4 py-2 rounded transition-all ${
-               (!scrolled && isHome) ? 'text-white hover:text-[#D4AF37]' : 'text-gray-700 hover:text-[#D4AF37]'
-             }`}>
-                <LogIn className="w-4 h-4" /> Sign In
-             </Link>
-             <Link to="/register" className="btn-gold !py-2.5 !px-6 text-xs uppercase tracking-widest shadow-lg">
-                Get Started
-             </Link>
+             {user ? (
+               <Link 
+                 to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                 className="btn-gold !py-2.5 !px-6 text-[10px] uppercase tracking-[0.2em] shadow-lg flex items-center gap-2 group"
+               >
+                  <LayoutDashboard className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
+                  <span className="font-black truncate max-w-[150px]">{user.name.split(' ')[0]} PORTAL</span>
+               </Link>
+             ) : (
+               <>
+                 <Link to="/auth/login" className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest px-4 py-2 rounded transition-all ${
+                   (!scrolled && isHome) ? 'text-white hover:text-[#D4AF37]' : 'text-gray-700 hover:text-[#D4AF37]'
+                 }`}>
+                    <LogIn className="w-4 h-4" /> Sign In
+                 </Link>
+                 <Link to="/auth/register" className="btn-gold !py-2.5 !px-6 text-xs uppercase tracking-widest shadow-lg">
+                    Get Started
+                 </Link>
+               </>
+             )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -111,16 +125,28 @@ const Navbar = () => {
               
               {/* Mobile Translation Widget */}
               <div className="flex items-center py-3 border-b border-gray-50 text-gray-800">
-                <GoogleTranslate />
+                <LanguageSwitcher />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                 <Link to="/login" className="flex items-center justify-center gap-2 border border-gray-200 text-gray-700 font-bold uppercase tracking-widest text-xs py-4 rounded" onClick={() => setMobileOpen(false)}>
-                    Sign In
-                 </Link>
-                 <Link to="/register" className="bg-[#D4AF37] text-white flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs py-4 rounded shadow-lg" onClick={() => setMobileOpen(false)}>
-                    Get Started
-                 </Link>
+              <div className="pt-4">
+                 {user ? (
+                    <Link 
+                      to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                      className="bg-[#D4AF37] text-white flex items-center justify-center gap-3 font-bold uppercase tracking-widest text-xs py-5 rounded shadow-lg group" 
+                      onClick={() => setMobileOpen(false)}
+                    >
+                       <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
+                    </Link>
+                 ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                       <Link to="/auth/login" className="flex items-center justify-center gap-2 border border-gray-200 text-gray-700 font-bold uppercase tracking-widest text-xs py-4 rounded" onClick={() => setMobileOpen(false)}>
+                          Sign In
+                       </Link>
+                       <Link to="/auth/register" className="bg-[#D4AF37] text-white flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs py-4 rounded shadow-lg" onClick={() => setMobileOpen(false)}>
+                          Get Started
+                       </Link>
+                    </div>
+                 )}
               </div>
             </div>
           </motion.div>

@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import {
   Search, Shield, CheckCircle, DollarSign, X, Snowflake, Flame, Eye,
   Filter, UserPlus, ArrowUpRight, ShieldCheck, Zap, Clock, ExternalLink,
-  Globe, Coins, Target, Activity, Trash2, UserCog, UserCheck, TrendingUp
+  Globe, Coins, Target, Activity, Trash2, UserCog, UserCheck, TrendingUp,
+  MoreHorizontal, Wallet, Shield as ShieldIcon
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -15,6 +16,14 @@ import {
 import {
   Tooltip, TooltipContent, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -96,7 +105,8 @@ const UserManagement = () => {
                     preferred_currency: p.preferred_currency,
                     theme_preference: p.theme_preference || 'system',
                     admin_theme_preference: p.admin_theme_preference || 'light',
-                    avatar_url: p.avatar_url
+                    avatar_url: p.avatar_url,
+                    current_plan: p.current_plan || 'Starter'
                 };
             }) as AppUser[];
             setUsers(mappedUsers);
@@ -168,7 +178,7 @@ const UserManagement = () => {
   const handleKycApprove = async (id: string | number, name: string) => {
     const { error } = await supabase.from('profiles').update({ kyc: 'Verified' }).eq('id', id);
     if (!error) {
-       toast.success(`KYC approved for ${name}`);
+       toast.success(`User approved: ${name}`);
        fetchAppData();
     } else {
        toast.error(error.message);
@@ -178,7 +188,7 @@ const UserManagement = () => {
   const handleKycReject = async (id: string | number, name: string) => {
     const { error } = await supabase.from('profiles').update({ kyc: 'Rejected' }).eq('id', id);
     if (!error) {
-       toast.error(`KYC rejected for ${name}`);
+       toast.error(`Verification rejected for ${name}`);
        fetchAppData();
     } else {
        toast.error(error.message);
@@ -205,6 +215,17 @@ const UserManagement = () => {
        fetchAppData();
     } else {
        toast.error(error.message);
+    }
+  };
+
+  const handleUpdatePlan = async (id: string | number, newPlan: string) => {
+    const { error } = await supabase.from('profiles').update({ current_plan: newPlan }).eq('id', id);
+    if (!error) {
+        toast.success(`Plan updated to ${newPlan}`);
+        fetchAppData();
+        if (viewUser) setViewUser({ ...viewUser, current_plan: newPlan });
+    } else {
+        toast.error(error.message);
     }
   };
 
@@ -272,69 +293,73 @@ const UserManagement = () => {
     <AdminLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
           <div>
-             <h1 className="text-3xl font-bold font-sans text-foreground">User Management</h1>
-             <p className="text-muted-foreground mt-1">Manage user accounts, KYC verification, and balances.</p>
+            <div className="flex items-center gap-2 text-primary mb-1">
+               <ShieldCheck className="w-4 h-4" />
+               <span className="text-[10px] font-black tracking-[0.2em] uppercase">Administration</span>
+            </div>
+            <h1 className="text-4xl font-black text-foreground tracking-tight">Users</h1>
+            <p className="text-muted-foreground mt-1 text-[10px] font-black uppercase tracking-widest opacity-40">Manage accounts and balances</p>
           </div>
-          <div className="flex gap-3">
-             <Button variant="outline" className="h-11 px-6 text-sm font-medium" onClick={() => toast.info("Filters reset")}>
-               <Filter className="w-4 h-4 mr-2" /> Filters
+          <div className="flex flex-wrap items-center gap-3">
+             <Button variant="outline" className="h-12 border-border text-[10px] font-black uppercase tracking-widest px-6 flex-1 sm:flex-none hover:bg-secondary rounded-xl" onClick={() => toast.info("Filters reset")}>
+                <Filter className="w-4 h-4 mr-2" /> Filters
              </Button>
-             <Button variant="hero" className="h-11 px-6 shadow-gold text-sm font-medium text-white" onClick={() => toast.success("Creation wizard launched")}>
-               <UserPlus className="w-4 h-4 mr-2" /> Add User
+             <Button variant="hero" className="h-12 text-[10px] font-black uppercase tracking-widest px-6 shadow-gold text-white flex-1 sm:flex-none rounded-xl" onClick={() => toast.success("Creation wizard launched")}>
+                <UserPlus className="w-4 h-4 mr-2" /> Add User
              </Button>
           </div>
         </div>
 
-        {/* Search & Summary */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+        {/* Search & Summary Overview */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
             <div className="relative w-full lg:max-w-md group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
                 <input 
-                    placeholder="Search by name or email..." 
-                    className="w-full h-11 bg-card border border-border rounded-xl pl-11 pr-4 text-sm outline-none focus:border-primary/50 transition-all"
+                    placeholder="Search users..." 
+                    className="w-full h-12 bg-card border border-border rounded-xl pl-11 pr-4 text-[13px] font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
-            <div className="flex gap-8 ml-auto">
+            <div className="flex flex-wrap gap-8 lg:ml-auto w-full lg:w-auto">
                 <div className="text-right">
-                    <span className="text-xs text-muted-foreground block">Total Users</span>
-                    <span className="text-2xl font-bold font-sans text-foreground tabular-nums">{users?.length || 0}</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1 opacity-60">Total Users</span>
+                    <span className="text-2xl font-black font-sans text-foreground tabular-nums tracking-tight">{users?.length || 0}</span>
                 </div>
-                <div className="text-right">
-                    <span className="text-xs text-muted-foreground block">Crypto Pool</span>
-                    <span className="text-2xl font-bold text-foreground tabular-nums">{formatCurrency(users?.reduce((acc, u) => acc + (u?.cryptoBalanceNum || 0), 0) || 0)}</span>
+                <div className="text-right border-l border-border pl-8">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1 opacity-60">Total Portfolio</span>
+                    <span className="text-2xl font-black text-foreground tabular-nums tracking-tight">{formatCurrency(users?.reduce((acc, u) => acc + (u?.cryptoBalanceNum || 0), 0) || 0)}</span>
                 </div>
-                <div className="text-right">
-                    <span className="text-xs text-muted-foreground block">Fiat Pool</span>
-                    <span className="text-2xl font-bold text-primary tabular-nums">{formatCurrency(users?.reduce((acc, u) => acc + (u?.fiatBalanceNum || 0) + (u?.tradingBalance || 0), 0) || 0)}</span>
+                <div className="text-right border-l border-border pl-8">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-widest block mb-1">Total Balance</span>
+                    <span className="text-2xl font-black text-primary tabular-nums tracking-tight">{formatCurrency(users?.reduce((acc, u) => acc + (u?.fiatBalanceNum || 0) + (u?.tradingBalance || 0), 0) || 0)}</span>
                 </div>
             </div>
         </div>
 
-        {/* Users Table */}
-        <div className="rounded-2xl bg-card border border-border overflow-hidden">
-          <div className="overflow-x-auto">
+        {/* Users Control Center */}
+        <div className="rounded-[2.5rem] bg-card border border-border overflow-hidden shadow-sm relative">
+          <div className="overflow-x-auto relative z-10">
             <table className="w-full">
               <thead>
-                <tr className="text-xs font-medium text-muted-foreground border-b border-border bg-secondary/30">
-                    <th className="text-left py-4 px-6">User Profile</th>
-                    <th className="text-left py-4 px-6 hidden md:table-cell">Main Balance (Total)</th>
-                    <th className="text-left py-4 px-6">Crypto Balance</th>
-                    <th className="text-left py-4 px-6">Fiat Balance</th>
-                    <th className="text-left py-4 px-6">Trading Balance</th>
-                    <th className="text-left py-4 px-6">Copy Status</th>
-                    <th className="text-right py-4 px-6">Actions</th>
+                <tr className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border bg-secondary/30">
+                    <th className="text-left py-5 px-8">User Info</th>
+                    <th className="text-left py-5 px-6 hidden md:table-cell">Total Balance</th>
+                    <th className="text-left py-5 px-6">Portfolio</th>
+                    <th className="text-left py-5 px-6">Cash Balance</th>
+                    <th className="text-left py-5 px-6">Trading Balance</th>
+                    <th className="text-left py-5 px-6">Status</th>
+                    <th className="text-right py-5 px-8">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((u) => (
                   <tr key={u.id} className="group hover:bg-secondary/20 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                         <div className="relative w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center font-bold text-sm text-white shadow-sm overflow-hidden">
+                    <td className="py-5 px-8">
+                      <div className="flex items-center gap-4">
+                         <div className="relative w-12 h-12 rounded-2xl bg-gradient-gold flex items-center justify-center font-black text-sm text-white shadow-sm overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300">
                             {u?.avatar_url ? (
                                <img src={u.avatar_url} className="w-full h-full object-cover" />
                             ) : (
@@ -342,128 +367,145 @@ const UserManagement = () => {
                             )}
                          </div>
                          <div>
-                            <div className="font-semibold text-foreground text-sm flex items-center gap-2">
+                            <div className="font-bold text-foreground text-sm flex items-center gap-2 tracking-tight">
                                {u?.name || "No User Name"}
-                               <span className={`px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest ${u.kyc === 'Verified' ? 'bg-green-500/10 text-green-700 border-green-200' : u.kyc === 'Pending' ? 'bg-amber-500/10 text-amber-700 border-amber-200' : 'bg-red-500/10 text-red-700 border-red-200'}`}>
+                               <span className={`px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-widest ${u.kyc === 'Verified' || u.kyc === 'Approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : u.kyc === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                                  {u.kyc || 'Unverified'}
                                </span>
                             </div>
-                            <div className="text-xs text-muted-foreground">{u?.email || "No email available"}</div>
+                            <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-40 mt-1">{u?.email || "No email available"}</div>
                          </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 hidden md:table-cell">
-                       <div className="font-bold text-foreground text-sm tabular-nums">
+                    <td className="py-5 px-6 hidden md:table-cell">
+                       <div className="font-black text-foreground text-sm tabular-nums tracking-tight">
                           {formatCurrency(u.balanceNum)}
                        </div>
-                       <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-tighter font-sans">
-                          Combined Total
+                       <div className="text-[9px] font-black text-muted-foreground mt-1 uppercase tracking-widest opacity-40">
+                          Account Value
                        </div>
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-5 px-6">
                        <Tooltip>
                           <TooltipTrigger asChild>
                              <div className="cursor-help group/bal">
-                                <div className="font-semibold text-foreground text-sm tabular-nums group-hover/bal:text-primary transition-colors">
+                                <div className="font-black text-foreground text-sm tabular-nums group-hover/bal:text-primary transition-colors tracking-tight">
                                    {formatCurrency((u as any).cryptoBalanceNum || 0)}
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                   <Coins className="w-3 h-3 text-primary/60" /> Portfolio Value
+                                <div className="flex items-center gap-1.5 text-[9px] font-black text-muted-foreground mt-1 uppercase tracking-widest opacity-40">
+                                   <Coins className="w-3 h-3 text-primary/60" /> Portfolio
                                 </div>
                              </div>
                           </TooltipTrigger>
-                          <TooltipContent className="p-4 min-w-[180px] bg-card border-border shadow-2xl">
-                             <div className="space-y-3 font-sans">
-                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2 mb-2">Asset Breakdown</div>
+                          <TooltipContent className="p-5 min-w-[200px] bg-card border-border shadow-huge rounded-[2.5rem] relative overflow-hidden">
+                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+                             <div className="space-y-3 font-sans relative z-10">
+                                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border pb-3 mb-3 opacity-60">Portfolio Distribution</div>
                                 {Object.entries(u.balances || {}).map(([c, a]) => (
                                   <div key={c} className="flex justify-between items-center gap-4">
-                                     <span className="text-xs font-medium text-muted-foreground uppercase">{c}</span>
-                                     <span className="text-xs font-bold text-foreground">{Number(a).toLocaleString()}</span>
+                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{c}</span>
+                                     <span className="text-xs font-black text-foreground tabular-nums">{Number(a).toLocaleString()}</span>
                                   </div>
                                 ))}
                              </div>
                           </TooltipContent>
                        </Tooltip>
                     </td>
-                     <td className="py-4 px-6 font-medium text-foreground text-sm tabular-nums">
-                        {formatCurrency(u?.fiatBalanceNum || 0)}
+                     <td className="py-5 px-6">
+                        <div className="font-black text-primary text-sm tabular-nums tracking-tight">
+                           {formatCurrency(u?.fiatBalanceNum || 0)}
+                        </div>
+                        <div className="text-[9px] font-black text-primary/40 mt-1 uppercase tracking-widest opacity-60">Available</div>
                      </td>
-                     <td className="py-4 px-6 font-medium text-foreground text-sm tabular-nums">
-                        {formatCurrency((u as any)?.tradingBalance || 0)}
+                     <td className="py-5 px-6">
+                        <div className="font-black text-foreground text-sm tabular-nums tracking-tight">
+                           {formatCurrency((u as any)?.tradingBalance || 0)}
+                        </div>
+                        <div className="text-[9px] font-bold text-muted-foreground/40 mt-1 uppercase tracking-widest">Active Funds</div>
                      </td>
-                     <td className="py-4 px-6">
+                     <td className="py-5 px-6">
                         {(activeSessions || []).some(ct => ct && ct.user_id === String(u?.id) && ct.status === 'active') ? (
-                          <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold border border-primary/20">
-                              <Target className="w-2.5 h-2.5" /> Copying
+                          <div className="flex flex-col gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary shadow-gold text-white text-[9px] font-black uppercase tracking-widest">
+                              <Target className="w-3 h-3" /> Online
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-medium">Live Session</span>
+                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.1em] text-center opacity-40 text-nowrap">Session Active</span>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground">Idle</span>
+                          <div className="flex flex-col gap-1">
+                             <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-20">Offline</span>
+                          </div>
                         )}
                      </td>
-                    <td className="py-4 px-6 text-muted-foreground text-xs hidden lg:table-cell">
+                    <td className="py-5 px-6 text-muted-foreground text-[10px] font-black uppercase tracking-widest opacity-60 hidden lg:table-cell">
                        {u.joined}
                     </td>
-                    <td className="py-4 px-6 text-right">
+                    <td className="py-5 px-8 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => handleViewUser(u)} className="h-9 w-9 rounded-lg border-border hover:bg-primary/10 hover:text-primary">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>View Details</TooltipContent>
-                        </Tooltip>
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <Button variant="outline" size="icon" onClick={() => handleViewUser(u)} className="h-10 w-10 rounded-xl border-border hover:bg-primary/10 hover:text-primary transition-all shadow-sm">
+                               <Eye className="w-4 h-4" />
+                             </Button>
+                           </TooltipTrigger>
+                           <TooltipContent>View Profile</TooltipContent>
+                         </Tooltip>
                         
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => setBalanceDialog(u)} className="h-9 w-9 rounded-lg border-border hover:bg-green-50 hover:text-green-600">
-                              <DollarSign className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Adjust Balance</TooltipContent>
-                        </Tooltip>
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <Button variant="outline" size="icon" onClick={() => setBalanceDialog(u)} className="h-10 w-10 rounded-xl border-border hover:bg-green-500/10 hover:text-green-500 transition-all shadow-sm">
+                               <Wallet className="w-4 h-4" />
+                             </Button>
+                           </TooltipTrigger>
+                           <TooltipContent>Edit Balance</TooltipContent>
+                         </Tooltip>
+                         
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-border bg-secondary/10 hover:bg-secondary transition-all">
+                               <MoreHorizontal className="w-4 h-4" />
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent align="end" className="w-64 p-2 bg-card border-border rounded-2xl shadow-huge">
+                             <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 py-2 opacity-60">Actions</DropdownMenuLabel>
+                             
+                             <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleUpdateRole(u.id, u.role)}>
+                               <ShieldIcon className="w-4 h-4 mr-3 text-primary transition-transform group-hover:scale-110" />
+                               <div className="flex flex-col">
+                                  <span className="text-xs font-black uppercase tracking-tight">{u.role === 'admin' ? "Remove Admin" : "Make Admin"}</span>
+                                  <span className="text-[9px] text-muted-foreground font-bold">Manage system access</span>
+                               </div>
+                             </DropdownMenuItem>
 
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => handleUpdateRole(u.id, u.role)} className={`h-9 w-9 rounded-lg border-border ${u.role === 'admin' ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-indigo-50 hover:text-indigo-600'}`}>
-                              <UserCog className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{u.role === 'admin' ? "Demote to User" : "Promote to Admin"}</TooltipContent>
-                        </Tooltip>
+                             {u.kyc === "Pending" && (
+                               <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer text-green-500 focus:text-green-500 focus:bg-green-500/5 group" onClick={() => handleKycApprove(u.id, u.name)}>
+                                 <CheckCircle className="w-4 h-4 mr-3 transition-transform group-hover:scale-110" />
+                                 <div className="flex flex-col">
+                                    <span className="text-xs font-black uppercase tracking-tight">Approve User</span>
+                                    <span className="text-[9px] text-green-500/60 font-bold">Verify documentation</span>
+                                 </div>
+                               </DropdownMenuItem>
+                             )}
 
-                        {u.kyc === "Pending" && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="outline" size="icon" onClick={() => handleKycApprove(u.id, u.name)} className="h-9 w-9 rounded-lg border-border hover:bg-green-50 text-green-600">
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Approve KYC</TooltipContent>
-                          </Tooltip>
-                        )}
-                        
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => handleFreeze(u.id, u.name)} className={`h-9 w-9 rounded-lg border-border ${u.frozen ? "hover:bg-green-50 text-green-600" : "hover:bg-blue-50 text-blue-500"}`}>
-                              {u.frozen ? <Flame className="w-4 h-4" /> : <Snowflake className="w-4 h-4" />}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{u.frozen ? "Unfreeze Account" : "Freeze Account"}</TooltipContent>
-                        </Tooltip>
+                             <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleFreeze(u.id, u.name)}>
+                               {u.frozen ? <Flame className="w-4 h-4 mr-3 text-green-500 transition-transform group-hover:scale-110" /> : <Snowflake className="w-4 h-4 mr-3 text-blue-500 transition-transform group-hover:scale-110" />}
+                               <div className="flex flex-col">
+                                  <span className="text-xs font-black uppercase tracking-tight">{u.frozen ? "Unfreeze Account" : "Freeze Account"}</span>
+                                  <span className="text-[9px] text-muted-foreground font-bold">Change account status</span>
+                               </div>
+                             </DropdownMenuItem>
 
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => handleDeleteUser(u.id, u.name)} className="h-9 w-9 rounded-lg border-border hover:bg-red-50 text-red-600">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Delete User</TooltipContent>
-                        </Tooltip>
-                      </div>
+                             <DropdownMenuSeparator className="bg-border my-2 mx-2" />
+                             <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10 group" onClick={() => handleDeleteUser(u.id, u.name)}>
+                               <Trash2 className="w-4 h-4 mr-3 transition-transform group-hover:rotate-12" />
+                               <div className="flex flex-col">
+                                  <span className="text-xs font-black uppercase tracking-tight">Delete User</span>
+                                  <span className="text-[9px] text-red-500/60 font-bold">Permanently delete this user</span>
+                               </div>
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
+                       </div>
                     </td>
                   </tr>
                 ))}
@@ -471,11 +513,16 @@ const UserManagement = () => {
             </table>
           </div>
           
-          <div className="p-5 bg-secondary/20 border-t border-border flex items-center justify-between">
-             <span className="text-xs text-muted-foreground">Showing {filtered.length} of {users.length} users</span>
-             <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="h-9 px-4 text-xs">Previous</Button>
-                <Button variant="outline" size="sm" className="h-9 px-4 text-xs">Next</Button>
+          <div className="p-8 border-t border-border bg-secondary/10 flex flex-col sm:flex-row items-center justify-between gap-6">
+             <div className="flex items-center gap-6">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Status: {filtered.length} of {users.length} Users active</span>
+                <div className="hidden md:flex h-1.5 w-32 bg-border rounded-full overflow-hidden">
+                   <div className="h-full bg-primary animate-pulse shadow-glow" style={{ width: `${(filtered.length / users.length) * 100}%` }} />
+                </div>
+             </div>
+             <div className="flex gap-3">
+                <Button variant="outline" className="h-11 px-6 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-secondary">Previous</Button>
+                <Button variant="outline" className="h-11 px-6 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-secondary">Next</Button>
              </div>
           </div>
         </div>
@@ -626,7 +673,7 @@ const UserManagement = () => {
                     <Badge variant={viewUser.role === 'admin' ? "default" : "secondary"} className="h-7 px-3 uppercase text-[10px] tracking-widest font-black">
                       {viewUser.role} Account
                     </Badge>
-                    <Badge variant={viewUser.frozen ? "destructive" : "outline"} className={`h-7 px-3 uppercase text-[10px] tracking-widest font-black ${!viewUser.frozen ? 'bg-green-500/10 text-green-700 border-green-200' : ''}`}>
+                    <Badge variant={viewUser.frozen ? "destructive" : "outline"} className={`h-7 px-3 uppercase text-[10px] tracking-widest font-black ${!viewUser.frozen ? 'bg-green-500/10 text-green-500 border-green-500/20 shadow-none' : ''}`}>
                       {viewUser.frozen ? "Frozen" : "Active"}
                     </Badge>
                   </div>
@@ -666,7 +713,7 @@ const UserManagement = () => {
                             </div>
                             <div className="flex justify-between items-center py-2">
                               <span className="text-sm text-muted-foreground">Account Status</span>
-                              <span className={`text-xs font-bold ${viewUser.frozen ? 'text-red-500' : 'text-green-600'}`}>
+                              <span className={`text-xs font-bold ${viewUser.frozen ? 'text-red-500' : 'text-green-500'}`}>
                                 {viewUser.frozen ? "Access Restricted" : "Active / Verified"}
                               </span>
                             </div>
@@ -696,16 +743,42 @@ const UserManagement = () => {
                         </section>
                       </div>
 
-                      <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                          <Activity className="w-5 h-5" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <Activity className="w-5 h-5" />
+                            </div>
+                            <div>
+                            <h4 className="font-bold text-foreground">Quick Account Summary</h4>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                This user has joined {viewUser.joined ? new Date(viewUser.joined).toLocaleDateString() : 'recently'} and has 
+                                completed their KYC steps. Total balance across all wallets is currently {formatCurrency(viewUser.balanceNum)}.
+                            </p>
+                            </div>
                         </div>
-                        <div>
-                          <h4 className="font-bold text-foreground">Quick Account Summary</h4>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                            This user has joined {viewUser.joined ? new Date(viewUser.joined).toLocaleDateString() : 'recently'} and has 
-                            completed their KYC steps. Total asset valuation across all pools is currently estimated at {formatCurrency(viewUser.balanceNum)}.
-                          </p>
+
+                        <div className="p-6 rounded-2xl bg-card border border-border flex flex-col gap-4">
+                            <div>
+                                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                    <ShieldCheck className="w-4 h-4 text-primary" /> KYC Tier Level
+                                </h4>
+                                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">Current Tier: <span className="text-primary font-black italic">{viewUser.current_plan || 'Starter'}</span></p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {['Starter', 'Silver', 'Gold', 'Elite'].map(plan => (
+                                    <button
+                                        key={plan}
+                                        onClick={() => handleUpdatePlan(viewUser.id, plan)}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                            (viewUser.current_plan || 'Starter') === plan
+                                            ? "bg-gradient-gold text-white border-transparent shadow-gold"
+                                            : "bg-secondary text-muted-foreground border-border hover:border-primary/50"
+                                        }`}
+                                    >
+                                        {plan}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                       </div>
                     </TabsContent>
@@ -719,7 +792,7 @@ const UserManagement = () => {
                           <p className="text-[10px] text-muted-foreground">Combined value of all asset types</p>
                         </div>
                         <div className="p-6 rounded-2xl bg-secondary/30 border border-border space-y-2">
-                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Main Fiat Balance</span>
+                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Main Balance</span>
                           <div className="text-3xl font-black text-primary tabular-nums">{formatCurrency(viewUser.fiatBalanceNum)}</div>
                           <p className="text-[10px] text-muted-foreground">Available for immediate withdrawal</p>
                         </div>
@@ -745,7 +818,7 @@ const UserManagement = () => {
                             { coin: 'Ethereum', symbol: 'ETH', balance: viewUser?.balances?.eth || 0, price: 3500, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                             { coin: 'Tether', symbol: 'USDT', balance: viewUser?.balances?.usdt || 0, price: 1, color: 'text-green-500', bg: 'bg-green-500/10' },
                             { coin: 'Solana', symbol: 'SOL', balance: viewUser?.balances?.sol || 0, price: 145, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                            { coin: 'US Dollar', symbol: 'USD', balance: viewUser?.fiatBalanceNum || 0, price: 1, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+                            { coin: 'Cash Balance', symbol: 'USD', balance: viewUser?.fiatBalanceNum || 0, price: 1, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
                             { coin: 'Trading Balance', symbol: 'TRD', balance: (viewUser as any)?.tradingBalance || 0, price: 1, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
                             { coin: 'Copy Trading', symbol: 'CPY', balance: (viewUser as any)?.copyTradingBalance || 0, price: 1, color: 'text-purple-500', bg: 'bg-purple-500/10' },
                           ].map((asset) => (
@@ -779,7 +852,7 @@ const UserManagement = () => {
                     <TabsContent value="activity" className="space-y-8 mt-0 animate-in fade-in-50 duration-500">
                       <section className="space-y-4">
                         <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-primary" /> Transaction & Trade History
+                          <Activity className="w-4 h-4 text-primary" /> Activity History
                         </h3>
                         <div className="space-y-3">
                           {/* Active Copy Trades */}
@@ -790,7 +863,7 @@ const UserManagement = () => {
                                   <Target className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <div className="text-sm font-bold text-foreground">Active Copy Session: {ct.traderName}</div>
+                                  <div className="text-sm font-bold text-foreground">Active Trade: {ct.traderName}</div>
                                   <div className="text-xs text-muted-foreground mt-0.5">Allocated: ${ct.allocated_amount} • Profits/Loss: <span className={ct.pnl >= 0 ? 'text-green-600' : 'text-red-500'}>${ct.pnl.toFixed(2)}</span></div>
                                 </div>
                               </div>
@@ -820,7 +893,7 @@ const UserManagement = () => {
                           {(activeSessions || []).filter(ct => ct?.userId === String(viewUser?.id)).length === 0 && 
                            (allTransactions || []).filter(tx => tx?.userId === String(viewUser?.id)).length === 0 && (
                             <div className="text-center py-12 border border-dashed border-border rounded-2xl bg-secondary/10">
-                              <p className="text-sm text-muted-foreground">No transaction history found for this user.</p>
+                              <p className="text-sm text-muted-foreground">No history found for this user.</p>
                             </div>
                           )}
                         </div>
@@ -832,7 +905,7 @@ const UserManagement = () => {
                       <section className="space-y-6">
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                            <ShieldCheck className="w-4 h-4 text-primary" /> Identity Verification Status
+                            <ShieldCheck className="w-4 h-4 text-primary" /> Identity Status
                           </h3>
                           <Badge className={`uppercase text-[10px] font-black tracking-widest px-4 h-8 ${viewUser.kyc === 'Verified' ? 'bg-green-500 text-white' : viewUser.kyc === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
                             {viewUser.kyc || 'Unverified'}
@@ -862,7 +935,7 @@ const UserManagement = () => {
                                   >
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                                       <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
-                                        <Eye className="w-4 h-4" /> Preview Document
+                                        <Eye className="w-4 h-4" /> Preview
                                       </div>
                                     </div>
                                     <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest z-10 border border-white/20">Front Side</div>
@@ -876,7 +949,7 @@ const UserManagement = () => {
                                   >
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                                       <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
-                                        <Eye className="w-4 h-4" /> Preview Document
+                                        <Eye className="w-4 h-4" /> Preview
                                       </div>
                                     </div>
                                     <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest z-10 border border-white/20">Back Side</div>
@@ -886,8 +959,7 @@ const UserManagement = () => {
                                 {!selectedSubmission.document_front && !selectedSubmission.document_back && (
                                   <div className="col-span-2 p-8 text-center border border-dashed border-border rounded-2xl bg-secondary/10">
                                     <Shield className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-                                    <p className="text-sm text-muted-foreground font-medium">No document images were uploaded with this submission.</p>
-                                    <p className="text-xs text-muted-foreground/60 mt-1">The user may need to re-submit with document photos.</p>
+                                    <p className="text-sm text-muted-foreground font-medium">No document images found.</p>
                                   </div>
                                 )}
                               </div>
@@ -915,7 +987,7 @@ const UserManagement = () => {
                         ) : (
                           <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-secondary/10">
                             <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-                            <p className="text-sm text-muted-foreground font-medium">No identification documents have been submitted yet.</p>
+                            <p className="text-sm text-muted-foreground font-medium">No documents submitted yet.</p>
                           </div>
                         )}
                       </section>
@@ -927,7 +999,7 @@ const UserManagement = () => {
               {/* Sticky Footer Area */}
               <div className="p-6 border-t border-border bg-secondary/5 shrink-0 flex justify-end">
                 <Button variant="outline" className="px-10 h-11 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary transition-colors" onClick={() => setViewUser(null)}>
-                  Close Details
+                  Close
                 </Button>
               </div>
             </>
@@ -941,7 +1013,7 @@ const UserManagement = () => {
           {previewImage && (
              <div className="relative group w-full flex flex-col items-center">
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/80 backdrop-blur-xl px-6 py-2 rounded-full border border-white/10 z-50">
-                   <div className="text-[10px] font-black text-white uppercase tracking-widest">Document Inspection Mode</div>
+                   <div className="text-[10px] font-black text-white uppercase tracking-widest">Document Preview</div>
                    <div className="w-px h-3 bg-white/20" />
                    <button onClick={() => setPreviewImage(null)} className="text-white/60 hover:text-white transition-colors">
                       <X className="w-4 h-4" />

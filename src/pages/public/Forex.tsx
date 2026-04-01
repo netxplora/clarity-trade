@@ -65,7 +65,7 @@ export default function Forex() {
                               {p.up ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />} {p.change}
                            </td>
                            <td className="px-8 py-6 text-center">
-                              <Link to="/register" className="btn-gold !py-2 !px-4 text-[10px] uppercase font-bold tracking-widest whitespace-nowrap">Trade Now</Link>
+                              <Link to="/auth/register" className="btn-gold !py-2 !px-4 text-[10px] uppercase font-bold tracking-widest whitespace-nowrap">Trade Now</Link>
                            </td>
                         </tr>
                       ))}
@@ -101,7 +101,7 @@ export default function Forex() {
         </div>
       </section>
 
-      {/* Liquidity Node - Split Section */}
+      {/* Deep Liquidity - Split Section */}
       <section className="bg-[#0B0F14] overflow-hidden">
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="lg:w-1/2 min-h-[500px] relative">
@@ -113,7 +113,7 @@ export default function Forex() {
              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0B0F14]" />
           </div>
           <div className="lg:w-1/2 p-20 lg:p-32 flex flex-col justify-center">
-             <span className="heading-gold !text-left">Liquidity Node</span>
+             <span className="heading-gold !text-left">Deep Liquidity</span>
              <h2 className="title-hyip text-white !text-left leading-tight">Global Interbank <span className="text-[#D4AF37]">Access</span></h2>
              <p className="p-hyip-dark mb-10 !text-left">
                 We bridge the gap between retail traders and institutional liquidity providers, 
@@ -122,7 +122,7 @@ export default function Forex() {
              <div className="grid grid-cols-2 gap-8 mb-12">
                 {[
                   { label: "Execution", value: "Sub 10ms" },
-                  { label: "Deeper Pool", value: "15+ LPs" },
+                   { label: "Liquidity Providers", value: "15+" },
                   { label: "Margin", value: "0.01 Lot" },
                   { label: "Support", value: "24/5 Live" },
                 ].map((stat) => (
@@ -133,7 +133,7 @@ export default function Forex() {
                 ))}
              </div>
              <div>
-                <Link to="/register" className="btn-gold !px-12">Join The Market</Link>
+                <Link to="/auth/register" className="btn-gold !px-12">Join The Market</Link>
              </div>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function Forex() {
               to ensure your capital is protected and always available within regulatory guidelines.
            </p>
            <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <Link to="/register" className="btn-gold !px-12 flex items-center justify-center gap-2 shadow-2xl">Create Trading Account <ArrowRight className="w-4 h-4" /></Link>
+              <Link to="/auth/register" className="btn-gold !px-12 flex items-center justify-center gap-2 shadow-2xl">Create Trading Account <ArrowRight className="w-4 h-4" /></Link>
               <Link to="/contact" className="border-2 border-gray-200 text-gray-600 font-bold uppercase tracking-widest text-xs py-4 px-12 rounded hover:bg-gray-900 hover:text-white transition-all">Contact Expert</Link>
            </div>
         </div>

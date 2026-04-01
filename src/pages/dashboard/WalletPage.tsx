@@ -95,14 +95,13 @@ const WalletPage = () => {
           amount: Number(amount).toLocaleString(),
           usd: formatCurrency(Number(amount) * price),
           icon: symbols[coin.toLowerCase()] || coin.charAt(0).toUpperCase(),
-          change: "LIVE",
+          change: "",
           color: colors[coin.toLowerCase()] || "text-primary"
       };
   }).filter(b => Number(b.amount.replace(/,/g, '')) > 0 || ['BTC', 'ETH', 'USDT'].includes(b.symbol));
 
   const fiatBalances = [
-    { coin: "US Dollar", symbol: "USD", amount: fiatBal.toLocaleString(), usd: formatCurrency(fiatBal), icon: "$", change: "STABLE", color: "text-green-600" },
-    { coin: "Euro", symbol: "EUR", amount: (0).toLocaleString(), usd: formatCurrency(0), icon: "€", change: "-0.2%", color: "text-blue-600" },
+     { coin: "US Dollar", symbol: "USD", amount: fiatBal.toLocaleString(), usd: formatCurrency(fiatBal), icon: "$", change: "", color: "text-green-600" },
   ];
 
   const handleCopy = () => {
@@ -116,14 +115,31 @@ const WalletPage = () => {
 
 
   const handleWithdraw = async () => {
-    const isVerified = user?.kyc === 'Verified' || user?.kyc === 'Approved';
+    const kycStatus = user?.kyc || 'None';
+    const isVerified = kycStatus === 'Verified' || kycStatus === 'Approved' || kycStatus === 'Intermediate' || kycStatus === 'Advanced';
+    
     if (!isVerified) {
         toast.error("KYC Verification Required", {
-            description: "Please complete identity verification to withdraw funds from your wallet."
+            description: "Please complete identity verification to unlock withdrawals."
         });
         navigate('/dashboard/kyc');
         return;
     }
+
+    let maxWithdrawal = 0;
+    let tierName = "Unverified";
+
+    if (kycStatus === 'Verified' || kycStatus === 'Approved') {
+        maxWithdrawal = 10000;
+        tierName = "Standard Verified";
+    } else if (kycStatus === 'Intermediate') {
+        maxWithdrawal = 50000;
+        tierName = "Intermediate";
+    } else if (kycStatus === 'Advanced') {
+        maxWithdrawal = 1000000; // Effectively Unlimited
+        tierName = "Advanced / Institutional";
+    }
+
 
     if (!withdrawAddress || !withdrawAmount) {
       toast.error("Please fill in all fields");
@@ -143,6 +159,14 @@ const WalletPage = () => {
       toast.error("Please enter a valid amount");
       return;
     }
+
+    if (amount > maxWithdrawal) {
+      toast.error(`Withdrawal Limit Exceeded`, {
+         description: `Your current KYC Level (${tierName}) only allows up to ${formatCurrency(maxWithdrawal)} per transaction.`
+      });
+      return;
+    }
+
 
     try {
         const { data: b, error: fetchError } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
@@ -183,6 +207,15 @@ const WalletPage = () => {
         });
         
         if (!error) {
+           // Notify Admin
+           await supabase.from('notifications').insert({
+               user_id: null,
+               title: `New Withdrawal Request`,
+               message: `${user?.name || 'User'} requested withdrawal of ${formatCurrency(amount, method === 'crypto' ? selectedCoin : selectedFiat)} via ${method === 'crypto' ? selectedCoin : 'Bank/Card'}.`,
+               type: 'WITHDRAWAL',
+               is_read: false
+           });
+
            toast.success(`${method.toUpperCase()} Withdrawal request submitted successfully`);
            setWithdrawAddress("");
            setWithdrawAmount("");
@@ -200,21 +233,9 @@ const WalletPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <div className="flex items-center gap-2 text-primary mb-1">
-               <Globe className="w-4 h-4" />
-               <span className="text-xs font-bold tracking-wider uppercase">Wallet Overview</span>
-            </div>
-            <h1 className="text-3xl font-bold font-sans text-foreground">Wallet</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Manage your crypto and fiat balances.</p>
-          </div>
-          <div className="flex gap-4">
-             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-100 text-green-700">
-                <ShieldCheck className="w-4 h-4" /> 
-                <span className="text-xs font-bold tracking-wider uppercase">Secure</span>
-             </div>
-          </div>
+        <header className="pb-6 border-b border-border">
+          <h1 className="text-3xl font-bold font-sans text-foreground">Wallet</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Manage your crypto and fiat balances.</p>
         </header>
 
         <div className="grid lg:grid-cols-12 gap-8">
@@ -225,30 +246,34 @@ const WalletPage = () => {
                 className="bg-card p-8 rounded-3xl border border-border shadow-md relative overflow-hidden group"
               >
                 <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
-                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Total Balance</div>
+                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Total Net Worth</div>
                 <div className="text-4xl font-bold text-foreground tracking-tight">{formatCurrency(grandTotal)}</div>
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-secondary/50 border border-border">
-                    <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Main Balance</div>
-                    <div className="text-sm font-bold text-foreground tabular-nums mt-0.5">{formatCurrency(fiatBal)}</div>
+                
+                <div className="mt-6 space-y-3">
+                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border flex justify-between items-center group/item hover:border-primary/30 transition-all">
+                    <div>
+                      <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Fiat / Main</div>
+                      <div className="text-lg font-black text-foreground tabular-nums">{formatCurrency(fiatBal)}</div>
+                    </div>
+                    <Landmark className="w-5 h-5 text-muted-foreground/20 group-hover/item:text-primary transition-colors" />
                   </div>
-                  <div className="p-3 rounded-xl bg-secondary/50 border border-border">
-                    <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Trading Balance</div>
-                    <div className="text-sm font-bold text-foreground tabular-nums mt-0.5">{formatCurrency(tradingBal)}</div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                     <div className="p-4 rounded-2xl bg-secondary/50 border border-border group/item hover:border-primary/30 transition-all">
+                        <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Trading</div>
+                        <div className="text-sm font-black text-foreground tabular-nums mt-1">{formatCurrency(tradingBal)}</div>
+                     </div>
+                     <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 group/item hover:border-primary/30 transition-all cursor-pointer" onClick={() => navigate('/dashboard/copy-trading')}>
+                        <div className="text-[9px] font-black text-primary uppercase tracking-widest">Copy Trading</div>
+                        <div className="text-sm font-black text-primary tabular-nums mt-1">{formatCurrency(balance.copyTrading)}</div>
+                     </div>
                   </div>
-                </div>
-                <div className="mt-6 flex items-center justify-between">
-                   <div className="flex items-center gap-1.5 text-green-700 text-xs font-bold bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
-                     <ArrowUpRight className="w-3.5 h-3.5" /> +2.5% // 24H
-                   </div>
-                   <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">24h Change</div>
                 </div>
               </motion.div>
 
               <div className="space-y-4">
                 <div className="px-1 flex items-center justify-between">
                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Crypto Balances</h3>
-                    <Zap className="w-4 h-4 text-muted-foreground/30" />
                 </div>
                 <div className="grid grid-cols-1 gap-3">
                   {cryptoBalances.map((b, i) => (
@@ -387,10 +412,10 @@ const WalletPage = () => {
                                        <div>
                                          <label className="text-xs font-bold text-muted-foreground mb-3 block uppercase tracking-widest">2. Deposit Address</label>
                                          <div className="flex items-center gap-2">
-                                           <div className="flex-1 h-14 bg-black/40 border border-white/5 font-mono text-sm rounded-2xl flex items-center px-6 overflow-x-auto no-scrollbar text-white">
+                                           <div className="flex-1 h-14 bg-secondary border border-border font-mono text-sm rounded-2xl flex items-center px-6 overflow-x-auto no-scrollbar text-foreground">
                                               {currentWallet.address}
                                            </div>
-                                           <Button variant="outline" size="icon" className="h-14 w-14 shrink-0 border-white/5 bg-secondary/40 rounded-2xl hover:bg-primary hover:text-black transition-all shadow-huge group" onClick={handleCopy}>
+                                           <Button variant="outline" size="icon" className="h-14 w-14 shrink-0 border-border bg-card rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all shadow-huge group" onClick={handleCopy}>
                                              <Copy className="w-4 h-4 group-hover:scale-110 transition-transform" />
                                            </Button>
                                          </div>
@@ -403,7 +428,7 @@ const WalletPage = () => {
                                        </div>
                                      </div>
                                    ) : (
-                                     <div className="p-8 rounded-2xl bg-secondary/20 border border-white/5 text-center italic text-muted-foreground text-sm">
+                                     <div className="p-8 rounded-2xl bg-secondary/40 border border-border text-center italic text-muted-foreground text-sm">
                                         Deposit address for {selectedCoin} is temporarily unavailable. 
                                         Please contact support or select another method.
                                      </div>
@@ -433,9 +458,12 @@ const WalletPage = () => {
                                      <h4 className="text-xs font-bold text-white uppercase tracking-widest">Important Notes</h4>
                                      <ul className="text-[11px] text-muted-foreground leading-relaxed font-medium list-disc pl-4 space-y-1 decoration-primary">
                                         <li>Minimum deposit: 50.00 USD equivalent. Deposits below this amount will not be credited.</li>
+                                        <li>Trading access is determined by your <span className="text-primary font-bold">Total Wallet Balance</span>. Ensure you meet the minimum requirement for your chosen trader.</li>
+                                        <li>Withdrawal limits are strictly tied to your <span className="text-primary font-bold">KYC Verification Level</span>.</li>
                                         <li>Ensure you are sending via the <span className="text-primary">{currentWallet?.network || 'correct'}</span> network.</li>
                                         <li>Only send the selected crypto to this address.</li>
                                      </ul>
+
                                   </div>
                                </div>
                            </motion.div>
@@ -496,7 +524,8 @@ const WalletPage = () => {
                                         </div>
                                         <div>
                                           <label className="text-xs font-semibold text-foreground mb-3 block">Amount To Deposit</label>
-                                          <Input placeholder="0.00" type="number" className="h-14 bg-card border-border rounded-xl text-lg font-bold" />
+                                          <Input placeholder="0.00" type="number" className="h-14 bg-card border-border rounded-xl text-lg font-bold text-zinc-950" />
+
                                         </div>
                                          <Button variant="outline" className="w-full h-14 rounded-xl border-primary text-primary font-semibold flex items-center justify-center">
                                            Continue
@@ -590,27 +619,54 @@ const WalletPage = () => {
 
                   {tab === "withdraw" && (
                     <div className="max-w-xl mx-auto space-y-8">
-                      {!(user?.kyc === 'Verified' || user?.kyc === 'Approved') ? (
-                         <div className="p-10 text-center bg-card border border-border rounded-[3rem] space-y-8 flex flex-col items-center justify-center min-h-[400px] shadow-huge">
-                            <div className="w-24 h-24 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-red-500 shadow-2xl shadow-red-500/10 scale-110">
-                               <ShieldAlert className="w-12 h-12" />
-                            </div>
-                            <div className="space-y-3">
-                               <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">Withdrawal Locked</h3>
-                               <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed font-bold uppercase tracking-widest opacity-80">
-                                 Your account must be fully verified (KYC) before you can withdraw assets or fiat currency to external accounts.
-                               </p>
-                            </div>
-                            <Button variant="hero" onClick={() => navigate('/dashboard/kyc')} className="h-16 rounded-2xl text-xs font-black uppercase tracking-[0.2em] text-white shadow-gold w-full max-w-xs mx-auto">Verify Now</Button>
-                         </div>
-                      ) : (
-                        <>
-                          <div className="flex items-start gap-4 p-5 rounded-2xl bg-orange-50 border border-orange-100">
-                             <ShieldCheck className="w-6 h-6 text-orange-600 shrink-0" />
-                             <p className="text-xs text-orange-800 leading-relaxed font-medium">
-                                First-time withdrawals might undergo a brief security check. Please enable 2FA if you haven't already.
-                             </p>
+                       <div className="p-8 rounded-[2.5rem] bg-card border border-border shadow-huge space-y-6 relative overflow-hidden group">
+                          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                             <ShieldCheck className="w-16 h-16" />
                           </div>
+                          
+                          <div className="flex items-center justify-between">
+                             <div className="space-y-1">
+                                <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">Current Limit</h3>
+                                <div className="text-2xl font-black text-foreground tabular-nums">
+                                   {user?.kyc === 'Intermediate' ? formatCurrency(50000) : (user?.kyc === 'Verified' || user?.kyc === 'Approved') ? formatCurrency(10000) : user?.kyc === 'Advanced' ? 'Unlimited' : formatCurrency(0)}
+                                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-2">/ Day</span>
+                                </div>
+                             </div>
+                             <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                (user?.kyc === 'Verified' || user?.kyc === 'Approved' || user?.kyc === 'Intermediate' || user?.kyc === 'Advanced') 
+                                ? 'bg-primary/10 border-primary/20 text-primary' 
+                                : 'bg-destructive/10 border-destructive/20 text-destructive animate-pulse'
+                             }`}>
+                                {user?.kyc === 'Intermediate' ? 'TIER 2' : (user?.kyc === 'Verified' || user?.kyc === 'Approved') ? 'TIER 1' : user?.kyc === 'Advanced' ? 'TIER 3' : 'UNVERIFIED'}
+                             </div>
+                          </div>
+
+                          <div className="pt-4 border-t border-border flex items-center justify-between gap-4">
+                             <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                                   <ShieldAlert className="w-4 h-4 text-muted-foreground/60" />
+                                </div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed max-w-[200px]">
+                                   { (user?.kyc === 'Verified' || user?.kyc === 'Approved' || user?.kyc === 'Intermediate' || user?.kyc === 'Advanced') 
+                                      ? "Account verified. Higher tiers available for Institutional users." 
+                                      : "Identity verification required to enable withdrawal processing." }
+                                </p>
+                             </div>
+                             {!(user?.kyc === 'Verified' || user?.kyc === 'Approved' || user?.kyc === 'Intermediate' || user?.kyc === 'Advanced') && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => navigate('/dashboard/kyc')} 
+                                  className="h-9 px-4 rounded-lg bg-secondary/50 border-border text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                                >
+                                   Verify Now
+                                </Button>
+                             )}
+                          </div>
+                       </div>
+                       
+                       <>
+
 
                           <div className="grid grid-cols-2 gap-6 items-end">
                             <div className="space-y-3">
@@ -641,7 +697,7 @@ const WalletPage = () => {
                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Amount</label>
                                <div className="relative">
                                   <Input 
-                                    className="h-14 bg-secondary/50 border-border rounded-xl font-bold text-lg" 
+                                    className="h-14 bg-secondary/50 border-border rounded-xl font-bold text-lg text-zinc-950" 
                                     placeholder="0.00"
                                     value={withdrawAmount}
                                     onChange={(e) => setWithdrawAmount(e.target.value)}
@@ -659,7 +715,7 @@ const WalletPage = () => {
                                   </div>
                                   {withdrawAmount && parseFloat(withdrawAmount) > 0 && (
                                       <div className="p-3.5 rounded-2xl bg-primary/5 border border-primary/20">
-                                          <div className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">Settlement Estimate</div>
+                                          <div className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">Estimated Value</div>
                                           <div className="text-sm font-black text-primary">{formatCurrency(parseFloat(withdrawAmount) * (cryptoPrices[selectedCoin.toLowerCase()] || 0))}</div>
                                       </div>
                                   )}
@@ -672,7 +728,7 @@ const WalletPage = () => {
                              </label>
                              <div className="relative">
                                 <Input 
-                                  className="h-16 bg-secondary/50 border-border rounded-xl font-mono text-sm tracking-tighter" 
+                                  className="h-16 bg-secondary/50 border-border rounded-xl font-mono text-sm tracking-tighter text-zinc-950" 
                                   placeholder={method === 'crypto' ? "Enter your wallet address" : "Enter bank details or card alias"}
                                   value={withdrawAddress}
                                   onChange={(e) => setWithdrawAddress(e.target.value)}
@@ -705,7 +761,6 @@ const WalletPage = () => {
                               </Button>
                            </div>
                         </>
-                      )}
                     </div>
                   )}
 
@@ -713,6 +768,7 @@ const WalletPage = () => {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
+
                           <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
                             <th className="text-left pb-4 pl-4">Type</th>
                             <th className="text-left pb-4">Amount</th>
@@ -764,52 +820,7 @@ const WalletPage = () => {
                 </div>
               </div>
            </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 pt-8 pb-12">
-           <div className="bg-card border border-border p-8 rounded-3xl shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                 <ShieldCheck className="w-6 h-6 text-primary" />
-              </div>
-               <h3 className="text-xl font-bold text-foreground mb-4">Security Focus</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                 Your assets are protected by industry-standard security practices and cold storage.
-              </p>
-           </div>
-           
-           <div className="bg-card border border-border p-8 rounded-3xl shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mb-6">
-                 <Clock className="w-6 h-6 text-muted-foreground" />
-              </div>
-               <h3 className="text-xl font-bold text-foreground mb-4">Processing Times</h3>
-              <div className="space-y-4">
-                 <div className="flex justify-between items-center text-xs font-bold font-sans">
-                    <span className="text-muted-foreground uppercase tracking-widest">Crypto Deposit</span>
-                    <span className="text-primary tracking-widest uppercase">~10-30 MINS</span>
-                 </div>
-                 <div className="flex justify-between items-center text-xs font-bold font-sans">
-                    <span className="text-muted-foreground uppercase tracking-widest">Withdrawal</span>
-                    <span className="text-primary tracking-widest uppercase">~1-12 HOURS</span>
-                 </div>
-                 <div className="flex justify-between items-center text-xs font-bold font-sans">
-                    <span className="text-muted-foreground uppercase tracking-widest">Bank Transfer</span>
-                    <span className="text-primary tracking-widest uppercase">1-3 BUSINESS DAYS</span>
-                 </div>
-              </div>
-           </div>
-
-           <div className="bg-primary/5 p-8 rounded-3xl border border-primary/10 flex flex-col justify-between">
-              <div>
-                 <h3 className="text-xl font-bold text-foreground mb-2">VIP Perks</h3>
-                 <p className="text-sm text-muted-foreground leading-relaxed">
-                    Contact support to learn about VIP accounts.
-                 </p>
-              </div>
-              <Button className="w-full mt-6 h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-wider hover:bg-primary/80 transition-all">
-                 Contact Support
-              </Button>
-           </div>
-        </div>
+            </div>
       </div>
     </DashboardLayout>
   );

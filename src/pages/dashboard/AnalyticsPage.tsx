@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
-  TrendingUp, BarChart3, Activity, ArrowUpRight, ArrowDownRight, Zap, Target as TargetIcon, Search, Download, Filter, ShieldCheck,
+  TrendingUp, BarChart3, Activity, ArrowUpRight, ArrowDownRight, Search, Download, Filter, Target as TargetIcon,
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useState } from "react";
@@ -10,14 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { createChart, ColorType, AreaSeries } from "lightweight-charts";
 import { Button } from "@/components/ui/button";
 
-const monthlyPerformance = [
-  { month: "Oct", pnl: 1240, up: true },
-  { month: "Nov", pnl: -320, up: false },
-  { month: "Dec", pnl: 2100, up: true },
-  { month: "Jan", pnl: 870, up: true },
-  { month: "Feb", pnl: 1560, up: true },
-  { month: "Mar", pnl: 940, up: true },
-];
+
 
 const EquityCurve = () => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -96,7 +89,7 @@ const AnalyticsPage = () => {
     { label: "Total Trades", value: balance.totalTrades.toString(), unit: "Trades", up: true, icon: Activity },
   ];
 
-  const maxPnl = Math.max(...monthlyPerformance.map((m) => Math.abs(m.pnl)));
+
 
   return (
     <DashboardLayout>
@@ -144,8 +137,8 @@ const AnalyticsPage = () => {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8">
+          <div className="space-y-8">
              {/* Equity Curve */}
              <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
                <div className="flex items-center justify-between mb-6">
@@ -167,7 +160,7 @@ const AnalyticsPage = () => {
                   <div className="flex gap-2">
                      <div className="relative">
                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                       <input className="h-10 pl-9 pr-4 bg-secondary border border-border rounded-xl text-sm w-56 focus:border-primary/50 transition-all outline-none text-foreground" placeholder="Search trades..." />
+                       <input className="h-10 pl-9 pr-4 bg-secondary border border-border rounded-xl text-sm w-56 focus:border-primary/50 transition-all outline-none" placeholder="Search trades..." />
                      </div>
                      <Button variant="outline" size="icon" className="h-10 w-10 border-border bg-card shadow-sm hover:bg-secondary"><Filter className="w-4 h-4 text-muted-foreground" /></Button>
                   </div>
@@ -217,156 +210,11 @@ const AnalyticsPage = () => {
                  </table>
                </div>
              </div>
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Monthly Performance */}
-            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
-              <h2 className="text-lg font-bold font-sans mb-6 text-foreground">Monthly Performance</h2>
-              <div className="space-y-5">
-                {monthlyPerformance.map((m, i) => (
-                  <div key={m.month} className="space-y-1.5">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-xs font-medium text-muted-foreground">{m.month}</span>
-                      <span className={`text-sm font-bold ${m.up ? "text-green-600" : "text-red-600"}`}>
-                        {m.up ? "+" : ""}{((Math.abs(m.pnl) / 10000) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${(Math.abs(m.pnl) / maxPnl) * 100}%` }}
-                        transition={{ duration: 1, delay: i * 0.1 }}
-                        className={`h-full rounded-full ${m.up ? "bg-green-500" : "bg-red-500"}`}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Button variant="hero" className="w-full h-12 mt-8 text-sm font-semibold text-white shadow-gold">
-                View Full Report <Zap className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-
-            {/* Projection Card */}
-            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm text-center flex flex-col items-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-5 border border-border relative z-10 transition-transform group-hover:scale-110">
-                 <TargetIcon className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-bold font-sans mb-2 text-foreground relative z-10">Growth Forecast</h3>
-              <p className="text-muted-foreground text-sm mb-5 leading-relaxed relative z-10">
-                Based on your current trading pace, we estimate a <span className={`${balance.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'} font-bold`}>
-                  {balance.totalProfit >= 0 ? `+${(18.5).toFixed(1)}%` : `-${(12.4).toFixed(1)}%`}
-                </span> {balance.totalProfit >= 0 ? 'increase' : 'correction'} in quarterly returns.
-              </p>
-              <div className="w-full h-px bg-border mb-5" />
-              <div className="flex justify-between w-full text-xs font-medium text-muted-foreground">
-                 <span>Confidence</span>
-                 <span className="text-primary font-bold">{balance.totalProfit >= 0 ? '94.2%' : '88.7%'}</span>
-              </div>
-            </div>
           </div>
         </div>
         
-        <div className="grid lg:grid-cols-3 gap-8 pb-12">
-            <div className="bg-card p-8 rounded-3xl border border-border shadow-sm group hover:border-primary/20 transition-all">
-                <h3 className="text-xl font-bold font-sans text-foreground mb-6 flex items-center gap-3">
-                    <TargetIcon className="w-6 h-6 text-primary" /> Performance Benchmarking
-                </h3>
-                <div className="space-y-6">
-                    {[
-                        { name: "S&P 500", perf: "+12.4%", status: "Beat", val: 12.4 },
-                        { name: "Bitcoin", perf: "+28.1%", status: "Lag", val: 28.1 },
-                        { name: "Portfolio", perf: `${balance.totalProfit >= 0 ? '+' : ''}${balance.totalProfit.toFixed(2)} USDT`, status: "Self", val: balance.totalProfit }
-                    ].map((b, i) => {
-                        const isPortfolio = b.name === "Portfolio";
-                        const portfolioPerf = (balance.totalProfit / Math.max(1, balance.total)) * 100;
-                        const benchmarkStatus = isPortfolio ? "Self" : (portfolioPerf > b.val ? "Beat" : "Lag");
-                        
-                        return (
-                            <div key={b.name} className="flex flex-col gap-2">
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{b.name}</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-sm font-black ${isPortfolio ? 'text-primary' : 'text-foreground'}`}>{b.perf}</span>
-                                        {!isPortfolio && (
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-tighter ${benchmarkStatus === 'Beat' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {benchmarkStatus}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                                    <motion.div 
-                                        initial={{ width: 0 }}
-                                        whileInView={{ width: `${Math.min(100, 60 + i * 15)}%` }}
-                                        transition={{ duration: 1.2 }}
-                                        className={`h-full ${isPortfolio ? 'bg-gradient-gold' : b.val > 0 ? 'bg-green-500' : 'bg-red-500'}`} 
-                                    />
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
 
-            <div className="bg-card p-8 rounded-3xl border border-border shadow-sm group hover:border-primary/20 transition-all">
-                <h3 className="text-xl font-bold font-sans text-foreground mb-6 flex items-center gap-3">
-                    <Activity className="w-6 h-6 text-primary" /> Trading Habits
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">PROFITABLE DAY</div>
-                        <div className="text-lg font-bold text-foreground">{balance.totalProfit >= 0 ? 'Tuesday' : 'N/A'}</div>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">MOST TRADED</div>
-                        <div className="text-lg font-bold text-foreground">BTC/USDT</div>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">AVG. DURATION</div>
-                        <div className="text-lg font-bold text-foreground">4.2 Hours</div>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-secondary/50 border border-border group-hover:bg-secondary/80 transition-colors">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">SHARPE RATIO</div>
-                        <div className="text-lg font-bold text-primary">{balance.totalProfit >= 0 ? '2.84' : '0.42'}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-card p-8 rounded-3xl border border-border shadow-sm group hover:border-primary/20 transition-all">
-                <h3 className="text-xl font-bold font-sans text-foreground mb-6 flex items-center gap-3">
-                    <ShieldCheck className="w-6 h-6 text-primary" /> Risk Overview
-                </h3>
-                <div className="space-y-6">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        {balance.totalProfit >= 0 
-                          ? "Your current risk-adjusted return profile is exceptional. Focus on maintaining your discipline during high-volatility sessions."
-                          : "Your current profile indicates elevated risk levels. We recommend lowering your position size and tightening stop-losses until performance stabilizes."}
-                    </p>
-                    <div className={`p-4 rounded-2xl border ${balance.totalProfit >= 0 ? 'border-primary/20 bg-primary/5' : 'border-red-200 bg-red-50'}`}>
-                        <div className="flex justify-between items-center mb-2">
-                           <span className={`text-[10px] font-bold uppercase ${balance.totalProfit >= 0 ? 'text-primary' : 'text-red-600'}`}>
-                               {balance.totalProfit >= 0 ? 'Risk Limit Efficiency' : 'Risk Warning Level'}
-                           </span>
-                           <span className={`text-xs font-bold ${balance.totalProfit >= 0 ? 'text-primary' : 'text-red-600'}`}>
-                               {balance.totalProfit >= 0 ? '94.2%' : '38.4%'}
-                           </span>
-                        </div>
-                        <div className={`h-2 w-full rounded-full overflow-hidden ${balance.totalProfit >= 0 ? 'bg-primary/10' : 'bg-red-200'}`}>
-                           <motion.div 
-                             initial={{ width: 0 }}
-                             whileInView={{ width: balance.totalProfit >= 0 ? '94%' : '38%' }}
-                             transition={{ duration: 1.5 }}
-                             className={`h-full ${balance.totalProfit >= 0 ? 'bg-primary' : 'bg-red-500'}`} 
-                           />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
       </div>
     </DashboardLayout>
   );

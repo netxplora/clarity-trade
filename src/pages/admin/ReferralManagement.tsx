@@ -38,17 +38,17 @@ const ReferralManagement = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+      <div className="space-y-8 lg:space-y-12 mb-10">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
           <div>
             <h1 className="text-3xl font-bold font-sans text-foreground">Referral & Affiliates</h1>
             <p className="text-muted-foreground mt-1 text-sm">Track referral activity and commission payouts.</p>
           </div>
           <div className="flex gap-3">
-             <Button variant="outline" className="h-11 rounded-xl gap-2 font-semibold">
+             <Button variant="outline" className="h-10 rounded-xl gap-2 text-[10px] font-black uppercase tracking-widest">
                <Filter className="w-4 h-4" /> Export Data
              </Button>
-             <Button variant="hero" className="h-11 rounded-xl shadow-gold text-white font-semibold gap-2">
+             <Button variant="hero" className="h-10 rounded-xl shadow-gold text-white text-[10px] font-black uppercase tracking-widest gap-2">
                Affiliate Settings <ChevronRight className="w-4 h-4" />
              </Button>
           </div>
@@ -62,7 +62,7 @@ const ReferralManagement = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card p-6 rounded-3xl border border-border shadow-sm flex items-center gap-6"
+              className="bg-card p-6 rounded-3xl border border-border shadow-sm flex items-center gap-6 hover:shadow-md transition-shadow"
             >
               <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                 <stat.icon className="w-7 h-7" />
@@ -75,13 +75,13 @@ const ReferralManagement = () => {
           ))}
         </div>
 
-        <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-border bg-secondary/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="bg-card rounded-3xl border border-border flex flex-col shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="relative w-full md:w-96 group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input 
                 placeholder="Search by referee name or email..." 
-                className="pl-12 h-12 rounded-xl bg-background border-border group-focus-within:border-primary/50 transition-all"
+                className="pl-12 h-10 rounded-xl bg-background border-border group-focus-within:border-primary/50 text-sm transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -95,37 +95,37 @@ const ReferralManagement = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-sm min-w-[800px]">
               <thead>
-                <tr className="text-muted-foreground border-b border-border text-[10px] font-bold uppercase tracking-[0.2em]">
-                  <th className="text-left py-5 px-8">Referee (Invited)</th>
-                  <th className="text-left py-5 px-8">Referrer ID</th>
-                  <th className="text-left py-5 px-8">Status</th>
-                  <th className="text-left py-5 px-8">Earnings</th>
-                  <th className="text-left py-5 px-8">Joined Date</th>
-                  <th className="text-right py-5 px-8">Actions</th>
+                <tr className="text-muted-foreground border-b border-border text-[10px] font-bold uppercase tracking-widest">
+                  <th className="text-left py-4 pl-6">Referee (Invited)</th>
+                  <th className="text-left py-4 px-4">Referrer ID</th>
+                  <th className="text-left py-4 px-4">Status</th>
+                  <th className="text-left py-4 px-4">Earnings</th>
+                  <th className="text-left py-4 px-4">Joined Date</th>
+                  <th className="text-right py-4 pr-6">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredReferrals.map((ref) => (
                   <tr key={ref.id} className="group hover:bg-secondary/30 transition-colors">
-                    <td className="py-5 px-8">
+                    <td className="py-4 pl-6">
                       <div className="flex flex-col">
                         <span className="font-bold text-foreground group-hover:text-primary transition-colors">{ref.refereeName}</span>
-                        <span className="text-[11px] text-muted-foreground">{ref.refereeEmail}</span>
+                        <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground mt-0.5">{ref.refereeEmail}</span>
                       </div>
                     </td>
-                    <td className="py-5 px-8">
+                    <td className="py-3 px-4">
                        <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center text-[10px] font-bold border border-pink-100 uppercase">
                              {ref.referrerId.toString().substring(0, 2)}
                           </div>
-                          <span className="font-mono text-xs text-muted-foreground">ID_{ref.referrerId}</span>
+                           <span className="font-mono text-xs font-bold text-muted-foreground">ID_{ref.referrerId}</span>
                        </div>
                     </td>
-                    <td className="py-5 px-8">
-                       <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border ${
+                    <td className="py-3 px-8">
+                       <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
                           ref.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
                           ref.status === 'Trading' ? 'bg-primary/10 text-primary border-primary/20' :
                           'bg-amber-50 text-amber-700 border-amber-200'
@@ -133,24 +133,24 @@ const ReferralManagement = () => {
                           {ref.status === 'Completed' ? <CheckCircle2 className="w-3.5 h-3.5" /> :
                            ref.status === 'Trading' ? <Zap className="w-3.5 h-3.5" /> :
                            <Clock className="w-3.5 h-3.5" />}
-                          {ref.status.toUpperCase()}
+                          {ref.status}
                         </div>
                     </td>
-                    <td className="py-5 px-8">
+                    <td className="py-4 px-4">
                        <div className="flex flex-col">
-                          <span className="font-bold text-green-600">${ref.bonusEarned.toFixed(2)}</span>
-                          <span className="text-[10px] text-muted-foreground uppercase font-bold">Paid to Referrer</span>
+                          <span className="font-bold text-foreground tabular-nums">${ref.bonusEarned.toFixed(2)}</span>
+                          <span className="text-[10px] text-muted-foreground/60 uppercase font-black tracking-widest mt-0.5">Paid</span>
                        </div>
                     </td>
-                    <td className="py-5 px-8 text-muted-foreground font-medium text-xs">
+                    <td className="py-4 px-4 text-muted-foreground font-medium text-xs">
                       {new Date(ref.date).toLocaleDateString()}
                     </td>
-                    <td className="py-5 px-8 text-right">
+                    <td className="py-4 pr-6 text-right">
                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:border-primary/50 hover:text-primary transition-all">
+                           <Button variant="outline" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 rounded-xl border-border bg-card hover:bg-primary/10 hover:border-primary/20 hover:text-primary">
                              <ExternalLink className="w-4 h-4" />
                           </Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:border-red-500/50 hover:text-red-500 transition-all">
+                          <Button variant="outline" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 rounded-xl border-border bg-card hover:bg-loss/10 hover:text-loss hover:border-loss/20">
                              <TrendingUp className="w-4 h-4" />
                           </Button>
                        </div>
@@ -171,7 +171,7 @@ const ReferralManagement = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-           <div className="bg-[#1a1510] p-8 rounded-3xl border border-primary/10 shadow-huge text-white">
+           <div className="bg-[#1a1510] p-6 sm:p-8 rounded-3xl border border-primary/10 shadow-huge text-white flex flex-col hover:shadow-glow transition-shadow">
               <div className="flex items-center gap-3 mb-8">
                  <Award className="w-7 h-7 text-primary" />
                  <h3 className="text-xl font-bold">Top Affiliate Leaderboard</h3>
@@ -201,7 +201,7 @@ const ReferralManagement = () => {
               </div>
            </div>
 
-           <div className="bg-card p-8 rounded-3xl border border-border shadow-md">
+           <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm flex flex-col hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-8">
                  <TrendingUp className="w-7 h-7 text-primary" />
                  <h3 className="text-xl font-bold text-foreground">Referral Growth</h3>
@@ -228,7 +228,7 @@ const ReferralManagement = () => {
                     </div>
                  </div>
 
-                 <Button variant="hero" className="w-full h-12 rounded-xl text-white font-bold uppercase tracking-[0.2em] shadow-gold group">
+                 <Button variant="hero" className="w-full h-12 rounded-xl text-white font-black uppercase tracking-[0.2em] shadow-gold group">
                     View Full Report <ArrowUpRight className="w-4 h-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                  </Button>
               </div>

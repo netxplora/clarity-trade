@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 export default function Trading() {
   const features = [
     { title: "Advanced Charting", desc: "Powered by deep liquidity. 100+ indicators and real-time order books.", icon: BarChart3 },
-    { title: "Microsecond Execution", desc: "Ultra-low latency matching engine capable of 1M+ TPS.", icon: Zap },
+    { title: "Microsecond Execution", desc: "Ultra-low latency trading system capable of 1M+ TPS.", icon: Zap },
     { title: "Global Markets", desc: "Trade crypto, forex, and commodities from a single marginalized account.", icon: Globe },
     { title: "Algorithmic Orders", desc: "TWAP, VWAP, Iceberg, and conditional trigger orders built in.", icon: Target },
   ];
@@ -126,7 +126,7 @@ export default function Trading() {
                  <h3 className="text-4xl font-display font-black text-white mb-8 uppercase italic tracking-wider">Ready to see the <span className="text-primary underline decoration-gold/40">difference?</span></h3>
                  <div className="flex flex-col sm:flex-row gap-6 justify-center">
                     <Button variant="hero" className="h-14 px-12 text-lg text-white shadow-gold rounded-xl uppercase font-bold tracking-widest" asChild>
-                       <Link to="/register">Open Free Account</Link>
+                       <Link to="/auth/register">Open Free Account</Link>
                     </Button>
                     <Button variant="outline" className="h-14 px-12 text-lg bg-transparent text-white border-white/20 hover:bg-white/10 rounded-xl uppercase font-bold tracking-widest" asChild>
                        <Link to="/trading">Trading Demo</Link>

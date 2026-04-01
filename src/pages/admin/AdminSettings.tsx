@@ -202,8 +202,8 @@ const AdminSettings = () => {
                         <Globe className="w-6 h-6" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold text-foreground">Global Platform Identity</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">Control the public face of the platform.</p>
+                        <h2 className="text-xl font-bold text-foreground">Platform Information</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Manage public details displayed across the platform.</p>
                       </div>
                     </div>
                     
@@ -250,13 +250,13 @@ const AdminSettings = () => {
                     </div>
 
                     <Button variant="hero" onClick={handleSave} className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold">
-                      Update Global Rules
+                      Save Settings
                     </Button>
                   </div>
 
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                       <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                       <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
                          <CreditCard className="w-6 h-6" />
                        </div>
                        <div>
@@ -283,7 +283,7 @@ const AdminSettings = () => {
                               </div>
                               <div className="flex items-center gap-4">
                                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
-                                   gw.status === 'Active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-card text-muted-foreground border-border'
+                                   gw.status === 'Active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-card text-muted-foreground border-border'
                                  }`}>
                                    {gw.status}
                                  </span>
@@ -311,16 +311,16 @@ const AdminSettings = () => {
                         <Percent className="w-6 h-6" />
                       </div>
                       <div className="flex-1">
-                        <h2 className="text-xl font-bold text-foreground">Clarity Platform Fee Engine</h2>
+                        <h2 className="text-xl font-bold text-foreground">Platform Fee Settings</h2>
                         <p className="text-xs text-muted-foreground mt-0.5">Configure the fee percentage, collection wallet, and routing rules.</p>
                       </div>
                       <div className="flex items-center gap-3">
                         {settings.feeEnabled ? (
-                          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-green-500 bg-green-500/10 px-3 py-1.5 rounded-full border border-green-500/20">
                             <CheckCircle className="w-3 h-3" /> Active
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
+                          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">
                             <XCircle className="w-3 h-3" /> Disabled
                           </span>
                         )}
@@ -411,11 +411,11 @@ const AdminSettings = () => {
                     </div>
 
                     {!settings.feeWalletAddress && (
-                      <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-4">
-                        <Shield className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                      <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex items-start gap-4">
+                        <Shield className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">⚠ Wallet Not Configured</p>
-                          <p className="text-xs text-amber-700 leading-relaxed font-medium">Fees are being calculated but cannot be routed until a valid collection wallet is set.</p>
+                          <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">⚠ Wallet Not Configured</p>
+                          <p className="text-xs text-amber-500/80 leading-relaxed font-medium">Fees are being calculated but cannot be routed until a valid collection wallet is set.</p>
                         </div>
                       </div>
                     )}
@@ -434,7 +434,7 @@ const AdminSettings = () => {
                   {/* Fee Ledger */}
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-6">
                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
                         <History className="w-6 h-6" />
                       </div>
                       <div>
@@ -469,7 +469,7 @@ const AdminSettings = () => {
                                 <td className="py-3 text-xs font-mono text-foreground">{entry.transaction_id?.substring(0, 14)}...</td>
                                 <td className="py-3 text-xs font-bold text-foreground">${entry.gross_amount?.toFixed(2)}</td>
                                 <td className="py-3 text-xs font-bold text-red-500">-${entry.fee_amount?.toFixed(2)}</td>
-                                <td className="py-3 text-xs font-bold text-green-600">${entry.net_amount?.toFixed(2)}</td>
+                                <td className="py-3 text-xs font-bold text-green-500">${entry.net_amount?.toFixed(2)}</td>
                                 <td className="py-3 text-[10px] font-black uppercase text-muted-foreground">{entry.asset}</td>
                               </tr>
                             ))}
@@ -501,7 +501,7 @@ const AdminSettings = () => {
                 >
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
                      <div className="flex items-center gap-4 border-b border-border pb-6">
-                       <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 border border-green-100">
+                       <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/20">
                          <Target className="w-6 h-6" />
                        </div>
                        <div>
@@ -538,7 +538,7 @@ const AdminSettings = () => {
                                    <Shield className="w-5 h-5" />
                                 </div>
                                 <div>
-                                   <div className="text-sm font-black text-foreground">Anti-Whale Protection</div>
+                                   <div className="text-sm font-black text-foreground">Large Trade Limits</div>
                                    <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Limit copy trades per trader to $1M volume.</div>
                                 </div>
                             </div>
@@ -547,11 +547,11 @@ const AdminSettings = () => {
 
                          <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
                             <div className="flex gap-4">
-                                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 border border-orange-200">
+                                <div className="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
                                    <Scale className="w-5 h-5" />
                                 </div>
                                 <div>
-                                   <div className="text-sm font-black text-foreground">Risk Escalation Mode</div>
+                                   <div className="text-sm font-black text-foreground">Market Volatility Protection</div>
                                    <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Auto-pause trading during extreme market swings.</div>
                                 </div>
                             </div>
@@ -560,11 +560,11 @@ const AdminSettings = () => {
 
                          <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
                              <div className="flex gap-4">
-                                 <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center text-red-600 border border-red-200">
+                                 <div className="w-11 h-11 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
                                     <Zap className="w-5 h-5" />
                                  </div>
                                  <div>
-                                    <div className="text-sm font-black text-foreground">Global Trading Kill Switch</div>
+                                    <div className="text-sm font-black text-foreground">Emergency Trading Pause</div>
                                     <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic text-red-600/80">Instantly pause all market activity platform-wide.</div>
                                  </div>
                              </div>
@@ -576,7 +576,7 @@ const AdminSettings = () => {
                     </div>
                     
                     <Button variant="hero" onClick={handleSave} className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold">
-                      Update Trading Engine
+                      Update Trading Settings
                     </Button>
                   </div>
                 </motion.div>
@@ -591,7 +591,7 @@ const AdminSettings = () => {
                 >
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
                      <div className="flex items-center gap-4 border-b border-border pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+                        <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
                            <Lock className="w-6 h-6" />
                         </div>
                         <div>
@@ -603,9 +603,9 @@ const AdminSettings = () => {
                      <div className="space-y-4">
                          {[
                              { label: "Force 2FA on Withdrawals", enabled: true, desc: "Require users to have 2FA enabled for any outbound funds." },
-                             { label: "IP Conflict Lock", enabled: false, desc: "Auto-lock account if login IP changes during active session." },
-                             { label: "KYC L3 Requirement", enabled: true, desc: "Users must verify identity for trades > $10,000." },
-                             { label: "New Login Webhooks", enabled: true, desc: "Notify admin Slack/Email on every successful admin login." },
+                             { label: "Strict IP Validation", enabled: false, desc: "Auto-lock account if login IP changes during active session." },
+                             { label: "Identity Verification Required", enabled: true, desc: "Users must verify identity for trades > $10,000." },
+                             { label: "Admin Login Notifications", enabled: true, desc: "Notify admin Slack/Email on every successful admin login." },
                          ].map((policy) => (
                              <div key={policy.label} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between hover:border-primary/20 transition-all">
                                  <div className="space-y-1">
@@ -617,11 +617,11 @@ const AdminSettings = () => {
                          ))}
                      </div>
 
-                     <div className="p-5 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-4">
-                        <Lock className="w-5 h-5 text-red-600 mt-1" />
+                     <div className="p-5 rounded-2xl bg-red-500/5 border border-red-500/20 flex items-start gap-4">
+                        <Lock className="w-5 h-5 text-red-500 mt-1" />
                         <div>
-                            <p className="text-xs font-bold text-red-800 uppercase tracking-widest mb-1">Critical Security Zone</p>
-                            <p className="text-xs text-red-700 leading-relaxed font-medium">Changes here affect the entire platform's authentication flow. Use with extreme caution.</p>
+                            <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-1">Security Warning</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">Changes here affect authentication settings. Modify with caution.</p>
                         </div>
                      </div>
 
@@ -641,7 +641,7 @@ const AdminSettings = () => {
                 >
                    <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
                       <div className="flex items-center gap-4 border-b border-border pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 border border-purple-100">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 border border-purple-500/20">
                           <Key className="w-6 h-6" />
                         </div>
                         <div>
@@ -651,7 +651,7 @@ const AdminSettings = () => {
                       </div>
 
                       <div className="space-y-4">
-                        {["Blockchain Node API", "Trading Simulation Engine", "Email Delivery Service", "GeoIP Provider"].map((key) => (
+                        {["Blockchain Network Connection", "Trading Simulator", "Email Delivery Service", "GeoIP Provider"].map((key) => (
                           <div key={key} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between">
                              <div className="space-y-1">
                                 <div className="text-sm font-black text-foreground uppercase">{key}</div>
@@ -669,7 +669,7 @@ const AdminSettings = () => {
                             <Server className="w-6 h-6 text-primary" />
                             <div>
                                <div className="text-sm font-bold text-foreground">Platform Server Status</div>
-                               <p className="text-[10px] font-bold text-green-600 uppercase">Operational • 99.99% Uptime</p>
+                               <p className="text-[10px] font-bold text-green-500 uppercase">Operational • 99.99% Uptime</p>
                             </div>
                          </div>
                          <div className="flex gap-4 items-center">
@@ -792,7 +792,7 @@ const WalletsPanel = () => {
       <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
         <div className="flex items-center justify-between border-b border-border pb-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 border border-orange-100">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
               <Wallet className="w-6 h-6" />
             </div>
             <div>
@@ -818,7 +818,7 @@ const WalletsPanel = () => {
           </div>
           <div className="p-4 rounded-2xl bg-secondary border border-border text-center">
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Active</p>
-            <p className="text-2xl font-black text-green-600">{wallets.filter(w => w.status === 'Active').length}</p>
+            <p className="text-2xl font-black text-green-500">{wallets.filter(w => w.status === 'Active').length}</p>
           </div>
           <div className="p-4 rounded-2xl bg-secondary border border-border text-center">
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Inactive</p>
@@ -917,8 +917,8 @@ const WalletsPanel = () => {
                       onClick={() => handleUpdate(wallet.id, { status: wallet.status === 'Active' ? 'Inactive' : 'Active' })}
                       className={`text-[10px] uppercase font-black px-3 py-1.5 rounded-full border cursor-pointer transition-colors ${
                         wallet.status === 'Active' 
-                          ? 'text-green-600 bg-green-50 border-green-100 hover:bg-green-100' 
-                          : 'text-red-600 bg-red-50 border-red-100 hover:bg-red-100'
+                          ? 'text-green-500 bg-green-500/10 border-green-500/20 hover:bg-green-500/20' 
+                          : 'text-red-500 bg-red-500/10 border-red-500/20 hover:bg-red-500/20'
                       }`}
                     >
                       {wallet.status === 'Active' ? <><CheckCircle className="w-3 h-3 inline mr-1" />Active</> : <><XCircle className="w-3 h-3 inline mr-1" />Inactive</>}
@@ -926,7 +926,7 @@ const WalletsPanel = () => {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="h-8 px-3 text-[10px] font-black uppercase border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-8 px-3 text-[10px] font-black uppercase border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => handleDelete(wallet.id, wallet.coin)}
                     >
                       Remove

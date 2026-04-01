@@ -15,7 +15,7 @@ const cryptoAssets = [
 ];
 
 const benefits = [
-  { icon: Zap, title: "Lightning Fast Execution", desc: "Execute trades in under 10ms with our institutional-grade matching engine." },
+  { icon: Zap, title: "Lightning Fast Execution", desc: "Execute trades in under 10ms with our institutional-grade trading system." },
   { icon: Lock, title: "Cold Storage Security", desc: "98% of assets stored in air-gapped cold wallets insured against breaches." },
   { icon: TrendingUp, title: "Leverage Up to 100x", desc: "Trade with up to 100x leverage on select pairs with advanced risk controls." },
   { icon: Coins, title: "150+ Trading Pairs", desc: "Access majors, altcoins, stablecoins, and emerging tokens easily." },
@@ -58,7 +58,7 @@ export default function Crypto() {
                   <div className="text-xl font-bold text-gray-800 tabular-nums mb-4">{asset.price}</div>
                   <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
                      <span className="text-[10px] uppercase font-bold text-gray-400">Cap: {asset.marketCap}</span>
-                     <Link to="/register" className="text-[#D4AF37] hover:scale-110 transition-transform"><ArrowUpRight className="w-4 h-4" /></Link>
+                     <Link to="/auth/register" className="text-[#D4AF37] hover:scale-110 transition-transform"><ArrowUpRight className="w-4 h-4" /></Link>
                   </div>
                 </motion.div>
              ))}
@@ -115,7 +115,7 @@ export default function Crypto() {
                 ))}
              </div>
              <div>
-                <Link to="/register" className="btn-gold !px-12">Open Demo Account</Link>
+                <Link to="/auth/register" className="btn-gold !px-12">Open Demo Account</Link>
              </div>
           </div>
           <div className="lg:w-1/2 min-h-[400px] relative">
@@ -140,7 +140,7 @@ export default function Crypto() {
                 Secure, transparent, and built for your financial success.
              </p>
              <div className="flex flex-col sm:flex-row justify-center gap-6">
-                <Link to="/register" className="btn-gold !px-12 flex items-center justify-center gap-2">Start Trading Now <ArrowRight className="w-4 h-4" /></Link>
+                <Link to="/auth/register" className="btn-gold !px-12 flex items-center justify-center gap-2">Start Trading Now <ArrowRight className="w-4 h-4" /></Link>
                 <Link to="/contact" className="btn-gold-outline !px-12 flex items-center justify-center">Talk to Support</Link>
              </div>
            </div>

@@ -69,7 +69,7 @@ export default function Commodities() {
                   <div className="text-xl font-bold text-gray-800 tabular-nums mb-4">{c.price}</div>
                   <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
                      <span className="text-[10px] uppercase font-bold text-gray-400">{c.category}</span>
-                     <Link to="/register" className="text-[#D4AF37] hover:scale-110 transition-transform"><ArrowUpRight className="w-4 h-4" /></Link>
+                     <Link to="/auth/register" className="text-[#D4AF37] hover:scale-110 transition-transform"><ArrowUpRight className="w-4 h-4" /></Link>
                   </div>
                 </motion.div>
              ))}
@@ -134,7 +134,7 @@ export default function Commodities() {
                 ))}
              </div>
              <div className="mt-12">
-                <Link to="/register" className="btn-gold !px-12">Start Your Portfolio</Link>
+                <Link to="/auth/register" className="btn-gold !px-12">Start Your Portfolio</Link>
              </div>
           </div>
           <div className="lg:w-1/2 min-h-[500px] relative">
@@ -158,7 +158,7 @@ export default function Commodities() {
              custodial accounts to protect your capital and ensure liquidity at all times.
            </p>
            <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <Link to="/register" className="btn-gold !px-12 flex items-center justify-center gap-2">Create Account <ArrowRight className="w-4 h-4" /></Link>
+              <Link to="/auth/register" className="btn-gold !px-12 flex items-center justify-center gap-2">Create Account <ArrowRight className="w-4 h-4" /></Link>
               <Link to="/contact" className="btn-gold-outline !px-12">Talk to Support</Link>
            </div>
         </div>

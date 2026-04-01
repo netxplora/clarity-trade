@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Zap, Globe } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Globe, LayoutDashboard } from "lucide-react";
+import { useStore } from "@/store/useStore";
 
 const HeroSection = () => {
+  const { user } = useStore();
   return (
     <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
       <div className="absolute inset-0 z-0 bg-[#0B0F14]">
@@ -33,9 +35,15 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-wrap gap-5">
-              <Link to="/register" className="btn-gold flex items-center gap-2 group">
-                Get Started Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {user ? (
+                <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn-gold flex items-center gap-3 group">
+                  <LayoutDashboard className="w-5 h-5 group-hover:scale-110 transition-transform" /> Go to Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <Link to="/auth/register" className="btn-gold flex items-center gap-2 group">
+                  Get Started Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
               <Link to="/about-us" className="btn-gold-outline">
                 Learn More
               </Link>

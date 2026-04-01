@@ -162,17 +162,17 @@ export default function AboutUs() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="lg:w-1/2 space-y-8">
-              <span className="heading-gold">The Engine Room</span>
+              <span className="heading-gold">Our Technology</span>
               <h2 className="title-hyip text-gray-900 leading-tight">Institutional-Grade Infrastructure for Every Trader</h2>
               <p className="p-hyip text-lg">
-                Our proprietary matching engine, <span className="text-gray-900 font-bold italic">ClarityEngine v3.0</span>, was built from the ground up to handle peak market volatility with sub-millisecond latency.
+                Our proprietary trading system, <span className="text-gray-900 font-bold italic">Clarity Core v3.0</span>, was built from the ground up to handle peak market volatility with sub-millisecond latency.
               </p>
               <div className="grid grid-cols-2 gap-6 pt-4">
                 {[
                   { label: "Execution Speed", value: "< 2ms", desc: "Ultra-fast order matching." },
                   { label: "Daily Peak Volume", value: "$4.2B", desc: "Proven stability under load." },
                   { label: "Data Encryption", value: "AES-256", desc: "Military-grade data protection." },
-                  { label: "Global Nodes", value: "14", desc: "Localized low-latency access." }
+                  { label: "Global Data Centers", value: "14", desc: "Localized low-latency access." }
                 ].map((stat) => (
                   <div key={stat.label} className="p-5 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className="text-2xl font-black text-gray-900 mb-1">{stat.value}</div>
@@ -242,7 +242,7 @@ export default function AboutUs() {
                 our platform provides you with the same institutional power used by the world's best banks.
              </p>
              <div className="flex justify-center gap-6">
-                <Link to="/register" className="btn-gold !px-12 !h-14 flex items-center gap-2">Join Our Community <ArrowRight className="w-4 h-4" /></Link>
+                <Link to="/auth/register" className="btn-gold !px-12 !h-14 flex items-center gap-2">Join Our Community <ArrowRight className="w-4 h-4" /></Link>
              </div>
            </div>
         </div>

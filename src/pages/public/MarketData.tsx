@@ -112,7 +112,7 @@ export default function MarketData() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search markets..."
-                className="w-full h-12 pl-11 pr-4 rounded-xl bg-secondary border border-border text-sm text-foreground focus:border-primary/50 outline-none transition-colors"
+                className="w-full h-12 pl-11 pr-4 rounded-xl bg-secondary border border-border text-sm focus:border-primary/50 outline-none transition-colors"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function MarketData() {
                       <td className="py-4 px-6 text-right text-sm text-muted-foreground tabular-nums">{item.volume}</td>
                       <td className="py-4 px-6 text-right">
                         <Button variant="outline" size="sm" className="h-9 rounded-lg text-xs font-semibold border-border opacity-0 group-hover:opacity-100 transition-opacity" asChild>
-                          <Link to="/register">Trade <ArrowUpRight className="w-3.5 h-3.5 ml-1" /></Link>
+                          <Link to="/auth/register">Trade <ArrowUpRight className="w-3.5 h-3.5 ml-1" /></Link>
                         </Button>
                       </td>
                     </tr>
@@ -176,7 +176,7 @@ export default function MarketData() {
 
           <div className="text-center mt-10">
             <Button variant="hero" className="h-14 px-10 rounded-xl text-sm font-bold shadow-gold text-white" asChild>
-              <Link to="/register">Start Trading Now <ArrowRight className="w-5 h-5 ml-2" /></Link>
+              <Link to="/auth/register">Start Trading Now <ArrowRight className="w-5 h-5 ml-2" /></Link>
             </Button>
             <p className="text-xs text-muted-foreground mt-3">Prices are indicative and update in real-time during market hours.</p>
           </div>

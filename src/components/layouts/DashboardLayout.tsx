@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Wallet, LineChart, Users, BarChart3, Settings,
@@ -11,8 +11,8 @@ import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useTheme } from "@/components/ThemeProvider";
-import GoogleTranslate from "@/components/ui/GoogleTranslate";
-import { useEffect } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/dashboard", description: "Portfolio Summary" },
   { icon: Wallet, label: "Wallet", path: "/dashboard/wallet", description: "Funds & Assets" },
@@ -37,30 +37,36 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     logout();
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/login");
+      if (!session) navigate("/auth/login");
     });
+
+    document.documentElement.classList.add("dashboard-scale");
+    return () => {
+      document.documentElement.classList.remove("dashboard-scale");
+    };
   }, [navigate]);
+
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col h-full bg-sidebar border-r border-border relative overflow-hidden">
-      <div className="p-8 pb-10 flex flex-col items-center gap-5 relative z-10 border-b border-border bg-primary/[0.03]">
+      <div className="p-8 pb-10 flex flex-col items-center gap-5 relative z-10 border-b border-sidebar-border bg-sidebar-accent/30">
         <Link to="/" className="flex flex-col items-center gap-3 group" onClick={onNavigate}>
           <img src="/logo.png" alt="Clarity Trade Logo" className="w-14 h-14 object-contain drop-shadow-gold transition-all duration-500 group-hover:scale-110 group-hover:rotate-3" />
           <div className="flex flex-col items-center">
-            <span className="text-xl font-bold tracking-tight text-white leading-none">Clarity <span className="text-gradient-gold">Trade</span></span>
-            <span className="text-[9px] font-medium text-white/30 tracking-[0.2em] uppercase mt-1.5">Trading Platform</span>
+            <span className="text-xl font-bold tracking-tight text-sidebar-foreground leading-none">Clarity <span className="text-gradient-gold">Trade</span></span>
+            <span className="text-[9px] font-medium text-sidebar-foreground/30 tracking-[0.2em] uppercase mt-1.5">Trading Platform</span>
           </div>
         </Link>
       </div>
 
       <div className="flex-1 px-5 py-8 space-y-2 overflow-y-auto relative z-10">
         <div className="px-4 mb-5">
-          <span className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em]">Navigation</span>
+          <span className="text-[10px] font-semibold text-sidebar-foreground/20 uppercase tracking-[0.2em]">Navigation</span>
         </div>
 
         {navItems.map((item) => {
@@ -72,15 +78,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               onClick={onNavigate}
               className={`group flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all duration-300 relative ${active
                 ? "bg-primary/15 text-primary"
-                : "text-white/50 hover:text-white hover:bg-white/5"
+                : "text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                 }`}
             >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${active ? "bg-gradient-gold shadow-gold text-white" : "bg-white/5"}`}>
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${active ? "bg-gradient-gold shadow-gold text-white" : "bg-sidebar-accent"}`}>
                 <item.icon className="w-4.5 h-4.5" />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold">{item.label}</span>
-                <span className={`text-[10px] font-medium mt-0.5 ${active ? "text-primary/60" : "text-white/20"}`}>{item.description}</span>
+                <span className={`text-[10px] font-medium mt-0.5 ${active ? "text-primary/60" : "text-sidebar-foreground/20"}`}>{item.description}</span>
               </div>
               {active && (
                 <motion.div
@@ -127,7 +133,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-72 h-screen sticky top-0 z-40">
+      <aside className="hidden lg:block w-64 h-screen sticky top-0 border-r border-border bg-card overflow-hidden">
         <SidebarContent />
       </aside>
 
@@ -143,19 +149,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               onClick={() => setSidebarOpen(false)}
             />
             <motion.aside
-              initial={{ x: -300 }}
+              initial={{ x: -256 }}
               animate={{ x: 0 }}
-              exit={{ x: -300 }}
+              exit={{ x: -256 }}
               transition={{ type: "spring", damping: 30, stiffness: 200 }}
-              className="lg:hidden fixed inset-y-0 left-0 w-72 z-50 overflow-hidden shadow-2xl"
+              className="lg:hidden fixed inset-y-0 left-0 w-64 z-50 overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <SidebarContent onNavigate={() => setSidebarOpen(false)} />
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="absolute top-8 right-6 w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+                className="absolute top-8 right-6 w-9 h-9 rounded-lg bg-background/20 flex items-center justify-center hover:bg-background/40 transition-all border border-border"
               >
-                <X className="w-4 h-4 text-white" />
+                <X className="w-4 h-4 text-foreground" />
               </button>
             </motion.aside>
           </>
@@ -164,7 +170,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 h-20 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-8 flex items-center justify-between">
+        <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-6 flex-1">
             <button className="lg:hidden w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-all" onClick={() => setSidebarOpen(true)}>
               <Menu className="w-5 h-5 text-foreground" />
@@ -174,19 +180,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <Search className="w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <input
                 placeholder="Search assets..."
-                className="bg-transparent border-none outline-none text-sm w-full placeholder:text-muted-foreground/50 text-foreground"
+                className="bg-transparent border-none outline-none text-sm w-full placeholder:text-muted-foreground/50"
               />
               <kbd className="text-[10px] font-medium text-muted-foreground bg-background px-2 py-0.5 rounded border border-border hidden lg:block">⌘K</kbd>
             </div>
           </div>
 
           <div className="flex items-center gap-3 lg:gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 border border-green-200">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] lg:text-xs font-semibold text-green-700">Markets Open</span>
+              <span className="text-[10px] lg:text-xs font-semibold text-green-600">Markets Open</span>
             </div>
 
-            <GoogleTranslate />
+            <LanguageSwitcher />
+            <ThemeToggle />
             <CurrencySelector />
 
             <div className="relative">
@@ -319,8 +326,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-10 relative overflow-x-hidden">
-          <div className="relative z-10">
+        <main className="flex-1 p-4 lg:p-8 relative overflow-x-hidden">
+          <div className="relative z-10 max-w-[1440px] mx-auto w-full">
             <PageTransition>{children}</PageTransition>
           </div>
         </main>

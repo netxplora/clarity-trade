@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Rocket } from "lucide-react";
+import { ArrowUpRight, Rocket, LayoutDashboard } from "lucide-react";
+import { useStore } from "@/store/useStore";
 
 const CTASection = () => {
+  const { user } = useStore();
   return (
     <section className="bg-[#0B0F14] relative overflow-hidden text-center py-20 lg:py-32" id="cta">
       {/* Background Hero */}
@@ -35,14 +37,22 @@ const CTASection = () => {
             Create your account today and start trading global markets with ease.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-             <Link to="/register" className="btn-gold !h-14 px-12 text-base flex items-center justify-center gap-3 w-full sm:w-auto hover:shadow-gold transition-shadow">
-                Register Free Account <ArrowUpRight className="w-5 h-5" />
-             </Link>
-             <Link to="/login" className="btn-gold-outline !h-14 px-12 text-base w-full sm:w-auto flex items-center justify-center">
-                Sign In Now
-             </Link>
-          </div>
+          {user ? (
+             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn-gold !h-16 px-16 text-lg flex items-center justify-center gap-4 w-full sm:w-auto hover:shadow-gold transition-all hover:scale-105 active:scale-95 group">
+                   <LayoutDashboard className="w-6 h-6 group-hover:rotate-12 transition-transform" /> Go to My Dashboard <ArrowUpRight className="w-6 h-6" />
+                </Link>
+             </div>
+          ) : (
+             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link to="/auth/register" className="btn-gold !h-14 px-12 text-base flex items-center justify-center gap-3 w-full sm:w-auto hover:shadow-gold transition-shadow">
+                   Register Free Account <ArrowUpRight className="w-5 h-5" />
+                </Link>
+                <Link to="/auth/login" className="btn-gold-outline !h-14 px-12 text-base w-full sm:w-auto flex items-center justify-center">
+                   Sign In Now
+                </Link>
+             </div>
+          )}
           
           <div className="mt-16 text-gray-400 text-xs font-bold uppercase tracking-widest flex flex-wrap items-center justify-center gap-10">
              <div className="flex items-center gap-2">

@@ -143,7 +143,7 @@ export default function Security() {
               Start trading knowing your assets are safe.
             </p>
             <Button variant="hero" className="h-14 px-10 rounded-xl text-sm font-bold shadow-gold text-white" asChild>
-              <Link to="/register">Open Secure Account <ArrowRight className="w-5 h-5 ml-2" /></Link>
+              <Link to="/auth/register">Open Secure Account <ArrowRight className="w-5 h-5 ml-2" /></Link>
             </Button>
           </motion.div>
         </div>

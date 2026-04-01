@@ -12,16 +12,13 @@ import {
   ArrowUpRight, 
   ArrowDownRight, 
   Search, 
-  Zap, 
   ShieldCheck, 
-  ShieldAlert,
-  Activity,
-  Info,
   History,
   Target,
   Globe,
   Coins,
-  ArrowRightLeft
+  TrendingUp,
+  Activity
 } from "lucide-react";
 
 type MarketCategory = "CRYPTO" | "FOREX" | "COMMODITIES";
@@ -48,22 +45,6 @@ const commoditiesPairs = [
 
 const allPairs = [...cryptoPairs, ...forexPairs, ...commoditiesPairs];
 
-const orderBook = {
-  asks: [
-    { price: 67450.2, amount: 0.342, total: 23145.6 },
-    { price: 67448.0, amount: 0.128, total: 8633.3 },
-    { price: 67445.5, amount: 0.891, total: 60093.9 },
-    { price: 67442.1, amount: 0.456, total: 30753.6 },
-    { price: 67440.0, amount: 1.234, total: 83220.9 },
-  ],
-  bids: [
-    { price: 67432.5, amount: 0.567, total: 38234.2 },
-    { price: 67430.0, amount: 0.234, total: 15778.6 },
-    { price: 67428.8, amount: 0.789, total: 53201.3 },
-    { price: 67425.1, amount: 0.123, total: 8293.3 },
-    { price: 67420.0, amount: 1.456, total: 98163.5 },
-  ],
-};
 
 type OrderType = "market" | "limit" | "stop-loss" | "take-profit";
 
@@ -84,7 +65,6 @@ const TradingPage = () => {
   const [tradeHistory, setTradeHistory] = useState<any[]>([]);
   
   const [dbPairs, setDbPairs] = useState<any[]>([]);
-  const [sentimentBias, setSentimentBias] = useState(0);
 
   const fetchUserTrades = async () => {
     if (!user?.id) return;
@@ -124,7 +104,6 @@ const TradingPage = () => {
   const handleCancelOrder = async (orderId: string) => {
     try {
         setIsTradeLoading(true);
-        // Refund margin if it was locked? In this simplified model, we'll just delete/cancel.
         const { error } = await supabase.from('trades').delete().eq('id', orderId);
         if (!error) {
             toast.success("Order Cancelled");
@@ -142,9 +121,6 @@ const TradingPage = () => {
     try {
        const { data: pairs } = await supabase.from('market_pairs').select('*').eq('active', true);
        if (pairs) setDbPairs(pairs);
-
-       const { data: sets } = await supabase.from('platform_settings').select('*').limit(1).single();
-       if (sets) setSentimentBias(sets.sentiment_bias || 0);
     } catch (err) {
        console.error("Failed to fetch market data", err);
     }
@@ -174,12 +150,12 @@ const TradingPage = () => {
      return pairs;
   }, [dbPairs]);
 
+
   // Price & PnL Simulation
   useEffect(() => {
     const interval = setInterval(() => {
-      // 1. Randomly fluctuate active trade current prices to simulate PnL
       setActiveTrades(prev => prev.map(trade => {
-        const volatility = 0.0005; 
+        const volatility = 0.0005;
         const change = 1 + (Math.random() * volatility * 2 - volatility);
         const newPrice = trade.currentPrice * change;
         const pnl = trade.type === 'Buy' 
@@ -188,33 +164,10 @@ const TradingPage = () => {
         
         return { ...trade, currentPrice: newPrice, pnl };
       }));
-
-      // 2. Simulate Order Book movement
-      setOrderBook(prev => ({
-         bids: prev.bids.map(b => ({ ...b, amount: Math.max(0.1, b.amount + (Math.random() * 0.2 - 0.1)) })),
-         asks: prev.asks.map(a => ({ ...a, amount: Math.max(0.1, a.amount + (Math.random() * 0.2 - 0.1)) }))
-      }));
     }, 3000);
     
     return () => clearInterval(interval);
   }, [activeTrades.length]);
-
-  const [orderBook, setOrderBook] = useState({
-     bids: [
-        { price: 65240.5, amount: 1.24 },
-        { price: 65239.0, amount: 3.52 },
-        { price: 65238.1, amount: 0.89 },
-        { price: 65237.5, amount: 5.11 },
-        { price: 65236.2, amount: 2.34 },
-     ],
-     asks: [
-        { price: 65242.8, amount: 0.45 },
-        { price: 65243.5, amount: 1.89 },
-        { price: 65244.2, amount: 4.12 },
-        { price: 65245.0, amount: 0.77 },
-        { price: 65246.5, amount: 2.56 },
-     ]
-  });
 
   const currentPair = dynamicPairs.find((p) => p.name === selectedPair) || dynamicPairs[0];
 
@@ -348,8 +301,6 @@ const TradingPage = () => {
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const buySentiment = Math.min(100, 64 + sentimentBias);
-  const sellSentiment = 100 - buySentiment;
 
   return (
     <DashboardLayout>
@@ -420,7 +371,7 @@ const TradingPage = () => {
                        <div className="relative group">
                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground transition-colors" />
                          <input 
-                           className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2.5 text-xs font-semibold uppercase tracking-wider focus:border-primary/50 outline-none transition-all" 
+                           className="w-full bg-white border border-border rounded-xl pl-9 pr-4 py-2.5 text-xs font-semibold uppercase tracking-wider focus:border-primary/50 outline-none transition-all text-zinc-950" 
                            placeholder="Search Pairs..."
                            value={searchQuery}
                            onChange={(e) => setSearchQuery(e.target.value)}
@@ -457,63 +408,8 @@ const TradingPage = () => {
 
                {/* Chart & Market Depth */}
                <div className="col-span-12 xl:col-span-9 space-y-6">
-                  {/* Chart */}
                   <div className="bg-card border border-border p-2 h-[500px] relative overflow-hidden shadow-sm rounded-3xl">
                      <TradingViewWidget symbol={currentPair.symbol} />
-                  </div>
-
-                  {/* Order Book */}
-                  <div className="bg-card border border-border p-6 shadow-sm rounded-3xl relative overflow-hidden">
-                    <div className="flex items-center justify-between mb-6">
-                       <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-primary">
-                             <ArrowRightLeft className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-bold font-sans text-foreground">Order Book Details</h3>
-                            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">Market Depth</div>
-                          </div>
-                       </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                       {/* Asks */}
-                       <div>
-                          <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-4 px-2 border-b border-border pb-2">
-                             <span>Price</span>
-                             <span>Amount</span>
-                             <span className="text-right">Total</span>
-                          </div>
-                          <div className="space-y-1">
-                             {[...orderBook.asks].reverse().map((o, i) => (
-                               <div key={i} className="flex justify-between py-1.5 relative group px-2 rounded-lg transition-all hover:bg-secondary">
-                                  <div className="absolute right-0 top-0.5 bottom-0.5 bg-red-50 rounded-md -z-1 opacity-50" style={{ width: `${(o.amount / 1.5) * 100}%` }} />
-                                  <span className="text-xs font-semibold font-mono text-red-600">{o.price.toLocaleString()}</span>
-                                  <span className="text-xs font-semibold font-mono text-foreground">{o.amount.toFixed(3)}</span>
-                                  <span className="text-xs font-semibold font-mono text-muted-foreground text-right tabular-nums">{formatCurrency(o.total)}</span>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
-                       {/* Bids */}
-                       <div>
-                          <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-4 px-2 border-b border-border pb-2">
-                             <span>Price</span>
-                             <span>Amount</span>
-                             <span className="text-right">Total</span>
-                          </div>
-                          <div className="space-y-1">
-                             {orderBook.bids.map((o, i) => (
-                               <div key={i} className="flex justify-between py-1.5 relative group px-2 rounded-lg transition-all hover:bg-secondary">
-                                  <div className="absolute left-0 top-0.5 bottom-0.5 bg-green-50 rounded-md -z-1 opacity-50" style={{ width: `${(o.amount / 1.5) * 100}%` }} />
-                                  <span className="text-xs font-semibold font-mono text-green-600">{o.price.toLocaleString()}</span>
-                                  <span className="text-xs font-semibold font-mono text-foreground">{o.amount.toFixed(3)}</span>
-                                  <span className="text-xs font-semibold font-mono text-muted-foreground text-right tabular-nums">{formatCurrency(o.total)}</span>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
-                    </div>
                   </div>
                </div>
             </div>
@@ -593,7 +489,7 @@ const TradingPage = () => {
                                           onClick={() => handleCloseTrade(trade.id)}
                                           className="h-9 px-4 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all"
                                        >
-                                           Close
+                                           Close Trade
                                         </Button>
                                      </td>
                                  </tr>
@@ -668,7 +564,7 @@ const TradingPage = () => {
                                        <Target className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
                                         <p className="text-sm font-bold text-muted-foreground">No pending orders.</p>
                                      </td>
-                                  </tr>
+                                 </tr>
                               ) : pendingOrders.map((order) => (
                                  <tr key={order.id} className="hover:bg-secondary/20 transition-colors">
                                     <td className="px-6 py-5">
@@ -698,49 +594,6 @@ const TradingPage = () => {
                         </table>
                      </div>
                   )}
-               </div>
-            </div>
-
-            {/* Trading Insights Section */}
-            <div className="grid md:grid-cols-2 gap-6 pb-12">
-               <div className="bg-card border border-border p-8 rounded-3xl shadow-sm">
-                  <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
-                     <Activity className="w-6 h-6 text-primary" /> Market Sentiment
-                  </h3>
-                   <div className="space-y-6">
-                     <div className="space-y-2">
-                        <div className="flex justify-between items-end text-xs font-bold uppercase tracking-wider">
-                           <span className="text-green-600">Buy Orders</span>
-                           <span className="text-red-600">Sell Orders</span>
-                        </div>
-                        <div className="h-4 w-full bg-secondary rounded-full overflow-hidden flex">
-                           <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${buySentiment}%` }} />
-                           <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${sellSentiment}%` }} />
-                        </div>
-                        <div className="flex justify-between text-[10px] font-bold text-muted-foreground mt-2">
-                           <span>{buySentiment}% BULLISH</span>
-                           <span>{sellSentiment}% BEARISH</span>
-                        </div>
-                     </div>
-                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        The current market sentiment for {selectedPair} is moderately bullish, driven by institutional buying pressure and positive technical divergence on the daily timeframe.
-                     </p>
-                  </div>
-               </div>
-
-               <div className="bg-card border border-border p-8 rounded-3xl shadow-sm">
-                  <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3 text-sans">
-                     <Info className="w-6 h-6 text-primary" /> Trading Tip
-                  </h3>
-                  <div className="bg-secondary/50 p-6 rounded-2xl border border-border">
-                     <p className="text-sm italic text-muted-foreground leading-relaxed">
-                        "In {category} markets, volatility often peaks during the crossover between major global trading sessions. Always use stop-loss orders to protect your capital during high-impact news releases."
-                     </p>
-                     <div className="mt-6 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">TRX</div>
-                        <span className="text-xs font-bold text-foreground uppercase tracking-wider">Pro Tip</span>
-                     </div>
-                  </div>
                </div>
             </div>
           </div>
@@ -794,7 +647,7 @@ const TradingPage = () => {
                           <input 
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                            className="w-full bg-secondary border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-foreground shadow-inner" 
+                            className="w-full bg-white border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-zinc-950 shadow-inner" 
                             type="number" 
                           />
                         </div>
@@ -813,7 +666,7 @@ const TradingPage = () => {
                            <input 
                               value={amount}
                               onChange={(e) => setAmount(e.target.value)}
-                              className="w-full bg-secondary border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-foreground shadow-inner" 
+                              className="w-full bg-white border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-zinc-950 shadow-inner" 
                               placeholder="0.0000"
                               type="number" 
                            />

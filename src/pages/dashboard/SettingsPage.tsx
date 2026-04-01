@@ -184,7 +184,7 @@ const SettingsPage = () => {
                 throw error;
             }
         } catch (err) {
-            toast.error("Process Failed", { description: "Unable to sync with master nodes." });
+            toast.error("Process Failed", { description: "Unable to sync with data servers." });
         }
     } else {
         toast.success(`${section} updated successfully.`, {
@@ -206,12 +206,12 @@ const SettingsPage = () => {
       <div className="space-y-8 max-w-6xl mx-auto">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
           <div>
-            <h1 className="text-3xl font-black font-sans text-foreground">Account Hub</h1>
-            <p className="text-muted-foreground mt-1 text-sm font-medium">Manage your personal identity, security vaults, and local experiences.</p>
+            <h1 className="text-3xl font-black font-sans text-foreground">Account Settings</h1>
+            <p className="text-muted-foreground mt-1 text-sm font-medium">Manage your personal information, security, and preferences.</p>
           </div>
           <div className="flex gap-3">
              <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-secondary border border-border text-foreground text-[10px] font-black uppercase tracking-widest shadow-sm">
-               <ShieldCheck className="w-4 h-4 text-primary" /> Active Encryption
+               <ShieldCheck className="w-4 h-4 text-primary" /> Encrypted
              </div>
           </div>
         </header>
@@ -256,13 +256,13 @@ const SettingsPage = () => {
                                     ) : (
                                       <User className="w-10 h-10" />
                                     )}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
-                                       <Upload className="w-6 h-6 text-white" />
+                                    <div className="absolute inset-0 bg-secondary/80 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
+                                       <Upload className="w-6 h-6 text-primary" />
                                     </div>
                                  </div>
                                  {uploading && (
-                                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl z-20">
-                                      <RefreshCw className="w-8 h-8 text-white animate-spin" />
+                                   <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 rounded-2xl z-20">
+                                      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
                                    </div>
                                  )}
                                  <input 
@@ -275,8 +275,8 @@ const SettingsPage = () => {
                                  />
                               </div>
                               <div>
-                                 <h2 className="text-2xl font-black text-foreground">Legal Profile</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1 italic">Verified Account: {user?.id}</p>
+                                 <h2 className="text-2xl font-black text-foreground">Personal Information</h2>
+                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1 italic">Account ID: {user?.id}</p>
                               </div>
                            </div>
 
@@ -370,12 +370,12 @@ const SettingsPage = () => {
                     >
                         <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
                            <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100 text-blue-600 shadow-inner">
+                              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500 shadow-inner">
                                  <Lock className="w-8 h-8" />
                               </div>
                               <div>
-                                 <h2 className="text-2xl font-black text-foreground">Security Vault</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Multi-factor enforcement & Encryption</p>
+                                 <h2 className="text-2xl font-black text-foreground">Security Settings</h2>
+                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Multi-factor & Passwords</p>
                               </div>
                            </div>
 
@@ -434,19 +434,19 @@ const SettingsPage = () => {
                     >
                         <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
                            <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center border border-orange-100 text-orange-600 shadow-inner">
+                              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-600 shadow-inner">
                                  <Bell className="w-8 h-8" />
                               </div>
                               <div>
-                                 <h2 className="text-2xl font-black text-foreground">Alert Hub</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Configure real-time event tracking</p>
+                                 <h2 className="text-2xl font-black text-foreground">Notifications</h2>
+                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Configure your alerts</p>
                               </div>
                            </div>
 
                            <div className="grid gap-6">
                               {[
                                  { label: "Financial Executions", desc: "Push & Email alerts for completed trades and orders.", active: true },
-                                 { label: "Whale Movement Alerts", desc: "Notify when significant market volatility occurs.", active: false },
+                                 { label: "Large Trade Alerts", desc: "Notify when significant market volatility occurs.", active: false },
                                  { label: "Portfolio Drift", desc: "Get notified when your assets drop below your target split.", active: true },
                                  { label: "Security & Login", desc: "Critical alerts for new login sessions and IP changes.", active: true },
                               ].map((item) => (
@@ -487,11 +487,11 @@ const SettingsPage = () => {
                     >
                         <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
                            <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100 text-green-600 shadow-inner">
+                              <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-600 shadow-inner">
                                  <Globe className="w-8 h-8" />
                               </div>
                               <div>
-                                 <h2 className="text-2xl font-black text-foreground">Local Experience</h2>
+                                 <h2 className="text-2xl font-black text-foreground">Preferences</h2>
                                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Regional formats & Interface settings</p>
                               </div>
                            </div>
@@ -536,7 +536,7 @@ const SettingsPage = () => {
                               </div>
                               <div>
                                  <h2 className="text-2xl font-black text-foreground">Recent Activity</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Audit log of your personal actions</p>
+                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Log of your recent actions</p>
                               </div>
                            </div>
 

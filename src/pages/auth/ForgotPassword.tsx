@@ -49,7 +49,7 @@ const ForgotPassword = () => {
                      value={email}
                      onChange={(e) => setEmail(e.target.value)}
                      placeholder="name@company.com" 
-                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-sm" 
+                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-zinc-950 text-sm" 
                   />
                </div>
 
@@ -70,7 +70,7 @@ const ForgotPassword = () => {
         )}
 
         <div className="mt-10 text-center">
-            <Link to="/login" className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/auth/login" className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Sign In
             </Link>
         </div>

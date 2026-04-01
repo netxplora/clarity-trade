@@ -23,7 +23,7 @@ const ReferralPage = () => {
   const referrals = useStore(state => state.referrals);
   const [copied, setCopied] = useState(false);
 
-  const referralLink = `${window.location.origin}/register?ref=${user?.referralCode || "USER_REF"}`;
+  const referralLink = `${window.location.origin}/auth/register?ref=${user?.referralCode || "USER_REF"}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -33,9 +33,9 @@ const ReferralPage = () => {
   };
 
   const stats = [
-    { label: "Total Referrals", value: referrals.length, icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Active Traders", value: referrals.filter(r => r.status === 'Trading' || r.status === 'Completed').length, icon: Zap, color: "text-amber-500", bg: "bg-amber-50" },
-    { label: "Total Earning", value: `$${referrals.reduce((acc, r) => acc + r.bonusEarned, 0).toLocaleString()}`, icon: Gift, color: "text-green-500", bg: "bg-green-50" },
+    { label: "Total Referrals", value: referrals.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Active Traders", value: referrals.filter(r => r.status === 'Trading' || r.status === 'Completed').length, icon: Zap, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Total Earning", value: `$${referrals.reduce((acc, r) => acc + r.bonusEarned, 0).toLocaleString()}`, icon: Gift, color: "text-green-500", bg: "bg-green-500/10" },
     { label: "Commission Rate", value: "10%", icon: Award, color: "text-primary", bg: "bg-primary/10" },
   ];
 
@@ -223,28 +223,7 @@ const ReferralPage = () => {
                    </div>
                 </div>
              </div>
-
-             <div className="bg-[#1a1510] p-8 rounded-3xl border border-primary/10 shadow-huge text-white">
-                <div className="flex items-center gap-3 mb-6">
-                   <TrendingUp className="w-6 h-6 text-primary" />
-                   <h3 className="text-lg font-bold">Network Performance</h3>
-                </div>
-                <div className="space-y-4">
-                   <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/50 font-medium">Monthly Potential</span>
-                      <span className="text-primary font-bold">$2,500.00</span>
-                   </div>
-                   <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: "35%" }}
-                        className="h-full bg-primary shadow-glow"
-                      />
-                   </div>
-                   <p className="text-[10px] text-white/30 text-center uppercase tracking-widest pt-2 font-bold">Based on current network growth</p>
-                </div>
-             </div>
-          </div>
+           </div>
         </div>
 
 
@@ -273,31 +252,7 @@ const ReferralPage = () => {
                 </div>
             </div>
 
-            <div className="bg-card p-8 rounded-3xl border border-border lg:col-span-2">
-                <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
-                    <Share2 className="w-6 h-6 text-primary" /> Marketing Assets
-                </h3>
-                <div className="grid sm:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-2xl bg-secondary/30 border border-border group cursor-pointer hover:border-primary/30 transition-all">
-                        <div className="aspect-video bg-black/10 rounded-xl mb-4 flex items-center justify-center border border-dashed border-border group-hover:bg-primary/5 transition-all">
-                            <Gift className="w-8 h-8 text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
-                        </div>
-                        <h4 className="text-sm font-bold text-foreground mb-1 uppercase tracking-wider">Vertical Banner</h4>
-                        <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-[0.2em]">1080 x 1920 . PNG</p>
-                    </div>
-                    <div className="p-6 rounded-2xl bg-secondary/30 border border-border group cursor-pointer hover:border-primary/30 transition-all">
-                        <div className="aspect-video bg-black/10 rounded-xl mb-4 flex items-center justify-center border border-dashed border-border group-hover:bg-primary/5 transition-all">
-                            <Share2 className="w-8 h-8 text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
-                        </div>
-                        <h4 className="text-sm font-bold text-foreground mb-1 uppercase tracking-wider">Social Square</h4>
-                        <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-[0.2em]">1080 x 1080 . PNG</p>
-                    </div>
-                </div>
-                <div className="mt-8 flex items-center gap-3 p-4 bg-primary/5 border border-primary/10 rounded-2xl">
-                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                    <p className="text-[11px] text-primary/80 font-bold uppercase tracking-wider">Custom branding kits available for Gold tier partners.</p>
-                </div>
-            </div>
+
         </div>
       </div>
     </DashboardLayout>

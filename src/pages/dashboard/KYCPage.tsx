@@ -128,7 +128,7 @@ const KYCPage = () => {
           </div>
           <div className="flex gap-3">
              <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
-               <ShieldAlert className="w-4 h-4" /> Priority Verification
+               <ShieldAlert className="w-4 h-4" /> Quick Verification
              </div>
           </div>
         </header>
@@ -160,13 +160,13 @@ const KYCPage = () => {
              <div className="p-6 bg-secondary/50 rounded-2xl inline-block text-left text-[10px] space-y-3 border border-border min-w-[280px]">
                 <div className="flex justify-between gap-8"><span className="text-muted-foreground font-black uppercase tracking-widest">Submitted</span> <span className="text-foreground font-black font-sans">{new Date(status.created_at).toLocaleDateString()}</span></div>
                 <div className="flex justify-between gap-8"><span className="text-muted-foreground font-black uppercase tracking-widest">Document</span> <span className="text-foreground font-black font-sans uppercase tracking-widest">{status.id_type}</span></div>
-                <div className="flex justify-between gap-8"><span className="text-muted-foreground font-black uppercase tracking-widest">Network Status</span> <span className="text-amber-500 font-black font-sans uppercase tracking-widest">Synchronizing</span></div>
+                <div className="flex justify-between gap-8"><span className="text-muted-foreground font-black uppercase tracking-widest">Status</span> <span className="text-amber-500 font-black font-sans uppercase tracking-widest">Processing</span></div>
              </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 order-2 lg:order-1">
-              <form onSubmit={handleSubmit} className="glass-card p-8 rounded-[2.5rem] bg-secondary/10 border-white/5 space-y-8">
+              <form onSubmit={handleSubmit} className="p-8 rounded-[2.5rem] bg-card border border-border shadow-sm space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Full Name (as on ID)</Label>
@@ -174,13 +174,13 @@ const KYCPage = () => {
                       value={formData.fullName} 
                       onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                       placeholder="John Doe" 
-                      className="h-14 bg-black/40 border-white/5 rounded-xl font-bold"
+                      className="h-14 bg-secondary/50 border-border rounded-xl font-bold"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">ID Type</Label>
                     <select 
-                      className="w-full h-14 bg-black/40 border border-white/5 rounded-xl px-4 font-bold outline-none"
+                      className="w-full h-14 bg-secondary/50 border border-border rounded-xl px-4 font-bold outline-none"
                       value={formData.idType}
                       onChange={(e) => setFormData({...formData, idType: e.target.value})}
                     >
@@ -197,14 +197,14 @@ const KYCPage = () => {
                     value={formData.idNumber} 
                     onChange={(e) => setFormData({...formData, idNumber: e.target.value})}
                     placeholder="Enter numbers only" 
-                    className="h-14 bg-black/40 border-white/5 rounded-xl font-bold"
+                    className="h-14 bg-secondary/50 border-border rounded-xl font-bold"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-3">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Front of ID</Label>
-                      <div className="relative group cursor-pointer border-2 border-dashed border-white/10 rounded-[1.5rem] p-8 text-center hover:border-primary/50 transition-all bg-black/20">
+                      <div className="relative group cursor-pointer border-2 border-dashed border-border rounded-[1.5rem] p-8 text-center hover:border-primary/50 transition-all bg-secondary/30">
                          <input type="file" onChange={(e) => handleFileChange(e, 'front')} className="absolute inset-0 opacity-0 cursor-pointer" />
                          <div className="space-y-2">
                             <Upload className="w-8 h-8 mx-auto text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all" />
@@ -214,7 +214,7 @@ const KYCPage = () => {
                    </div>
                    <div className="space-y-3">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Back of ID (Optional)</Label>
-                      <div className="relative group cursor-pointer border-2 border-dashed border-white/10 rounded-[1.5rem] p-8 text-center hover:border-primary/50 transition-all bg-black/20">
+                      <div className="relative group cursor-pointer border-2 border-dashed border-border rounded-[1.5rem] p-8 text-center hover:border-primary/50 transition-all bg-secondary/30">
                          <input type="file" onChange={(e) => handleFileChange(e, 'back')} className="absolute inset-0 opacity-0 cursor-pointer" />
                          <div className="space-y-2">
                             <Upload className="w-8 h-8 mx-auto text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all" />
@@ -239,18 +239,19 @@ const KYCPage = () => {
             </div>
 
             <div className="space-y-6 order-1 lg:order-2">
-              <div className="glass-card p-8 rounded-[2rem] bg-primary/5 border-primary/20 space-y-6">
+              <div className="p-8 rounded-[2rem] bg-primary/5 border border-primary/20 space-y-6">
                  <div className="flex items-center gap-3 text-primary">
                     <Info className="w-5 h-5" />
                     <h3 className="font-bold text-sm uppercase tracking-widest">Why Verify?</h3>
                  </div>
                  <ul className="space-y-4">
-                    {[
-                      { icon: CheckCircle2, text: "Daily withdrawals up to $50,000" },
-                      { icon: CheckCircle2, text: "Unrestricted crypto trading" },
-                      { icon: CheckCircle2, text: "Priority customer support" },
-                      { icon: CheckCircle2, text: "Enhanced account security" }
+                     {[
+                      { icon: CheckCircle2, text: "Tier 1: Withdraw up to $10,000 / Day" },
+                      { icon: CheckCircle2, text: "Tier 2: Withdraw up to $50,000 / Day" },
+                      { icon: CheckCircle2, text: "Tier 3: Unlimited Institutional Access" },
+                      { icon: CheckCircle2, text: "Priority Compliance Support" }
                     ].map((item, i) => (
+
                       <li key={i} className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase">
                         <item.icon className="w-4 h-4 text-primary" />
                         {item.text}

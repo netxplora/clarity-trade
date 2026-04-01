@@ -7,6 +7,7 @@ import TrustSection from "@/components/landing/TrustSection";
 import MarketPreviewSection from "@/components/landing/MarketPreviewSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import CTASection from "@/components/landing/CTASection";
+import SubscriptionPlansSection from "@/components/landing/SubscriptionPlansSection";
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
@@ -16,6 +17,7 @@ const Index = () => {
       <HeroSection />
       <HowItWorksSection />
       <CopyTradingSection />
+      <SubscriptionPlansSection />
       <FeaturesSection />
       <TrustSection />
       <MarketPreviewSection />

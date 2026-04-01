@@ -85,13 +85,27 @@ const CopyTradingSection = () => {
                  </div>
               </div>
 
-              <Link to="/register" className="w-full btn-gold !h-12 !px-0 flex items-center justify-center gap-2 group/btn">
+              <Link to="/auth/register" className="w-full btn-gold !h-12 !px-0 flex items-center justify-center gap-2 group/btn">
                  <Copy className="w-4 h-4" /> Start Copying <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
           ))}
+            <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true }}
+               transition={{ delay: 0.4 }}
+               className="mt-16 text-center"
+            >
+               <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
+                  Ready to amplify your results?
+               </p>
+               <a href="#packages" className="inline-flex items-center gap-2 text-[#D4AF37] font-black uppercase text-xs tracking-[0.3em] hover:text-white transition-colors group">
+                  View Access Packages <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+               </a>
+            </motion.div>
+          </div>
         </div>
-      </div>
     </section>
   );
 };

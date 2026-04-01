@@ -124,9 +124,9 @@ const AdminTradingControl = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-8 lg:space-y-12 mb-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Trading Control</h1>
             <p className="text-muted-foreground text-sm mt-2">Manage market pairs, spreads, fees, and trading availability.</p>
@@ -134,16 +134,16 @@ const AdminTradingControl = () => {
           <div className="flex items-center gap-3">
             <Button 
               onClick={handleGlobalKillSwitch}
-              className={`h-12 px-6 rounded-xl flex items-center gap-2 text-sm font-semibold transition-all ${
+              className={`h-10 px-6 rounded-xl flex items-center gap-2 text-[10px] uppercase tracking-widest font-black transition-all ${
                   globalActive 
-                  ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white" 
-                  : "bg-green-50 text-green-600 border border-green-200 hover:bg-green-600 hover:text-white"
+                  ? "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white" 
+                  : "bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white"
               }`}
             >
               <Power className="w-4 h-4" />
               {globalActive ? "Pause All Trading" : "Resume Trading"}
             </Button>
-            <Button variant="hero" className="h-12 px-6 rounded-xl text-sm font-semibold text-white shadow-gold" onClick={() => setAddPairModalOpen(true)}>
+            <Button variant="hero" className="h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-gold" onClick={() => setAddPairModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" /> Add Market Pair
             </Button>
           </div>
@@ -151,84 +151,83 @@ const AdminTradingControl = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-card p-6 rounded-2xl border border-border shadow-sm text-center">
+          <div className="bg-card p-6 rounded-3xl border border-border shadow-sm text-center hover:shadow-md transition-shadow">
             <Globe className="w-6 h-6 text-blue-500 mx-auto mb-3 opacity-60" />
-            <div className="text-xs font-medium text-muted-foreground mb-2">Active Markets</div>
-            <div className="text-2xl font-bold text-foreground">{pairs.filter(p => p.active).length} of {pairs.length}</div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Active Markets</div>
+            <div className="text-2xl font-black text-foreground">{pairs.filter(p => p.active).length} of {pairs.length}</div>
           </div>
-          <div className="bg-card p-6 rounded-2xl border border-border shadow-sm text-center">
+          <div className="bg-card p-6 rounded-3xl border border-border shadow-sm text-center hover:shadow-md transition-shadow">
             <RefreshCw className="w-6 h-6 text-primary mx-auto mb-3 opacity-60" />
-            <div className="text-xs font-medium text-muted-foreground mb-2">Platform Uptime</div>
-            <div className="text-2xl font-bold text-foreground">99.998%</div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Platform Uptime</div>
+            <div className="text-2xl font-black text-foreground">99.998%</div>
           </div>
-          <div className="bg-card p-6 rounded-2xl border border-border shadow-sm text-center">
+          <div className="bg-card p-6 rounded-3xl border border-border shadow-sm text-center hover:shadow-md transition-shadow">
             <Activity className="w-6 h-6 text-green-500 mx-auto mb-3 opacity-60" />
-            <div className="text-xs font-medium text-muted-foreground mb-2">Requests / Second</div>
-            <div className="text-2xl font-bold text-foreground">1,240</div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Requests / Second</div>
+            <div className="text-2xl font-black text-foreground">1,240</div>
           </div>
         </div>
 
         {/* Markets Table */}
-        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm flex flex-col">
           <div className="p-6 border-b border-border flex items-center justify-between">
-            <h2 className="text-lg font-bold text-foreground">Market Pairs</h2>
+            <h2 className="text-xl font-bold font-sans text-foreground">Market Pairs</h2>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-medium text-green-600">Live</span>
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-glow" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Live</span>
             </div>
           </div>
           
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
-                <tr className="text-xs font-medium text-muted-foreground border-b border-border bg-secondary/30">
-                  <th className="text-left p-5">Trading Pair</th>
-                  <th className="text-left p-5">Spread</th>
-                  <th className="text-left p-5">Fee</th>
-                  <th className="text-left p-5">Latency</th>
-                  <th className="text-left p-5">Active</th>
-                  <th className="text-right p-5">Actions</th>
+                <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
+                  <th className="text-left pb-4 pl-6">Trading Pair</th>
+                  <th className="text-left pb-4">Spread</th>
+                  <th className="text-left pb-4">Fee</th>
+                  <th className="text-left pb-4">Latency</th>
+                  <th className="text-left pb-4">Active</th>
+                  <th className="text-right pb-4 pr-6">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {pairs.map((pair) => (
-                  <tr key={pair.id} className={`group hover:bg-secondary/20 transition-colors ${!pair.active ? 'opacity-50' : ''}`}>
-                    <td className="p-5">
+                  <tr key={pair.id} className={`group hover:bg-secondary/30 transition-colors ${!pair.active ? 'opacity-50' : ''}`}>
+                    <td className="py-5 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center font-bold text-xs ${pair.active ? "text-primary" : "text-muted-foreground"}`}>
+                        <div className={`w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center font-black text-xs uppercase tracking-tighter ${pair.active ? "text-primary" : "text-muted-foreground"}`}>
                           {pair.name.split('/')[0].substring(0, 3)}
                         </div>
                         <div>
-                          <div className="font-semibold text-sm text-foreground">{pair.name}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">Load: {pair.load_status}</div>
+                          <div className="font-bold text-sm text-foreground">{pair.name}</div>
+                          <div className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-tighter mt-0.5">Load: {pair.load_status}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-5">
-                      <span className="font-semibold text-sm text-foreground">{pair.spread}</span>
+                    <td className="py-5">
+                      <span className="font-bold text-sm text-foreground tabular-nums">{pair.spread}</span>
                     </td>
-                    <td className="p-5">
-                      <span className="font-semibold text-sm text-foreground">{pair.fee}</span>
+                    <td className="py-5">
+                      <span className="font-bold text-sm text-foreground tabular-nums">{pair.fee}</span>
                     </td>
-                    <td className="p-5">
+                    <td className="py-5">
                       <div className="flex items-center gap-2">
-                        <Zap className={`w-3.5 h-3.5 ${pair.active ? "text-primary" : "text-muted-foreground/30"}`} />
-                        <span className="text-sm font-medium text-muted-foreground">{pair.latency}</span>
+                        <Zap className={`w-3.5 h-3.5 ${pair.active ? "text-primary glow-primary" : "text-muted-foreground/30"}`} />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{pair.latency}</span>
                       </div>
                     </td>
-                    <td className="p-5">
+                    <td className="py-5">
                       <Switch 
                         checked={pair.active} 
                         onCheckedChange={() => togglePair(pair.id, pair.active, pair.name)} 
-                        className="data-[state=checked]:bg-green-500"
                       />
                     </td>
-                    <td className="p-5 text-right">
+                    <td className="py-5 pr-6 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-border bg-card hover:bg-secondary" onClick={() => openEdit(pair)}>
-                          <Settings2 className="w-4 h-4 text-muted-foreground" />
+                        <Button variant="outline" size="icon" className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-border bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/20" onClick={() => openEdit(pair)}>
+                          <Settings2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-border bg-card hover:bg-red-50 hover:text-red-600 hover:border-red-200" onClick={() => deletePair(pair.id, pair.name)}>
+                        <Button variant="outline" size="icon" className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-border bg-card hover:bg-loss/10 hover:text-loss hover:border-loss/20" onClick={() => deletePair(pair.id, pair.name)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -254,7 +253,7 @@ const AdminTradingControl = () => {
 
         {/* Advanced Market Controls */}
         <div className="grid lg:grid-cols-2 gap-8 pt-4">
-            <div className="bg-card p-8 rounded-2xl border border-border shadow-sm space-y-6">
+            <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-6 flex flex-col hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4 mb-2">
                     <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center text-red-600 border border-red-200">
                         <AlertTriangle className="w-5 h-5" />
@@ -267,7 +266,7 @@ const AdminTradingControl = () => {
                 <div className="space-y-4">
                     {[
                         { label: "Flash Crash Protection", enabled: true, desc: "Pause trading if price drops > 5% in 1min." },
-                        { label: "Whale Alert Notifications", enabled: true, desc: `Alert admins on orders > ${formatCurrency(1000000)}.` },
+                        { label: "Large Order Alerts", enabled: true, desc: `Alert admins on orders > ${formatCurrency(1000000)}.` },
                         { label: "Global Stop-Loss", enabled: false, desc: "Close all trades if total platform value drops more than 20%." },
                     ].map((risk) => (
                         <div key={risk.label} className="p-4 rounded-xl bg-secondary/30 border border-border flex items-center justify-between group hover:bg-secondary/50 transition-all">
@@ -281,13 +280,13 @@ const AdminTradingControl = () => {
                 </div>
             </div>
 
-            <div className="bg-card p-8 rounded-2xl border border-border shadow-sm space-y-6">
+            <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-6 flex flex-col hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4 mb-2">
                     <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-200">
                         <TrendingUp className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-foreground">Sentiment Manipulation</h2>
+                        <h2 className="text-lg font-bold text-foreground">Market Sentiment Controls</h2>
                         <p className="text-xs text-muted-foreground mt-0.5">Control displayed market sentiment indicators.</p>
                     </div>
                 </div>
