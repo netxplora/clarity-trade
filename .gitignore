@@ -22,3 +22,53 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.production
+.env.*.local
+server/.env
+
+# Build artifacts and temporary files
+build.log
+build.txt
+build_log.txt
+build_log_utf8.txt
+build_output.log
+build_result.txt
+dir_utf8.txt
+list.txt
+network_check.txt
+node_v.txt
+node_v_utf8.txt
+npm_install_legacy_peer_deps.txt
+npm_install_out.txt
+npm_install_res.txt
+npm_install_res_v2.txt
+npm_v_utf8.txt
+out.txt
+output.txt
+output3.txt
+test-output.txt
+test_out.txt
+tsc_check_v2.txt
+tsc_final_check.txt
+tsc_output.txt
+vite-output.log
+temp_wallet.txt
+
+# Temporary directories
+tmp/
+
+# Test scripts (development only)
+check.js
+fix_wallet.js
+fix_wallet_v2.js
+test-api.js
+test-fetch.mjs
+test-supabase.js
+test.js
+
+# Lock files (keep package-lock.json but exclude bun.lock if not using bun)
+bun.lock

@@ -16,7 +16,7 @@ export const useCurrencyDetection = () => {
             
             if (!hasSetPreference || !user?.preferred_currency) {
                 try {
-                    const geoResp = await fetch('https://ipapi.co/json/');
+                    const geoResp = await fetch('https://ipwho.is/');
                     const geoData = await geoResp.json();
                     
                     let detected = 'USD';
@@ -36,7 +36,6 @@ export const useCurrencyDetection = () => {
                     }
                     localStorage.setItem('currency_preference_set', 'true');
                 } catch (err) {
-                    console.error("GeoIP failed, defaulting to USD");
                     if (!displayCurrency) setCurrency('USD', false);
                 }
             } else if (user?.preferred_currency) {

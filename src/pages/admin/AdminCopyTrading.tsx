@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
-  Search, CheckCircle, Ban, Star, ShieldCheck, Target, Users, Zap, TrendingUp, MoreVertical, Shield, Clock, Plus, Trash2, Filter, Activity, Upload, Loader2, Camera, X
+  Search, CheckCircle, Ban, Star, ShieldCheck, Target, Users, Zap, TrendingUp, MoreVertical, Shield, Clock, Plus, Trash2, Filter, Activity, Upload, Loader2, Camera, X, Settings2, Percent, DollarSign
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { supabase } from "@/lib/supabase";
@@ -29,9 +29,21 @@ const AdminCopyTrading = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'approved' | 'rejected' | 'revoked'>('all');
   const [tierFilter, setTierFilter] = useState<'All' | 'Starter' | 'Silver' | 'Gold' | 'Elite'>('All');
+  const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Forex' | 'Commodities'>('All');
   const [tierMinimums, setTierMinimums] = useState<Record<string, number>>({ Starter: 100, Silver: 1000, Gold: 5000, Elite: 25000 });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  
+  // PNL Management State
+  const [manageSession, setManageSession] = useState<any>(null);
+  const [pnlInput, setPnlInput] = useState("");
+  const [pnlType, setPnlType] = useState<'fixed' | 'percentage'>('fixed');
+  const [isSettling, setIsSettling] = useState(false);
+  
+  // Global PNL State
+  const [showGlobalPnl, setShowGlobalPnl] = useState(false);
+  const [globalPnlInput, setGlobalPnlInput] = useState("");
+  const [globalPnlType, setGlobalPnlType] = useState<'fixed' | 'percentage'>('percentage');
   
   // New/Edit Trader Form
   const [traderForm, setTraderForm] = useState({
@@ -47,7 +59,6 @@ const AdminCopyTrading = () => {
     categories: [] as string[],
     min_amount: "500",
     min_plan: "Starter",
-    is_trending: false,
     dedicated_features: "",
     avatar_url: ""
   });
@@ -58,25 +69,28 @@ const AdminCopyTrading = () => {
         if (data) setTraders(data);
     } catch (err) {
         console.error("Failed to fetch traders", err);
-    } finally {
-        setLoading(false);
     }
   }, []);
 
   const fetchGlobalLogs = useCallback(async () => {
     try {
-        const { data, error } = await supabase
-            .from('copy_trading_logs')
-            .select(`
-                *,
-                copy_traders (
-                    name,
-                    avatar_url
-                )
-            `)
-            .order('created_at', { ascending: false })
-            .limit(50);
-        if (data) setExecutionLogs(data);
+        const [{ data: logsData, error: lErr }, { data: tradersData }] = await Promise.all([
+            supabase.from('copy_trading_logs').select('*').order('created_at', { ascending: false }).limit(50),
+            supabase.from('copy_traders').select('id, name, avatar_url')
+        ]);
+        
+        if (lErr) console.error("Global Logs Error", lErr);
+        
+        if (logsData) {
+            const enrichedLogs = logsData.map(log => {
+                const trader = tradersData?.find(t => String(t.id) === String(log.trader_id));
+                return {
+                    ...log,
+                    copy_traders: trader || { name: 'System Auto', avatar_url: '' }
+                };
+            });
+            setExecutionLogs(enrichedLogs as any);
+        }
     } catch (err) {
         console.error("Failed to fetch global logs", err);
     }
@@ -84,16 +98,27 @@ const AdminCopyTrading = () => {
 
   const fetchAllSessions = useCallback(async () => {
     try {
-        const { data, error } = await supabase
-            .from('active_sessions')
-            .select(`
-                *,
-                copy_traders!inner (
-                    avatar_url,
-                    ranking_level
-                )
-            `);
-        if (data) setActiveSessions(data);
+        const [{ data: sessionsData, error: sErr }, { data: profilesData }, { data: tradersData }] = await Promise.all([
+            supabase.from('active_sessions').select('*').order('created_at', { ascending: false }),
+            supabase.from('profiles').select('id, name, email'),
+            supabase.from('copy_traders').select('*')
+        ]);
+        
+        if (sErr) console.error("Session Error", sErr);
+
+        if (sessionsData) {
+            const enriched = sessionsData.map((session) => {
+                const userObj = profilesData?.find((p) => String(p.id) === String(session.user_id));
+                const traderObj = tradersData?.find((t) => String(t.id) === String(session.trader_id));
+                
+                return {
+                    ...session,
+                    profiles: userObj || { name: 'Unknown User', email: 'No email' },
+                    copy_traders: traderObj || { avatar_url: '', ranking_level: 'Standard' }
+                };
+            });
+            setActiveSessions(enriched as any);
+        }
     } catch (err) {
         console.error("Failed to fetch all sessions", err);
     }
@@ -110,30 +135,54 @@ const AdminCopyTrading = () => {
     }
   }, []);
 
+  const initializeData = useCallback(async () => {
+    setLoading(true);
+    await Promise.allSettled([
+      fetchTraders(),
+      fetchAllSessions(),
+      fetchGlobalLogs(),
+      fetchTierMinimums()
+    ]);
+    setLoading(false);
+  }, [fetchTraders, fetchAllSessions, fetchGlobalLogs, fetchTierMinimums]);
+
   useEffect(() => {
-    fetchTraders();
-    fetchAllSessions();
-    fetchGlobalLogs();
-    fetchTierMinimums();
+    initializeData();
     
-    // Subscribe to new logs for real-time monitoring
+    // Debounce timers to prevent UI locking under intense loads
+    let logTimeout: ReturnType<typeof setTimeout>;
+    let sessionTimeout: ReturnType<typeof setTimeout>;
+    let traderTimeout: ReturnType<typeof setTimeout>;
+
     const logSubscription = supabase
-        .channel('admin-logs')
+        .channel('admin-copytrading-realtime')
         .on('postgres_changes', { event: 'INSERT', table: 'copy_trading_logs', schema: 'public' }, () => {
-             fetchGlobalLogs();
-             fetchAllSessions();
+             clearTimeout(logTimeout);
+             logTimeout = setTimeout(() => {
+                 fetchGlobalLogs();
+             }, 1000);
+        })
+        .on('postgres_changes', { event: '*', table: 'copy_traders', schema: 'public' }, () => {
+             clearTimeout(traderTimeout);
+             traderTimeout = setTimeout(() => {
+                 fetchTraders();
+             }, 1000);
+        })
+        .on('postgres_changes', { event: '*', table: 'active_sessions', schema: 'public' }, () => {
+             clearTimeout(sessionTimeout);
+             sessionTimeout = setTimeout(() => {
+                 fetchAllSessions();
+             }, 1000);
         })
         .subscribe();
-
-    const interval = setInterval(() => {
-        fetchTraders();
-    }, 30000);
     
     return () => {
-        clearInterval(interval);
         supabase.removeChannel(logSubscription);
+        clearTimeout(logTimeout);
+        clearTimeout(sessionTimeout);
+        clearTimeout(traderTimeout);
     };
-  }, [fetchTraders, fetchAllSessions, fetchGlobalLogs, fetchTierMinimums]);
+  }, [initializeData, fetchTraders, fetchAllSessions, fetchGlobalLogs]);
 
 
 
@@ -168,7 +217,6 @@ const AdminCopyTrading = () => {
         categories: traderForm.categories,
         min_amount: getTierMinAmount(traderForm.min_plan),
         min_plan: traderForm.min_plan,
-        is_trending: traderForm.is_trending,
         dedicated_features: traderForm.dedicated_features ? traderForm.dedicated_features.split(',').map(s=>s.trim()) : [],
         avatar_url: traderForm.avatar_url
     };
@@ -203,7 +251,6 @@ const AdminCopyTrading = () => {
             categories: [],
             min_amount: "500",
             min_plan: "Starter",
-            is_trending: false,
             dedicated_features: "",
             avatar_url: ""
         });
@@ -236,7 +283,6 @@ const AdminCopyTrading = () => {
         categories: trader.categories || [],
         min_amount: (trader.min_amount || 0).toString(),
         min_plan: trader.min_plan || 'Starter',
-        is_trending: !!trader.is_trending,
         dedicated_features: (trader.dedicated_features || []).join(', '),
         avatar_url: trader.avatar_url || ""
     });
@@ -258,11 +304,166 @@ const AdminCopyTrading = () => {
     }
   };
 
+  const applyPNLChange = async (type: 'increase' | 'decrease') => {
+    if (!manageSession || !pnlInput) return;
+    
+    let delta = 0;
+    const val = parseFloat(pnlInput);
+    if (isNaN(val) || val <= 0) return;
+
+    if (pnlType === 'fixed') {
+        delta = type === 'increase' ? val : -val;
+    } else {
+        const factor = val / 100;
+        const base = manageSession.allocated_amount;
+        delta = type === 'increase' ? (base * factor) : -(base * factor);
+    }
+
+    const newPnl = manageSession.pnl + delta;
+
+    const { error } = await supabase.from('active_sessions').update({ pnl: newPnl }).eq('id', manageSession.id);
+    if (!error) {
+        addAuditLog({
+          action: `Admin adjusted PNL for session ${manageSession.id.slice(-6)} by ${delta >= 0 ? '+' : ''}${formatCurrency(delta)}`,
+          user: "Admin",
+          type: "Trading"
+        });
+        toast.success("PNL updated successfully.");
+        fetchAllSessions();
+        setManageSession({...manageSession, pnl: newPnl});
+        setPnlInput("");
+    } else {
+        toast.error("Failed to update PNL: " + error.message);
+    }
+  };
+
+  const handleAdminSettle = async (session: any) => {
+    if (!confirm("Are you sure you want to forcibly settle this trade session?")) return;
+    
+    setIsSettling(true);
+    try {
+        const { data: settings } = await supabase.from('platform_settings').select('commission_auto_deduct_percent').eq('id', 1).single();
+        const { data: profile } = await supabase.from('profiles').select('referred_by').eq('id', session.user_id).single();
+        
+        const commissionPercent = settings?.commission_auto_deduct_percent || 10;
+        const principal = session.allocated_amount;
+        const pnl = session.pnl || 0;
+        let commissionDeducted = 0;
+        let netReturn = principal + pnl;
+
+        if (pnl > 0) {
+            commissionDeducted = (pnl * commissionPercent) / 100;
+            netReturn = principal + (pnl - commissionDeducted);
+
+            await supabase.from('fee_ledger').insert({
+                user_id: session.user_id,
+                gross_amount: pnl,
+                fee_percent: commissionPercent,
+                fee_amount: commissionDeducted,
+                net_amount: pnl - commissionDeducted,
+                asset: 'USD'
+            });
+
+            if (profile?.referred_by) {
+                const referralBonus = commissionDeducted * 0.20;
+                const { data: refBal } = await supabase.from('balances').select('fiat_balance').eq('user_id', profile.referred_by).single();
+                if (refBal) {
+                    await supabase.from('balances').update({
+                        fiat_balance: refBal.fiat_balance + referralBonus
+                    }).eq('user_id', profile.referred_by);
+                    
+                    await supabase.from('notifications').insert({
+                        user_id: profile.referred_by,
+                        title: "Referral Commission Received",
+                        message: `You earned ${formatCurrency(referralBonus)} from your referral's copy trading profit.`,
+                        type: "Reward"
+                    });
+                }
+            }
+        }
+
+        const { data: b } = await supabase.from('balances').select('copy_trading_balance').eq('user_id', session.user_id).single();
+        await supabase.from('balances').update({
+            copy_trading_balance: (b?.copy_trading_balance || 0) + netReturn
+        }).eq('user_id', session.user_id);
+
+        await supabase.from('notifications').insert({
+            user_id: session.user_id,
+            title: "Trade Session Settled by Admin",
+            message: `Your copy session with ${session.trader_name} has been settled. Net Return: ${formatCurrency(netReturn)}`,
+            type: "Transaction"
+        });
+
+        await supabase.from('active_sessions').update({ status: 'settled' }).eq('id', session.id);
+        
+        toast.success(`Session settled. Net: ${formatCurrency(netReturn)}`);
+        setManageSession(null);
+        fetchAllSessions();
+    } catch (err: any) {
+        toast.error("Failed to settle: " + err.message);
+    } finally {
+        setIsSettling(false);
+    }
+  };
+
+  const applyGlobalPNL = async (type: 'increase' | 'decrease') => {
+    if (!globalPnlInput) return;
+    
+    if (!confirm("Are you sure you want to apply this change to all active copy trades?")) return;
+    
+    const val = parseFloat(globalPnlInput);
+    if (isNaN(val) || val <= 0) return;
+
+    try {
+        setLoading(true);
+        const activeOnly = activeSessions.filter(s => s.status === 'active');
+        
+        for (const session of activeOnly) {
+            let delta = 0;
+            if (globalPnlType === 'fixed') {
+                delta = type === 'increase' ? val : -val;
+            } else {
+                const factor = val / 100;
+                delta = type === 'increase' ? (session.allocated_amount * factor) : -(session.allocated_amount * factor);
+            }
+            
+            const newPnl = session.pnl + delta;
+            await supabase.from('active_sessions').update({ pnl: newPnl }).eq('id', session.id);
+        }
+
+        addAuditLog({
+            action: `Admin performed Global PNL Adjustment by ${type === 'increase' ? '+' : '-'}${val}${globalPnlType === 'percentage' ? '%' : '$'} to ${activeOnly.length} active sessions`,
+            user: "Admin",
+            type: "Trading"
+        });
+
+        toast.success(`Global PNL ${type === 'increase' ? 'profit' : 'loss'} injected to ${activeOnly.length} trades.`);
+        fetchAllSessions();
+        setShowGlobalPnl(false);
+        setGlobalPnlInput("");
+    } catch (err: any) {
+        toast.error("Global PNL adjustment failed: " + err.message);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleAdminTogglePause = async (session: any) => {
+      const newStatus = session.status === 'active' ? 'paused' : 'active';
+      const { error } = await supabase.from('active_sessions').update({ status: newStatus }).eq('id', session.id);
+      if (!error) {
+          toast.success(`Session ${newStatus === 'active' ? 'resumed' : 'paused'} successfully.`);
+          setManageSession({...session, status: newStatus});
+          fetchAllSessions();
+      }
+  };
+
   const filtered = traders.filter(t => {
     const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filter === 'all' || t.status?.toLowerCase() === filter;
     const matchesTier = tierFilter === 'All' || t.min_plan === tierFilter;
-    return matchesSearch && matchesStatus && matchesTier;
+    const matchesCategory = categoryFilter === 'All' || (t.categories || []).includes(categoryFilter);
+    return matchesSearch && matchesStatus && matchesTier && matchesCategory;
   });
 
   return (
@@ -312,7 +513,7 @@ const AdminCopyTrading = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-11 border-border bg-card text-zinc-950 text-sm font-medium px-6 shadow-sm hover:bg-secondary">
+                <Button variant="outline" className="h-11 border-border bg-card text-foreground text-sm font-medium px-6 shadow-sm hover:bg-secondary">
                   <ShieldCheck className="w-4 h-4 mr-2" /> Global Tier Rules
                 </Button>
               </DialogTrigger>
@@ -341,7 +542,7 @@ const AdminCopyTrading = () => {
                                   type="number" 
                                   id={`globalTier_${tier}`}
                                   placeholder={`${(tierMinimums[tier] || 0).toLocaleString()}`}
-                                  className="h-10 bg-white border-border text-zinc-950 font-bold pl-8" 
+                                  className="h-10 bg-secondary border-border text-foreground font-bold pl-8" 
                                />
                              </div>
                           </div>
@@ -371,7 +572,7 @@ const AdminCopyTrading = () => {
                                 fetchTraders();
                                 (document.getElementById(`globalTier_${tier}`) as HTMLInputElement).value = '';
                              }}
-                             className="h-10 px-6 bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-widest shadow-sm"
+                             className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-widest shadow-sm"
                           >
                              Apply Update
                           </Button>
@@ -501,7 +702,7 @@ const AdminCopyTrading = () => {
                                 <select
                                     value={traderForm.min_plan}
                                     onChange={e => setTraderForm({...traderForm, min_plan: e.target.value})}
-                                    className="w-full h-12 bg-secondary border border-border rounded-md px-3 text-sm font-medium outline-none focus:border-primary/50 transition-all cursor-pointer text-zinc-950"
+                                    className="w-full h-12 bg-secondary border border-border rounded-md px-3 text-sm font-medium outline-none focus:border-primary/50 transition-all cursor-pointer text-foreground"
                                 >
                                     <option value="Starter">Starter</option>
                                     <option value="Silver">Silver</option>
@@ -594,16 +795,6 @@ const AdminCopyTrading = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-2 flex items-center gap-3 pt-6">
-                                <input 
-                                    type="checkbox"
-                                    id="is_trending"
-                                    checked={traderForm.is_trending}
-                                    onChange={e => setTraderForm({...traderForm, is_trending: e.target.checked})}
-                                    className="w-5 h-5 accent-primary rounded cursor-pointer"
-                                />
-                                <Label htmlFor="is_trending" className="text-xs font-bold uppercase text-foreground cursor-pointer">Trending Badge</Label>
-                            </div>
                         </div>
                     </div>
                         <div className="p-6 bg-secondary/30 border-t border-border shrink-0">
@@ -621,9 +812,9 @@ const AdminCopyTrading = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { label: "Active Traders", value: traders.filter(t => t.status === 'Active').length, icon: Target, color: "text-primary", bg: "bg-primary/10" },
-            { label: "Active Sessions", value: activeSessions.filter(s => s.status === 'active').length, icon: Activity, color: "text-amber-600", bg: "bg-amber-50" },
-            { label: "Total Invested", value: formatCurrency(activeSessions.reduce((acc, s) => acc + s.current_value, 0)), icon: Zap, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Avg. ROI", value: "+24.8%", icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+            { label: "Active Sessions", value: activeSessions.filter(s => s.status === 'active').length, icon: Activity, color: "text-amber-600", bg: "bg-amber-500/10" },
+            { label: "Total Invested", value: formatCurrency(activeSessions.reduce((acc, s) => acc + s.current_value, 0)), icon: Zap, color: "text-blue-600", bg: "bg-blue-500/10" },
+            { label: "Avg. ROI", value: "+24.8%", icon: TrendingUp, color: "text-green-600", bg: "bg-green-500/10" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -643,75 +834,7 @@ const AdminCopyTrading = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Live Monitoring Section */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold font-sans text-foreground flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-primary" />
-                        Investment Tracking
-                    </h2>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase bg-secondary px-3 py-1 rounded-full border border-border">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        Internal Records
-                    </div>
-                </div>
-                
-                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm max-h-[500px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                        <thead className="sticky top-0 z-10">
-                            <tr className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border bg-secondary/80 backdrop-blur-md">
-                                <th className="text-left p-4">Session</th>
-                                <th className="text-left p-4">Invested</th>
-                                <th className="text-left p-4">Current PnL</th>
-                                <th className="text-center p-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {activeSessions.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="p-8 text-center text-muted-foreground italic">No active copy sessions found.</td>
-                                </tr>
-                            ) : (
-                                activeSessions.map((session) => (
-                                    <tr key={session.id} className="hover:bg-secondary/20 transition-colors">
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] shadow-sm overflow-hidden shrink-0 ${
-                                                    session.copy_traders?.ranking_level === 'Elite' ? 'ring-1 ring-primary ring-offset-1 ring-offset-background bg-gradient-gold text-white' : 'bg-secondary text-muted-foreground border border-border'
-                                                }`}>
-                                                    {session.copy_traders?.avatar_url ? (
-                                                        <img src={session.copy_traders.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        session.trader_name?.charAt(0) || 'T'
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="text-[10px] font-mono text-muted-foreground">{session.id.slice(-6).toUpperCase()}</div>
-                                                    <div className="font-bold text-foreground text-xs">{session.trader_name}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 font-bold text-foreground tabular-nums">{formatCurrency(session.allocated_amount)}</td>
-                                        <td className={`p-4 font-black tabular-nums text-xs ${session.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {session.pnl >= 0 ? '+' : ''}{formatCurrency(session.pnl)}
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                                                session.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 
-                                                'bg-secondary text-muted-foreground border-border'
-                                            }`}>
-                                                {session.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+        <div className="space-y-12 mt-8">
             {/* System Trade Logs */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -723,9 +846,9 @@ const AdminCopyTrading = () => {
                 </div>
                 
                 <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm max-h-[500px] overflow-y-auto">
-                    <div className="p-4 space-y-3">
+                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {executionLogs.length === 0 ? (
-                            <div className="py-12 text-center text-muted-foreground italic text-xs">Waiting for trades...</div>
+                            <div className="col-span-full py-12 text-center text-muted-foreground italic text-xs">Waiting for trades...</div>
                         ) : executionLogs.map((log) => (
                             <div key={log.id} className="p-3 rounded-xl bg-secondary/30 border border-border group hover:border-primary/20 transition-all flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -757,6 +880,124 @@ const AdminCopyTrading = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Live Monitoring Section */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold font-sans text-foreground flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-primary" />
+                        Active Copy Trading Monitoring
+                    </h2>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="hero"
+                            onClick={() => setShowGlobalPnl(true)}
+                            className="h-8 shadow-gold text-white text-[10px] uppercase font-black tracking-widest px-4"
+                        >
+                            Global PNL Control
+                        </Button>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase bg-secondary px-3 py-1 rounded-full border border-border">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                            Internal Records
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm max-h-[600px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                        <thead className="sticky top-0 z-10">
+                            <tr className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border bg-secondary/80 backdrop-blur-md">
+                                <th className="text-left p-4">User Identity</th>
+                                <th className="text-left p-4">Copied Trader</th>
+                                <th className="text-left p-4">Entry / Current Bal</th>
+                                <th className="text-left p-4">Current PNL</th>
+                                <th className="text-left p-4">Duration</th>
+                                <th className="text-center p-4">Status</th>
+                                <th className="text-right p-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border relative">
+                            {activeSessions.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="p-8 text-center text-muted-foreground italic">No active copy sessions found.</td>
+                                </tr>
+                            ) : (
+                                activeSessions.map((session) => (
+                                    <tr key={session.id} className="hover:bg-secondary/20 transition-colors">
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] bg-secondary text-muted-foreground border border-border shadow-sm shrink-0">
+                                                    {(session.profiles?.name || 'U').charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-foreground text-xs">{session.profiles?.name || 'Unknown User'}</div>
+                                                    <div className="text-[10px] text-muted-foreground flex gap-2">
+                                                        <span>{session.profiles?.email || 'No email'}</span>
+                                                        <span className="font-mono bg-secondary/50 px-1 rounded">ACC-{session.user_id.slice(0, 8).toUpperCase()}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-6 h-6 rounded shadow-sm overflow-hidden shrink-0 ${session.copy_traders?.ranking_level === 'Elite' ? 'ring-1 ring-primary inline-flex bg-gradient-gold' : 'bg-secondary'}`}>
+                                                    {session.copy_traders?.avatar_url ? (
+                                                        <img src={session.copy_traders.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="w-full h-full flex justify-center items-center font-bold text-[8px] text-muted-foreground">{session.copy_traders?.name?.charAt(0)}</span>
+                                                    )}
+                                                </div>
+                                                <div className="font-semibold text-xs tabular-nums">{session.copy_traders?.name || 'Unknown'}</div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="font-bold text-xs text-foreground tabular-nums">
+                                                In: {formatCurrency(session.allocated_amount)}
+                                            </div>
+                                            <div className="text-[10px] font-bold text-primary mt-0.5 tabular-nums uppercase tracking-widest">
+                                                Cur: {formatCurrency(session.allocated_amount + session.pnl)}
+                                            </div>
+                                        </td>
+                                        <td className={`p-4 font-black tabular-nums text-xs ${session.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                            <div>{session.pnl >= 0 ? '+' : ''}{formatCurrency(session.pnl)}</div>
+                                            <div className="text-[9px] opacity-70">
+                                                {session.pnl >= 0 ? '+' : ''}{(session.allocated_amount > 0 ? ((session.pnl / session.allocated_amount) * 100).toFixed(2) : '0')} %
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">
+                                                {new Date(session.created_at).toLocaleDateString()}
+                                            </div>
+                                            <div className="text-[9px] font-bold mt-0.5 text-foreground/50 opacity-60 tabular-nums uppercase tracking-widest flex items-center gap-1">
+                                                <Clock className="w-2.5 h-2.5" />
+                                                {Math.max(1, Math.floor((new Date().getTime() - new Date(session.created_at).getTime()) / (1000 * 60 * 60 * 24)))} Days
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                                                session.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                                'bg-secondary text-muted-foreground border-border'
+                                            }`}>
+                                                {session.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                onClick={() => setManageSession(session)}
+                                                className="w-8 h-8 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
+                                            >
+                                                <Settings2 className="w-4 h-4" />
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         {/* Search & Filters */}
@@ -771,6 +1012,20 @@ const AdminCopyTrading = () => {
             />
           </div>
           <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl ml-auto">
+            {['All', 'Crypto', 'Forex', 'Commodities'].map((c) => (
+              <button 
+                key={c} 
+                onClick={() => setCategoryFilter(c as any)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  categoryFilter === c ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl">
             {['All', 'Approved', 'Rejected', 'Revoked'].map((f) => (
               <button 
                 key={f} 
@@ -906,6 +1161,191 @@ const AdminCopyTrading = () => {
           </div>
         </div>
       </div>
+
+      {/* PNL Management Dialog */}
+      {manageSession && (
+          <Dialog open={!!manageSession} onOpenChange={(open) => !open && setManageSession(null)}>
+              <DialogContent className="max-w-md bg-card border-border sm:rounded-2xl">
+                  <DialogHeader>
+                      <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                          <Settings2 className="w-5 h-5 text-primary" /> Session PNL Management
+                      </DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-6 mt-2">
+                      <div className="p-4 rounded-xl bg-secondary/30 border border-border space-y-3">
+                          <div className="flex justify-between items-center text-sm">
+                              <span className="text-muted-foreground">Session ID</span>
+                              <span className="font-mono font-bold text-foreground">{manageSession.id.slice(-8).toUpperCase()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm">
+                              <span className="text-muted-foreground">Trader</span>
+                              <span className="font-bold text-foreground">{manageSession.trader_name}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm">
+                              <span className="text-muted-foreground">Entry Balance</span>
+                              <span className="font-bold text-foreground">{formatCurrency(manageSession.allocated_amount)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm">
+                              <span className="text-muted-foreground">Current PNL</span>
+                              <span className={`font-black ${manageSession.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                  {manageSession.pnl >= 0 ? '+' : ''}{formatCurrency(manageSession.pnl)} ({(manageSession.allocated_amount > 0 ? ((manageSession.pnl / manageSession.allocated_amount) * 100).toFixed(2) : '0.00')}%)
+                              </span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm">
+                              <span className="text-muted-foreground">Status</span>
+                              <span className="font-bold uppercase text-[10px] bg-secondary px-2 py-0.5 rounded-full">{manageSession.status}</span>
+                          </div>
+                      </div>
+
+                      <div className="space-y-4">
+                          <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl">
+                              <button
+                                  type="button"
+                                  onClick={() => setPnlType('fixed')}
+                                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${pnlType === 'fixed' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
+                              >
+                                  Fixed Amount ($)
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={() => setPnlType('percentage')}
+                                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${pnlType === 'percentage' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
+                              >
+                                  Percentage (%)
+                              </button>
+                          </div>
+
+                          <div>
+                              <Label className="text-xs font-bold text-muted-foreground uppercase">{pnlType === 'fixed' ? 'Amount to Adjust' : 'Percentage of Entry'}</Label>
+                              <div className="relative mt-1">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                      {pnlType === 'fixed' ? <DollarSign className="w-4 h-4 text-muted-foreground" /> : <Percent className="w-4 h-4 text-muted-foreground" />}
+                                  </div>
+                                  <Input 
+                                      type="number"
+                                      value={pnlInput}
+                                      onChange={(e) => setPnlInput(e.target.value)}
+                                      placeholder={pnlType === 'fixed' ? '50.00' : '2.5'}
+                                      className="pl-9 bg-secondary border-border"
+                                  />
+                              </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                              <Button 
+                                  onClick={() => applyPNLChange('increase')}
+                                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold h-10 shadow-sm"
+                              >
+                                  <TrendingUp className="w-4 h-4 mr-2" /> Inject Profit
+                              </Button>
+                              <Button 
+                                  onClick={() => applyPNLChange('decrease')}
+                                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold h-10 shadow-sm"
+                              >
+                                  <TrendingUp className="w-4 h-4 mr-2 rotate-180" /> Inject Loss
+                              </Button>
+                          </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-border flex flex-col gap-3">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Session Control</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                              <Button
+                                  variant="outline"
+                                  onClick={() => handleAdminTogglePause(manageSession)}
+                                  className={`h-10 text-xs font-bold ${manageSession.status === 'paused' ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-200' : 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-200'}`}
+                              >
+                                  {manageSession.status === 'paused' ? 'Resume Session' : 'Pause Session'}
+                              </Button>
+                              <Button
+                                  onClick={() => handleAdminSettle(manageSession)}
+                                  disabled={isSettling}
+                                  className="h-10 text-xs font-bold bg-zinc-950 text-white hover:bg-zinc-800"
+                              >
+                                  {isSettling ? 'Settling...' : 'Force Settle'}
+                              </Button>
+                          </div>
+                      </div>
+                  </div>
+              </DialogContent>
+          </Dialog>
+      )}
+
+      {/* Global PNL Management Dialog */}
+      <Dialog open={showGlobalPnl} onOpenChange={setShowGlobalPnl}>
+          <DialogContent className="max-w-md bg-card border-border sm:rounded-2xl shadow-huge">
+              <DialogHeader>
+                  <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                      <Target className="w-5 h-5 text-primary" /> Global PNL Alteration
+                  </DialogTitle>
+                  <p className="text-xs text-muted-foreground mt-1 text-left px-1">
+                      Apply wide scale PNL injections across all active copy trades smoothly. Safe manipulation prevents massive UI jitter.
+                  </p>
+              </DialogHeader>
+
+              <div className="space-y-6 mt-4">
+                  <div className="space-y-4">
+                      <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl">
+                          <button
+                              type="button"
+                              onClick={() => setGlobalPnlType('percentage')}
+                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${globalPnlType === 'percentage' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
+                          >
+                              Global Percentage (%)
+                          </button>
+                          <button
+                              type="button"
+                              onClick={() => setGlobalPnlType('fixed')}
+                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${globalPnlType === 'fixed' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
+                          >
+                              Global Fixed ($)
+                          </button>
+                      </div>
+
+                      <div>
+                          <Label className="text-xs font-bold text-muted-foreground uppercase">{globalPnlType === 'fixed' ? 'Raw Amount to Inject' : 'Baseline Percentage Target'}</Label>
+                          <div className="relative mt-1">
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  {globalPnlType === 'fixed' ? <DollarSign className="w-4 h-4 text-muted-foreground" /> : <Percent className="w-4 h-4 text-muted-foreground" />}
+                              </div>
+                              <Input 
+                                  type="number"
+                                  value={globalPnlInput}
+                                  onChange={(e) => setGlobalPnlInput(e.target.value)}
+                                  placeholder={globalPnlType === 'fixed' ? '20.00' : '1.5'}
+                                  className="pl-9 bg-secondary border-border"
+                              />
+                          </div>
+                      </div>
+
+                      <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg flex items-start gap-2">
+                          <Activity className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                          <p className="text-[10px] font-bold text-amber-600">
+                              Warning: This change will affect {activeSessions.filter(s => s.status === 'active').length} currently active copy trade sessions. Settled or explicitly paused trades will be ignored.
+                          </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                          <Button 
+                              onClick={() => applyGlobalPNL('increase')}
+                              disabled={loading || !globalPnlInput}
+                              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold h-12 shadow-sm"
+                          >
+                              {loading ? 'Processing...' : <><TrendingUp className="w-4 h-4 mr-2" /> Global Profit Push</>}
+                          </Button>
+                          <Button 
+                              onClick={() => applyGlobalPNL('decrease')}
+                              disabled={loading || !globalPnlInput}
+                              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold h-12 shadow-sm"
+                          >
+                             {loading ? 'Processing...' : <><TrendingUp className="w-4 h-4 mr-2 rotate-180" /> Global Loss Push</>}
+                          </Button>
+                      </div>
+                  </div>
+              </div>
+          </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

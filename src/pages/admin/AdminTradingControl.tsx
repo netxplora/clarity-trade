@@ -24,6 +24,24 @@ const AdminTradingControl = () => {
 
   useEffect(() => {
     fetchData();
+
+    const channel = supabase
+      .channel("admin-trading-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "market_pairs" },
+        () => fetchData()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "platform_settings" },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchData = async () => {

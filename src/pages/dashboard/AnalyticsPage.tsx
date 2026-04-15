@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
   TrendingUp, BarChart3, Activity, ArrowUpRight, ArrowDownRight, Search, Download, Filter, Target as TargetIcon,
+  Zap, Clock, Calendar, ChevronRight
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useState } from "react";
@@ -128,7 +129,7 @@ const AnalyticsPage = () => {
                 <div className="text-xs font-medium text-muted-foreground">{m.unit}</div>
               </div>
               <div className={`mt-4 flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full w-fit ${
-                m.up ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200"
+                m.up ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"
               }`}>
                 {m.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                 {m.up ? "Trending up" : "Trending down"}

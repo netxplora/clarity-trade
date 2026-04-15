@@ -45,18 +45,25 @@ const UserManagement = () => {
   const [allTransactions, setAllTransactions] = useState<any[]>([]);
   const [viewUser, setViewUser] = useState<AppUser | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  const [allKycSubmissions, setAllKycSubmissions] = useState<any[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [rejectionDialog, setRejectionDialog] = useState<{ userId: string; userName: string; level: number } | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   const fetchUserKyc = async (userId: string | number) => {
     const { data } = await supabase
       .from('kyc_submissions')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order('kyc_level', { ascending: true });
     
-    setSelectedSubmission(data);
+    setAllKycSubmissions(data || []);
+    // Keep latest single submission for backward compat
+    if (data && data.length > 0) {
+      setSelectedSubmission(data[data.length - 1]);
+    } else {
+      setSelectedSubmission(null);
+    }
   };
 
   const handleViewUser = (u: AppUser) => {
@@ -175,21 +182,42 @@ const UserManagement = () => {
     }
   };
 
-  const handleKycApprove = async (id: string | number, name: string) => {
+  const handleKycApprove = async (id: string | number, name: string, level?: number) => {
+    // Approve specific submission level
+    if (level) {
+      const sub = allKycSubmissions.find(s => s.kyc_level === level && s.user_id === id);
+      if (sub) {
+        await supabase.from('kyc_submissions').update({ status: 'Verified', reviewed_at: new Date().toISOString() }).eq('id', sub.id);
+      }
+    }
+    // Update profile KYC status
     const { error } = await supabase.from('profiles').update({ kyc: 'Verified' }).eq('id', id);
     if (!error) {
-       toast.success(`User approved: ${name}`);
+       toast.success(`${level ? `Level ${level} a` : 'A'}pproved for ${name}`);
        fetchAppData();
+       if (viewUser) fetchUserKyc(id);
     } else {
        toast.error(error.message);
     }
   };
 
-  const handleKycReject = async (id: string | number, name: string) => {
+  const handleKycReject = async (id: string | number, name: string, level?: number, reason?: string) => {
+    // Reject specific submission level
+    if (level) {
+      const sub = allKycSubmissions.find(s => s.kyc_level === level && s.user_id === id);
+      if (sub) {
+        await supabase.from('kyc_submissions').update({
+          status: 'Rejected',
+          rejection_reason: reason || 'Documents could not be verified',
+          reviewed_at: new Date().toISOString()
+        }).eq('id', sub.id);
+      }
+    }
     const { error } = await supabase.from('profiles').update({ kyc: 'Rejected' }).eq('id', id);
     if (!error) {
-       toast.error(`Verification rejected for ${name}`);
+       toast.error(`${level ? `Level ${level} r` : 'R'}ejected for ${name}`);
        fetchAppData();
+       if (viewUser) fetchUserKyc(id);
     } else {
        toast.error(error.message);
     }
@@ -867,7 +895,7 @@ const UserManagement = () => {
                                   <div className="text-xs text-muted-foreground mt-0.5">Allocated: ${ct.allocated_amount} • Profits/Loss: <span className={ct.pnl >= 0 ? 'text-green-600' : 'text-red-500'}>${ct.pnl.toFixed(2)}</span></div>
                                 </div>
                               </div>
-                              <Badge variant="outline" className="bg-green-100/50 text-green-700 border-green-200 uppercase text-[9px] font-black">ACTIVE</Badge>
+                              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 uppercase text-[9px] font-black">ACTIVE</Badge>
                             </div>
                           ))}
 
@@ -900,7 +928,7 @@ const UserManagement = () => {
                       </section>
                     </TabsContent>
 
-                    {/* KYC Tab */}
+                    {/* KYC Tab — Multi-Level */}
                     <TabsContent value="kyc" className="space-y-8 mt-0 animate-in fade-in-50 duration-500">
                       <section className="space-y-6">
                         <div className="flex items-center justify-between">
@@ -912,77 +940,142 @@ const UserManagement = () => {
                           </Badge>
                         </div>
 
-                        {selectedSubmission ? (
-                          <div className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-secondary/30 border border-border">
-                              <div className="space-y-2">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Identification Type</span>
-                                <div className="text-sm font-bold text-foreground p-3 rounded-xl bg-card border border-border">{selectedSubmission.id_type || 'N/A'}</div>
-                              </div>
-                              <div className="space-y-2">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Document Number</span>
-                                <div className="text-sm font-bold text-foreground p-3 rounded-xl bg-card border border-border font-mono">{selectedSubmission.id_number || 'N/A'}</div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-4">
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Verification Documents</span>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {selectedSubmission.document_front && (
-                                  <div 
-                                    onClick={() => setPreviewImage(selectedSubmission.document_front)}
-                                    className="group relative rounded-2xl border border-border bg-card overflow-hidden h-48 hover:border-primary transition-all shadow-lg hover:shadow-primary/5 cursor-zoom-in"
-                                  >
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                      <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
-                                        <Eye className="w-4 h-4" /> Preview
+                        {allKycSubmissions.length > 0 ? (
+                          <div className="space-y-6">
+                            {[1, 2, 3].map(level => {
+                              const sub = allKycSubmissions.find(s => s.kyc_level === level);
+                              if (!sub) {
+                                return (
+                                  <div key={level} className="p-6 rounded-2xl bg-secondary/10 border border-dashed border-border">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">{level}</div>
+                                      <div>
+                                        <span className="text-xs font-bold text-muted-foreground">Level {level}: {level === 1 ? 'Basic Information' : level === 2 ? 'Identity Verification' : 'Address Verification'}</span>
+                                        <p className="text-[10px] text-muted-foreground/60">Not submitted yet</p>
                                       </div>
                                     </div>
-                                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest z-10 border border-white/20">Front Side</div>
-                                    <img src={selectedSubmission.document_front} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="ID Front" />
                                   </div>
-                                )}
-                                {selectedSubmission.document_back && (
-                                  <div 
-                                    onClick={() => setPreviewImage(selectedSubmission.document_back)}
-                                    className="group relative rounded-2xl border border-border bg-card overflow-hidden h-48 hover:border-primary transition-all shadow-lg hover:shadow-primary/5 cursor-zoom-in"
-                                  >
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                      <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
-                                        <Eye className="w-4 h-4" /> Preview
+                                );
+                              }
+                              return (
+                                <div key={level} className={`p-6 rounded-2xl border ${sub.status === 'Verified' ? 'bg-green-500/5 border-green-500/20' : sub.status === 'Pending' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${sub.status === 'Verified' ? 'bg-green-500' : sub.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'}`}>{level}</div>
+                                      <div>
+                                        <span className="text-xs font-bold text-foreground">Level {level}: {level === 1 ? 'Basic Information' : level === 2 ? 'Identity Verification' : 'Address Verification'}</span>
+                                        <p className="text-[10px] text-muted-foreground">Submitted {new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}</p>
                                       </div>
                                     </div>
-                                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest z-10 border border-white/20">Back Side</div>
-                                    <img src={selectedSubmission.document_back} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="ID Back" />
+                                    <Badge className={`text-[9px] font-black uppercase tracking-widest ${sub.status === 'Verified' ? 'bg-green-500 text-white' : sub.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>{sub.status}</Badge>
                                   </div>
-                                )}
-                                {!selectedSubmission.document_front && !selectedSubmission.document_back && (
-                                  <div className="col-span-2 p-8 text-center border border-dashed border-border rounded-2xl bg-secondary/10">
-                                    <Shield className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-                                    <p className="text-sm text-muted-foreground font-medium">No document images found.</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
 
-                            {viewUser?.kyc === 'Pending' && (
-                              <div className="flex gap-4 pt-4">
-                                <Button 
-                                  variant="outline" 
-                                  className="flex-1 h-14 rounded-2xl text-xs font-bold uppercase tracking-widest border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                                  onClick={() => handleKycReject(viewUser.id, viewUser.name)}
-                                >
-                                  <X className="w-4 h-4 mr-2" /> Reject Submission
-                                </Button>
-                                <Button 
-                                  variant="hero" 
-                                  className="flex-1 h-14 rounded-2xl text-xs font-bold uppercase tracking-widest text-white shadow-gold"
-                                  onClick={() => handleKycApprove(viewUser.id, viewUser.name)}
-                                >
-                                  Approve Verification <CheckCircle className="w-4 h-4 ml-2" />
-                                </Button>
-                              </div>
-                            )}
+                                  {/* Level 1 details */}
+                                  {level === 1 && (
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                      {[{l:'Full Name', v: sub.full_name}, {l: 'Date of Birth', v: sub.date_of_birth}, {l: 'Country', v: sub.country}, {l: 'Phone', v: sub.phone}, {l: 'Address', v: sub.address}].map(({l,v}) => v ? (
+                                        <div key={l} className="p-3 rounded-xl bg-card border border-border">
+                                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{l}</div>
+                                          <div className="text-xs font-bold text-foreground mt-0.5">{v}</div>
+                                        </div>
+                                      ) : null)}
+                                    </div>
+                                  )}
+
+                                  {/* Level 2 details */}
+                                  {level === 2 && (
+                                    <div className="space-y-4 mb-4">
+                                      <div className="grid grid-cols-2 gap-3">
+                                        <div className="p-3 rounded-xl bg-card border border-border">
+                                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Document Type</div>
+                                          <div className="text-xs font-bold text-foreground mt-0.5">{sub.id_type || 'N/A'}</div>
+                                        </div>
+                                        <div className="p-3 rounded-xl bg-card border border-border">
+                                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Document Number</div>
+                                          <div className="text-xs font-bold text-foreground mt-0.5 font-mono">{sub.id_number || 'N/A'}</div>
+                                        </div>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        {sub.document_front && (
+                                          <div onClick={() => setPreviewImage(sub.document_front)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                                              <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
+                                            </div>
+                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Front</div>
+                                            <img src={sub.document_front} className="w-full h-full object-cover" alt="ID Front" />
+                                          </div>
+                                        )}
+                                        {sub.document_back && (
+                                          <div onClick={() => setPreviewImage(sub.document_back)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                                              <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
+                                            </div>
+                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Back</div>
+                                            <img src={sub.document_back} className="w-full h-full object-cover" alt="ID Back" />
+                                          </div>
+                                        )}
+                                        {sub.selfie_url && (
+                                          <div onClick={() => setPreviewImage(sub.selfie_url)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                                              <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
+                                            </div>
+                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Selfie</div>
+                                            <img src={sub.selfie_url} className="w-full h-full object-cover" alt="Selfie" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Level 3 details */}
+                                  {level === 3 && (
+                                    <div className="space-y-3 mb-4">
+                                      <div className="p-3 rounded-xl bg-card border border-border">
+                                        <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Document Type</div>
+                                        <div className="text-xs font-bold text-foreground mt-0.5">{sub.address_doc_type || 'N/A'}</div>
+                                      </div>
+                                      {sub.address_doc_url && (
+                                        <div onClick={() => setPreviewImage(sub.address_doc_url)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
+                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                                            <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
+                                          </div>
+                                          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Address Proof</div>
+                                          <img src={sub.address_doc_url} className="w-full h-full object-cover" alt="Address Proof" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Rejection reason display */}
+                                  {sub.status === 'Rejected' && sub.rejection_reason && (
+                                    <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/10 mb-4">
+                                      <span className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Rejection Reason</span>
+                                      <p className="text-xs text-foreground mt-0.5">{sub.rejection_reason}</p>
+                                    </div>
+                                  )}
+
+                                  {/* Action buttons per level */}
+                                  {sub.status === 'Pending' && (
+                                    <div className="flex gap-3 pt-2">
+                                      <Button
+                                        variant="outline"
+                                        className="flex-1 h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest border-red-500/20 text-red-600 hover:bg-red-500/10 hover:border-red-500/30"
+                                        onClick={() => setRejectionDialog({ userId: String(viewUser.id), userName: viewUser.name, level })}
+                                      >
+                                        <X className="w-3.5 h-3.5 mr-1.5" /> Reject Level {level}
+                                      </Button>
+                                      <Button
+                                        variant="hero"
+                                        className="flex-1 h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-white shadow-gold"
+                                        onClick={() => handleKycApprove(viewUser.id, viewUser.name, level)}
+                                      >
+                                        Approve Level {level} <CheckCircle className="w-3.5 h-3.5 ml-1.5" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-secondary/10">
@@ -1007,6 +1100,54 @@ const UserManagement = () => {
         </DialogContent>
       </Dialog>
       
+      {/* KYC Rejection Reason Dialog */}
+      <Dialog open={!!rejectionDialog} onOpenChange={() => { setRejectionDialog(null); setRejectionReason(''); }}>
+        <DialogContent className="bg-card border-border shadow-huge p-8 max-w-md rounded-2xl">
+          {rejectionDialog && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-lg font-bold text-foreground">Reject Level {rejectionDialog.level} Verification</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-1">
+                  Provide a reason for rejecting {rejectionDialog.userName}'s Level {rejectionDialog.level} submission. This will be visible to the user.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rejection Reason</Label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="E.g., Document is blurred, name does not match, expired document..."
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 transition-colors resize-none"
+                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {['Document is blurred or unreadable', 'Name does not match records', 'Document has expired', 'Incomplete information provided', 'Suspected fraudulent document'].map(r => (
+                    <button key={r} onClick={() => setRejectionReason(r)} className="text-[9px] font-bold text-muted-foreground px-2.5 py-1.5 rounded-lg bg-secondary border border-border hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all">{r}</button>
+                  ))}
+                </div>
+              </div>
+              <DialogFooter className="mt-6 grid grid-cols-2 gap-3">
+                <Button variant="outline" className="h-11 rounded-xl" onClick={() => { setRejectionDialog(null); setRejectionReason(''); }}>Cancel</Button>
+                <Button
+                  variant="destructive"
+                  className="h-11 rounded-xl font-bold"
+                  disabled={!rejectionReason.trim()}
+                  onClick={() => {
+                    handleKycReject(rejectionDialog.userId, rejectionDialog.userName, rejectionDialog.level, rejectionReason);
+                    setRejectionDialog(null);
+                    setRejectionReason('');
+                  }}
+                >
+                  Confirm Rejection
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* KYC Image Preview Lightbox */}
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
         <DialogContent className="max-w-[95vw] lg:max-w-[80vw] p-0 bg-transparent border-none shadow-none flex items-center justify-center">

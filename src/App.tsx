@@ -9,9 +9,11 @@ import { useCurrencyDetection } from "./hooks/useCurrencyDetection";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useStore } from "@/store/useStore";
+import LiveChatWidget from "./components/dashboard/LiveChatWidget";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Auth
 import Login from "./pages/auth/Login";
@@ -38,37 +40,59 @@ import RiskDisclosure from "./pages/public/RiskDisclosure";
 import FAQ from "./pages/public/FAQ";
 import Help from "./pages/public/Help";
 
-// Dashboard
-import Overview from "./pages/dashboard/Overview";
-import WalletPage from "./pages/dashboard/WalletPage";
-import TradingPage from "./pages/dashboard/TradingPage";
-import CopyTradingPage from "./pages/dashboard/CopyTradingPage";
-import AnalyticsPage from "./pages/dashboard/AnalyticsPage";
-import ReferralPage from "./pages/dashboard/ReferralPage";
-import SettingsPage from "./pages/dashboard/SettingsPage";
-import KYCPage from "./pages/dashboard/KYCPage";
-import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
-import TraderProfilePage from "./pages/dashboard/TraderProfilePage";
+// Lazy Pages for Performance and Stability
+import { lazy, Suspense } from "react";
+const Overview = lazy(() => import("./pages/dashboard/Overview"));
+const WalletPage = lazy(() => import("./pages/dashboard/WalletPage"));
+const TradingPage = lazy(() => import("./pages/dashboard/TradingPage"));
+const CopyTradingPage = lazy(() => import("./pages/dashboard/CopyTradingPage"));
+const AnalysisPage = lazy(() => import("./pages/dashboard/AnalysisPage"));
+const ReferralPage = lazy(() => import("./pages/dashboard/ReferralPage"));
+const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
+const KYCPage = lazy(() => import("./pages/dashboard/KYCPage"));
+const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage"));
+const TraderProfilePage = lazy(() => import("./pages/dashboard/TraderProfilePage"));
+const InvestmentsPage = lazy(() => import("./pages/dashboard/InvestmentsPage"));
+const HelpCenter = lazy(() => import("./pages/dashboard/HelpCenter"));
+const StatusPage = lazy(() => import("./pages/dashboard/StatusPage"));
 
 // Admin
-import AdminOverview from "./pages/admin/AdminOverview";
-import UserManagement from "./pages/admin/UserManagement";
-import FinancialManagement from "./pages/admin/FinancialManagement";
-import AdminTradingControl from "./pages/admin/AdminTradingControl";
-import AdminCopyTrading from "./pages/admin/AdminCopyTrading";
-import ReferralManagement from "./pages/admin/ReferralManagement";
-import ContentManagement from "./pages/admin/ContentManagement";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminLogin from "./pages/admin/AdminLogin";
-import SetupAdmin from "./pages/admin/SetupAdmin";
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+const FinancialManagement = lazy(() => import("./pages/admin/FinancialManagement"));
+const AdminTradingControl = lazy(() => import("./pages/admin/AdminTradingControl"));
+const AdminCopyTrading = lazy(() => import("./pages/admin/AdminCopyTrading"));
+const ReferralManagement = lazy(() => import("./pages/admin/ReferralManagement"));
+const ContentManagement = lazy(() => import("./pages/admin/ContentManagement"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const CryptoProviderManagement = lazy(() => import("./pages/admin/CryptoProviderManagement"));
+const SetupAdmin = lazy(() => import("./pages/admin/SetupAdmin"));
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminSupportHub = lazy(() => import("./pages/admin/AdminSupportHub"));
+const AdminKYC = lazy(() => import("./pages/admin/AdminKYC"));
+const AdminInvestments = lazy(() => import("./pages/admin/AdminInvestments"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2,    // Data stays fresh for 2 minutes
+      gcTime: 1000 * 60 * 10,      // Unused data garbage collected after 10 minutes
+      retry: 1,                     // Only 1 retry on failure
+      refetchOnWindowFocus: false,  // Prevent refetch storms when switching tabs
+    },
+  },
+});
 
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
+    <Suspense fallback={
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A]">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    }>
+      <>
+        <Routes location={location} key={location.pathname}>
         {/* Landing */}
         <Route path="/" element={<Index />} />
         
@@ -99,159 +123,140 @@ const AnimatedRoutes = () => {
         <Route path="/support" element={<Help />} />
 
         {/* User Dashboard */}
-        <Route path="/dashboard" element={<Overview />} />
-        <Route path="/dashboard/wallet" element={<WalletPage />} />
-        <Route path="/dashboard/trading" element={<TradingPage />} />
-        <Route path="/dashboard/copy-trading" element={<CopyTradingPage />} />
-        <Route path="/dashboard/copy-trading/trader/:id" element={<TraderProfilePage />} />
-        <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
-        <Route path="/dashboard/referrals" element={<ReferralPage />} />
-        <Route path="/dashboard/settings" element={<SettingsPage />} />
-        <Route path="/dashboard/kyc" element={<KYCPage />} />
-        <Route path="/dashboard/subscription" element={<SubscriptionPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
+        <Route path="/dashboard/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+        <Route path="/dashboard/trading" element={<ProtectedRoute><TradingPage /></ProtectedRoute>} />
+        <Route path="/dashboard/copy-trading" element={<ProtectedRoute><CopyTradingPage /></ProtectedRoute>} />
+        <Route path="/dashboard/copy-trading/trader/:id" element={<ProtectedRoute><TraderProfilePage /></ProtectedRoute>} />
+        <Route path="/dashboard/analysis" element={<ProtectedRoute><AnalysisPage /></ProtectedRoute>} />
+        <Route path="/dashboard/referrals" element={<ProtectedRoute><ReferralPage /></ProtectedRoute>} />
+        <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/dashboard/kyc" element={<ProtectedRoute><KYCPage /></ProtectedRoute>} />
+        <Route path="/dashboard/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+        <Route path="/dashboard/investments" element={<ProtectedRoute><InvestmentsPage /></ProtectedRoute>} />
+        <Route path="/dashboard/help" element={<ProtectedRoute><HelpCenter /></ProtectedRoute>} />
+        <Route path="/dashboard/status" element={<ProtectedRoute><StatusPage /></ProtectedRoute>} />
 
         {/* Admin */}
         <Route path="/setup-admin" element={<SetupAdmin />} />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminOverview />} />
-        <Route path="/admin/users" element={<UserManagement />} />
-        <Route path="/admin/finances" element={<FinancialManagement />} />
-        <Route path="/admin/trading" element={<AdminTradingControl />} />
-        <Route path="/admin/copy-trading" element={<AdminCopyTrading />} />
-        <Route path="/admin/referrals" element={<ReferralManagement />} />
-        <Route path="/admin/content" element={<ContentManagement />} />
-        <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />
+        <Route path="/admin/users" element={<ProtectedRoute adminOnly><UserManagement /></ProtectedRoute>} />
+        <Route path="/admin/finances" element={<ProtectedRoute adminOnly><FinancialManagement /></ProtectedRoute>} />
+        <Route path="/admin/trading" element={<ProtectedRoute adminOnly><AdminTradingControl /></ProtectedRoute>} />
+        <Route path="/admin/copy-trading" element={<ProtectedRoute adminOnly><AdminCopyTrading /></ProtectedRoute>} />
+        <Route path="/admin/referrals" element={<ProtectedRoute adminOnly><ReferralManagement /></ProtectedRoute>} />
+        <Route path="/admin/content" element={<ProtectedRoute adminOnly><ContentManagement /></ProtectedRoute>} />
+        <Route path="/admin/settings" element={<ProtectedRoute adminOnly><AdminSettings /></ProtectedRoute>} />
+        <Route path="/admin/crypto-providers" element={<ProtectedRoute adminOnly><CryptoProviderManagement /></ProtectedRoute>} />
+        <Route path="/admin/support" element={<ProtectedRoute adminOnly><AdminSupportHub /></ProtectedRoute>} />
+        <Route path="/admin/kyc" element={<ProtectedRoute adminOnly><AdminKYC /></ProtectedRoute>} />
+        <Route path="/admin/investments" element={<ProtectedRoute adminOnly><AdminInvestments /></ProtectedRoute>} />
 
         {/* Catch-all */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </AnimatePresence>
+      <LiveChatWidget />
+      </>
+    </Suspense>
   );
 };
 
 const AuthListener = () => {
-  const { setUser } = useStore();
+    const { setUser, fetchAppData } = useStore();
+    const isMounted = useRef(true);
+    const currentSub = useRef<any>(null);
+    const syncInProgress = useRef(false);
+    const initialSyncDone = useRef(false);
 
-  const isMounted = useRef(true);
-  const isFetching = useRef(false);
-  const currentSub = useRef<any>(null);
-
-  useEffect(() => {
-    isMounted.current = true;
-    
-    const fetchSession = async () => {
-      if (isFetching.current) return;
-      isFetching.current = true;
-      
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user && isMounted.current) {
-            const { data: profile } = await supabase.from('profiles').select('*, balances(*)').eq('id', session.user.id).single();
-            if (profile && isMounted.current) {
-                const b = Array.isArray(profile.balances) ? profile.balances[0] : profile.balances;
-                const crypto = b?.crypto_balances || {};
-                const cryptoPrices: Record<string, number> = { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580, matic: 0.9, dot: 8.2 };
-                const cryptoTotal = Object.entries(crypto).reduce((acc, [coin, amount]) => {
-                  return acc + (Number(amount) * (cryptoPrices[coin.toLowerCase()] || 0));
-                }, 0);
-
-                const [{ data: sessions }, { data: trades }, { data: notifs }] = await Promise.all([
-                    supabase.from('active_sessions').select('*').eq('user_id', profile.id),
-                    supabase.from('trades').select('*').eq('user_id', profile.id).order('created_at', { ascending: false }),
-                    supabase.from('notifications').select('*').or(profile.role === 'admin' ? `user_id.eq.${profile.id},user_id.is.null` : `user_id.eq.${profile.id},type.eq.GLOBAL`).order('created_at', { ascending: false }).limit(50)
-                ]);
-
-                if (!isMounted.current) return;
-
-                const manualOpen = trades?.filter(t => t.status === 'Open') || [];
-                const activePnL = sessions?.reduce((acc, s) => acc + (Number(s.pnl) || 0), 0) || 0;
-                const manualPnL = manualOpen?.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0) || 0;
-                const closedTrades = trades?.filter(t => t.status === 'Closed') || [];
-                const closedPnL = closedTrades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
-                const winRateVal = closedTrades.length > 0 ? (closedTrades.filter(t => (Number(t.pnl) || 0) > 0).length / closedTrades.length * 100) : 0;
-
-                const userData = {
-                    id: profile.id,
-                    name: profile.name,
-                    email: profile.email,
-                    phone: profile.phone || '',
-                    role: profile.role,
-                    status: profile.status,
-                    kyc: profile.kyc,
-                    frozen: profile.frozen,
-                    joined: profile.created_at,
-                    fiatBalanceNum: Number(b?.fiat_balance || 0),
-                    tradingBalance: Number(b?.trading_balance || 0),
-                    copyTradingBalance: Number(b?.copy_trading_balance || 0),
-                    cryptoBalanceNum: cryptoTotal,
-                    balances: crypto,
-                    referralCode: profile.referral_code,
-                    default_currency: profile.default_currency,
-                    preferred_currency: profile.preferred_currency,
-                    theme_preference: profile.theme_preference,
-                    admin_theme_preference: profile.admin_theme_preference,
-                    avatar_url: profile.avatar_url,
-                    current_plan: profile.current_plan
-                };
-
-                setUser(userData as any);
-                
-                const { setBalanceStats, setTradeHistory, setActiveTrades, setNotifications } = useStore.getState();
-                setTradeHistory(trades || []);
-                setActiveTrades(manualOpen || []);
-                setNotifications(notifs || []);
-                
-                setBalanceStats({
-                    totalProfit: activePnL + manualPnL + closedPnL,
-                    copySessions: sessions?.length || 0,
-                    totalTrades: (trades?.length || 0) + (sessions?.length || 0),
-                    winRate: Math.round(winRateVal),
-                    maxDrawdown: closedTrades.length > 5 ? 4.2 : 0 
-                });
+    useEffect(() => {
+        isMounted.current = true;
+        
+        const syncData = async (userId: string, isInitial = false) => {
+            if (!isMounted.current) return;
+            // Prevent concurrent syncs from stomping on each other
+            if (syncInProgress.current && !isInitial) return;
+            syncInProgress.current = true;
+            try {
+                await fetchAppData(userId);
+            } finally {
+                syncInProgress.current = false;
             }
-        } else if (isMounted.current) {
-            setUser(null);
-        }
-      } catch (err) {
-        console.error("Auth fetch error:", err);
-      } finally {
-        isFetching.current = false;
-      }
-    };
+        };
 
-    const setupSubscriptions = async (userId: string) => {
-      if (currentSub.current) {
-        supabase.removeChannel(currentSub.current);
-      }
-
-      currentSub.current = supabase
-        .channel(`user-${userId}-sync`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'balances', filter: `user_id=eq.${userId}` }, () => fetchSession())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${userId}` }, () => fetchSession())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${userId}` }, () => fetchSession())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => fetchSession())
-        .subscribe();
-    };
-
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
-            setUser(null);
+        const setupSubscriptions = (userId: string) => {
             if (currentSub.current) supabase.removeChannel(currentSub.current);
-            currentSub.current = null;
-        } else if (session?.user) {
-            await fetchSession();
-            setupSubscriptions(session.user.id);
-        }
-    });
 
-    return () => {
-      isMounted.current = false;
-      authSub.unsubscribe();
-      if (currentSub.current) supabase.removeChannel(currentSub.current);
-    };
-  }, [setUser]);
+            currentSub.current = supabase
+                .channel(`user-${userId}-sync`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'balances', filter: `user_id=eq.${userId}` }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${userId}` }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${userId}` }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${userId}` }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'referrals', filter: `referrer_id=eq.${userId}` }, () => syncData(userId))
+                .subscribe();
+        };
 
-  return null;
+        const initAuth = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user && isMounted.current) {
+                    useStore.setState({ hasActiveSession: true });
+                    // AWAIT syncData so user data is loaded BEFORE we mark initialization complete
+                    await syncData(session.user.id, true);
+                    initialSyncDone.current = true;
+                    setupSubscriptions(session.user.id);
+                } else if (isMounted.current) {
+                    useStore.setState({ hasActiveSession: false, isLoading: false, user: null });
+                }
+            } catch (err) {
+                console.error("Auth initialization failed:", err);
+                useStore.setState({ hasActiveSession: false, isLoading: false });
+            } finally {
+                if (isMounted.current) {
+                    useStore.setState({ isAuthInitialized: true });
+                }
+            }
+        };
+
+        initAuth();
+
+        const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                useStore.getState().reset();
+                initialSyncDone.current = false;
+                
+                if (currentSub.current) {
+                    supabase.removeChannel(currentSub.current);
+                    currentSub.current = null;
+                }
+            } else if (session?.user && isMounted.current) {
+                useStore.setState({ hasActiveSession: true });
+                // Skip if the initial sync already loaded this user's data
+                if (!initialSyncDone.current) {
+                    syncData(session.user.id, true);
+                    setupSubscriptions(session.user.id);
+                }
+                // Mark initial sync as consumed so future auth events re-sync normally
+                initialSyncDone.current = false;
+            }
+        });
+
+        return () => {
+            isMounted.current = false;
+            authSub.unsubscribe();
+            if (currentSub.current) {
+                try { 
+                    supabase.removeChannel(currentSub.current); 
+                    currentSub.current = null;
+                } catch(e) {}
+            }
+        };
+    }, [setUser, fetchAppData]);
+
+    return null;
 };
 
 const App = () => {

@@ -119,10 +119,10 @@ const FinancialManagement = () => {
   const totalWithdrawn = withdrawals.reduce((s, t) => s + Math.abs(parseFloat(t.amount) || 0), 0);
 
   const stats = [
-    { label: "Total Deposits", value: formatCurrency(totalDeposited), change: "+18.3%", icon: Download, color: "text-[#D4AF37]", bg: "bg-[#D4AF37]/10" },
-    { label: "Total Withdrawals", value: formatCurrency(totalWithdrawn), change: "+9.1%", icon: Send, color: "text-red-500", bg: "bg-red-500/10" },
-    { label: "Platform Revenue", value: formatCurrency(feeLedgerTotal), change: "Lifetime", icon: DollarSign, color: "text-[#D4AF37]", bg: "bg-[#D4AF37]/10" },
-    { label: "Net Balance", value: formatCurrency(totalDeposited - totalWithdrawn), change: "+24.7%", icon: Wallet, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Total Deposits", value: formatCurrency(totalDeposited), change: "+18.3%", icon: Download, color: "text-primary", bg: "bg-primary/10", glow: "shadow-glow" },
+    { label: "Total Withdrawals", value: formatCurrency(totalWithdrawn), change: "+9.1%", icon: Send, color: "text-red-500", bg: "bg-red-500/10", glow: "shadow-glow-loss" },
+    { label: "Platform Revenue", value: formatCurrency(feeLedgerTotal), change: "Lifetime", icon: DollarSign, color: "text-primary", bg: "bg-primary/10", glow: "shadow-glow" },
+    { label: "Net Balance", value: formatCurrency(totalDeposited - totalWithdrawn), change: "+24.7%", icon: Wallet, color: "text-blue-500", bg: "bg-blue-500/10", glow: "shadow-glow" },
   ];
 
   const handleAction = async (id: string, action: "Completed" | "Rejected") => {
@@ -315,21 +315,25 @@ const FinancialManagement = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card p-6 rounded-3xl border border-border shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden"
+              whileHover={{ y: -5 }}
+              className="bg-card p-6 rounded-[2rem] border border-border/50 shadow-huge hover:shadow-gold transition-all group relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors blur-2xl" />
               <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform ${stat.glow}`}>
                    <stat.icon className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">{stat.change}</span>
-                  <TrendingUp className="w-3 h-3 text-green-500 mt-1" />
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none bg-secondary/50 px-2 py-1 rounded-md">{stat.change}</span>
+                  <div className="flex items-center gap-1 mt-1.5">
+                    <TrendingUp className="w-3 h-3 text-green-500" />
+                    <span className="text-[8px] font-bold text-green-500">LIVE</span>
+                  </div>
                 </div>
               </div>
-              <div className="relative z-10">
-                <div className="text-2xl font-black text-foreground tracking-tight mb-0.5">{stat.value}</div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{stat.label}</div>
+              <div className="relative z-10 mt-6">
+                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-60">{stat.label}</div>
+                <div className="text-3xl font-black text-foreground tracking-tighter tabular-nums">{stat.value}</div>
               </div>
             </motion.div>
           ))}
@@ -343,16 +347,16 @@ const FinancialManagement = () => {
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`px-4 py-2 text-xs font-bold uppercase transition-all tracking-widest relative ${
+                  className={`px-6 py-4 text-[10px] font-black uppercase transition-all tracking-[0.2em] relative ${
                     tab === t ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t === "alerts" ? "Security Logs" : t === "purchase" ? "Crypto Buy" : t === "card_deposits" ? "Card Deposits" : t}
                   {tab === t && (
-                    <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />
+                    <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 w-full h-1 bg-gradient-gold rounded-full" />
                   )}
                   {(t === "alerts" && notifications.some(n => !n.is_read)) && (
-                     <span className="absolute top-1 right-0 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                     <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-red-500 shadow-glow-loss animate-pulse" />
                   )}
                 </button>
               ))}
@@ -427,10 +431,16 @@ const FinancialManagement = () => {
                           <td className="py-6 text-right">
                             {w.status === "Pending" && (
                               <div className="flex justify-end gap-3">
-                                <Button onClick={() => handleAction(w.id, "Completed")} className="h-10 px-4 bg-profit/10 text-profit hover:bg-profit hover:text-white border border-profit/20 transition-all rounded-xl font-bold text-[9px] tracking-widest uppercase">
+                                <Button 
+                                  onClick={() => handleAction(w.id, "Completed")} 
+                                  className="h-10 px-6 bg-gradient-to-r from-profit/20 to-profit/10 text-profit hover:from-profit hover:to-emerald-600 hover:text-white border border-profit/20 transition-all rounded-xl font-black text-[9px] tracking-widest uppercase shadow-sm hover:shadow-glow"
+                                >
                                    <CheckCircle2 className="w-3.5 h-3.5 mr-2" /> APPROVE
                                 </Button>
-                                <Button onClick={() => handleAction(w.id, "Rejected")} className="h-10 px-4 bg-loss/10 text-loss hover:bg-loss hover:text-white border border-loss/20 transition-all rounded-xl font-bold text-[9px] tracking-widest uppercase">
+                                <Button 
+                                  onClick={() => handleAction(w.id, "Rejected")} 
+                                  className="h-10 px-6 bg-gradient-to-r from-loss/20 to-loss/10 text-loss hover:from-loss hover:to-rose-600 hover:text-white border border-loss/20 transition-all rounded-xl font-black text-[9px] tracking-widest uppercase shadow-sm hover:shadow-glow-loss"
+                                >
                                    <XCircle className="w-3.5 h-3.5 mr-2" /> REJECT
                                 </Button>
                               </div>
@@ -534,11 +544,11 @@ const FinancialManagement = () => {
                   <table className="w-full text-sm min-w-[600px]">
                     <thead>
                       <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
-                        <th className="text-left pb-4">User / Source</th>
+                        <th className="text-left pb-4">User / ID</th>
                         <th className="text-left pb-4">Amount</th>
-                        <th className="text-left pb-4">USD Valuation</th>
+                        <th className="text-left pb-4">Method / TX Hash</th>
                         <th className="text-left pb-4">Status</th>
-                        <th className="text-right pb-4">Timestamp</th>
+                        <th className="text-right pb-4">Actions / Time</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -562,17 +572,53 @@ const FinancialManagement = () => {
                                 <div className="w-2 h-2 rounded-full bg-profit shadow-glow" />
                                 <span className="font-bold text-white text-sm">+{d.amount || d.fiat_amount} {d.asset || d.fiat_currency?.toUpperCase() || "USD"}</span>
                              </div>
-                          </td>
-                          <td className="py-6 font-bold text-white text-sm">
-                            {formatCurrency(d.amount)}
+                             <div className="text-[10px] uppercase font-bold text-muted-foreground mt-1 tracking-widest">{formatCurrency(d.amount)} equivalent</div>
                           </td>
                           <td className="py-6">
-                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest bg-profit/10 text-profit border border-profit/20 shadow-glow">
-                               <CheckCircle2 className="w-3 h-3" /> Verified
+                            <div className="flex flex-col gap-1">
+                               <div className="text-xs font-bold text-foreground">
+                                  {d.metadata?.method || 'Standard Deposit'} 
+                                  {d.metadata?.provider_used && <span className="text-primary ml-1">({d.metadata.provider_used})</span>}
+                               </div>
+                               {d.metadata?.tx_hash && (
+                                   <div className="text-[10px] font-mono text-muted-foreground truncate max-w-[150px] italic">
+                                     Hash: {d.metadata.tx_hash}
+                                   </div>
+                               )}
+                            </div>
+                          </td>
+                          <td className="py-6">
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                              d.status === "Pending" ? "bg-warning/10 text-warning border border-warning/20 shadow-glow-warning" :
+                              d.status === "Completed" ? "bg-profit/10 text-profit border border-profit/20 shadow-glow" :
+                              "bg-loss/10 text-loss border border-loss/20 shadow-glow-loss"
+                            }`}>
+                               {d.status === "Pending" && <Activity className="w-3 h-3 animate-pulse" />}
+                               {d.status === "Completed" && <CheckCircle2 className="w-3 h-3" />}
+                               {d.status === "Rejected" && <XCircle className="w-3 h-3" />}
+                               {d.status || "Verified"}
                             </span>
                           </td>
-                          <td className="py-6 text-right text-xs text-muted-foreground">
-                             {new Date(d.created_at || d.date).toLocaleString()}
+                          <td className="py-6 text-right">
+                            {d.status === "Pending" ? (
+                              <div className="flex justify-end gap-3 mb-2">
+                                <Button 
+                                  onClick={() => handleAction(d.id, "Completed")} 
+                                  className="h-8 px-4 bg-gradient-to-r from-profit/20 to-profit/10 text-profit hover:from-profit hover:to-emerald-600 hover:text-white border border-profit/20 transition-all rounded-lg font-black text-[9px] tracking-widest uppercase shadow-sm"
+                                >
+                                   APPROVE
+                                </Button>
+                                <Button 
+                                  onClick={() => handleAction(d.id, "Rejected")} 
+                                  className="h-8 px-4 bg-gradient-to-r from-loss/20 to-loss/10 text-loss hover:from-loss hover:to-rose-600 hover:text-white border border-loss/20 transition-all rounded-lg font-black text-[9px] tracking-widest uppercase shadow-sm"
+                                >
+                                   REJECT
+                                </Button>
+                              </div>
+                            ) : null}
+                             <div className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-tighter">
+                               {new Date(d.created_at || d.date).toLocaleString()}
+                             </div>
                           </td>
                         </tr>
                       ))}

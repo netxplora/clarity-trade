@@ -12,13 +12,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import LiveChatWidget from "@/components/dashboard/LiveChatWidget";
+
+import { SoundToggle } from "@/components/SoundToggle";
+import { playAppOpenSound } from "@/lib/sound";
+
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/dashboard", description: "Portfolio Summary" },
   { icon: Wallet, label: "Wallet", path: "/dashboard/wallet", description: "Funds & Assets" },
-  { icon: LineChart, label: "Trading", path: "/dashboard/trading", description: "Markets & Orders" },
+  { icon: TrendingUp, label: "Investment", path: "/dashboard/investments", description: "Auto-Pilot Profits" },
   { icon: Users, label: "Copy Trading", path: "/dashboard/copy-trading", description: "Follow Experts" },
-  { icon: BarChart3, label: "Analytics", path: "/dashboard/analytics", description: "Performance" },
+  { icon: BarChart3, label: "Trading", path: "/dashboard/trading", description: "Markets & Orders" },
+  { icon: LineChart, label: "Analysis", path: "/dashboard/analysis", description: "Performance" },
+  { icon: ShieldCheck, label: "Verification", path: "/dashboard/kyc", description: "Identity & KYC" },
   { icon: Gift, label: "Referrals", path: "/dashboard/referrals", description: "Earn Rewards" },
   { icon: Settings, label: "Settings", path: "/dashboard/settings", description: "Preferences" },
 ];
@@ -45,12 +51,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       if (!session) navigate("/auth/login");
     });
 
+    playAppOpenSound();
+
     document.documentElement.classList.add("dashboard-scale");
     return () => {
       document.documentElement.classList.remove("dashboard-scale");
     };
   }, [navigate]);
 
+// SNIP up to header section
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col h-full bg-sidebar border-r border-border relative overflow-hidden">
@@ -102,18 +111,18 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-[0.2em]">Support</span>
         </div>
 
-        <button className="w-full group flex items-center gap-4 px-5 py-3.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all text-left">
+        <Link to="/dashboard/help" onClick={onNavigate} className="w-full group flex items-center gap-4 px-5 py-3.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all text-left">
           <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
             <MessageSquare className="w-4 h-4" />
           </div>
           <span>Help Center</span>
-        </button>
-        <button className="w-full group flex items-center gap-4 px-5 py-3.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all text-left">
-          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+        </Link>
+        <Link to="/dashboard/status" onClick={onNavigate} className="w-full group flex items-center gap-4 px-5 py-3.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all text-left">
+          <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
             <Globe className="w-4 h-4" />
           </div>
           <span>Status Page</span>
-        </button>
+        </Link>
       </div>
 
       <div className="p-6 mt-auto border-t border-border relative z-10">
@@ -192,7 +201,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="text-[10px] lg:text-xs font-semibold text-green-600">Markets Open</span>
             </div>
 
-            <LanguageSwitcher />
+            <SoundToggle />
             <ThemeToggle />
             <CurrencySelector />
 
@@ -222,27 +231,38 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                       className="absolute right-0 mt-4 w-80 sm:w-96 z-50 bg-card border border-border shadow-huge rounded-2xl overflow-hidden"
                     >
                       <div className="p-6 border-b border-border bg-secondary/30 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-foreground">Notifications</h3>
-                        {notificationsOrEmpty.filter((n: any) => !n.is_read).length > 0 && (
-                          <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">
-                            {notificationsOrEmpty.filter((n: any) => !n.is_read).length} New
-                          </span>
-                        )}
+                        <h3 className="text-lg font-bold text-foreground font-sans">Notifications</h3>
+                        <div className="flex items-center gap-2">
+                          {notificationsOrEmpty.filter((n: any) => !n.is_read).length > 0 && (
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">
+                              {notificationsOrEmpty.filter((n: any) => !n.is_read).length} New
+                            </span>
+                          )}
+                          <button 
+                            onClick={() => setNotificationsOpen(false)}
+                            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       <div className="max-h-[400px] overflow-y-auto">
                         {notificationsOrEmpty.length > 0 ? (
                           notificationsOrEmpty.map((n: any) => {
                             const Icon = n.type === 'SYSTEM' ? ShieldAlert : n.type === 'DEPOSIT' || n.type === 'WITHDRAWAL' ? Wallet : n.type === 'TRADING' ? TrendingUp : MessageSquare;
                             const colorClass = n.type === 'DEPOSIT' ? 'text-green-500' : n.type === 'WITHDRAWAL' ? 'text-amber-500' : n.type === 'SYSTEM' ? 'text-red-500' : 'text-blue-500';
-                            const bgClass = n.type === 'DEPOSIT' ? 'bg-green-50' : n.type === 'WITHDRAWAL' ? 'bg-amber-50' : n.type === 'SYSTEM' ? 'bg-red-50' : 'bg-blue-50';
+                            const bgClass = n.type === 'DEPOSIT' ? 'bg-green-500/10' : n.type === 'WITHDRAWAL' ? 'bg-amber-500/10' : n.type === 'SYSTEM' ? 'bg-red-500/10' : 'bg-blue-500/10';
                             
                             return (
-                              <div key={n.id} onClick={() => useStore.getState().markNotificationAsRead(n.id)} className={`p-5 border-b border-border hover:bg-secondary/50 transition-colors cursor-pointer group ${!n.is_read ? 'bg-secondary/20' : ''}`}>
+                              <div key={n.id} onClick={() => useStore.getState().markNotificationAsRead(n.id)} className={`relative p-5 border-b border-border hover:bg-secondary/50 transition-colors cursor-pointer group ${!n.is_read ? 'bg-secondary/20' : ''}`}>
+                                <button onClick={(e) => { e.stopPropagation(); useStore.getState().dismissNotification(n.id, n.user_id === null || n.type === 'GLOBAL'); }} className="absolute top-3 right-3 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-foreground/10 transition-all text-muted-foreground hover:text-foreground">
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
                                 <div className="flex gap-4">
                                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${!n.is_read ? bgClass : 'bg-secondary'}`}>
                                     <Icon className={`w-5 h-5 ${!n.is_read ? colorClass : 'text-muted-foreground'}`} />
                                   </div>
-                                  <div className="flex flex-col">
+                                  <div className="flex flex-col pr-6">
                                     <span className={`text-sm font-bold transition-colors ${!n.is_read ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{n.title || 'Notification'}</span>
                                     <span className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.message || ''}</span>
                                     <span className="text-[10px] font-medium text-muted-foreground/40 mt-2 uppercase tracking-widest">{n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
@@ -330,7 +350,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="relative z-10 max-w-[1440px] mx-auto w-full">
             <PageTransition>{children}</PageTransition>
           </div>
-        </main>
+       </main>
       </div>
     </div>
   );

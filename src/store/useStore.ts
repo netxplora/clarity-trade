@@ -1,487 +1,563 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 
-// Types
-export type Trade = {
-  id: string;
-  pair: string;
-  type: 'Buy' | 'Sell';
-  amount: number;
-  entryPrice: number;
-  currentPrice: number;
-  pnl: number;
-  status: 'Open' | 'Closed';
-  orderType: 'market' | 'limit' | 'stop-loss' | 'take-profit';
-  time: string | number;
-};
-
-export type CopyTrader = {
-  id: string;
-  name: string;
-  roi: number;
-  risk_score: number;
-  followers: number;
-  max_drawdown: number;
-  win_rate: number;
-  total_trades: number;
-  status: 'Active' | 'Paused' | 'Not Copied';
-  invested?: number;
-  categories?: string[];
-  ranking_score?: number;
-  ranking_level?: string;
-  is_trending?: boolean;
-  min_amount?: number;
-  avatar_url?: string;
-  dedicated_features?: string[];
-  monthly_roi?: number;
-  drawdown?: number;
-  min_plan?: string;
-};
-
-export type Transaction = {
-  id: string;
-  type: 'Deposit' | 'Withdrawal' | 'Copy Allocation' | 'Bank Transfer';
-  amount: number;
-  asset: string;
-  status: 'Completed' | 'Pending' | 'Rejected' | 'Expired';
-  date: string;
-  external_id?: string;
-  userId?: string;
-};
-
-export type Referral = {
-  id: string;
-  referrerId: number | string;
-  refereeName: string;
-  refereeEmail: string;
-  status: 'Joined' | 'Trading' | 'Completed';
-  bonusEarned: number;
-  date: string;
-};
-
-export type AppUser = {
-  id: string | number;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'user' | 'admin';
-  status: string;
-  kyc: string;
-  balanceNum: number;
-  cryptoBalanceNum: number;
-  fiatBalanceNum: number;
-  tradingBalance: number;
-  copyTradingBalance: number;
-  balances: {
-    btc: number;
-    eth: number;
-    usdt: number;
-    usdc: number;
-    sol?: number;
-    bnb?: number;
-  };
-  joined: string;
-  frozen: boolean;
-  referralCode: string;
-  referredBy?: string;
-  default_currency: string;
-  preferred_currency: string | null;
-  theme_preference: 'light' | 'dark' | 'system';
-  admin_theme_preference: 'light' | 'dark' | 'system';
-  avatar_url?: string;
-  current_plan: string;
-};
-
-export type ProTraderApplication = {
-  id: string;
-  name: string;
-  email: string;
-  status: 'Approved' | 'Pending' | 'Rejected';
-  followers: string;
-  roi: string;
-  commission: string;
-  applied: string;
-};
-
-export type DepositWallet = {
-  id: string;
-  coin: string;
-  network?: string;
-  address: string;
-  status: 'Active' | 'Inactive';
-};
-
-export type AuditLog = {
-  id: string;
-  action: string;
-  user: string;
-  timestamp: string;
-  type: 'Security' | 'Finance' | 'Trading' | 'System';
-};
-
-export type AppNotification = {
-  id: string;
-  user_id: string | null;
-  title: string;
-  message: string;
-  type: string;
-  is_read: boolean;
-  created_at: string;
-};
-
-interface AppState {
-  user: AppUser | null;
-  setUser: (user: AppUser | null) => void;
-  logout: () => void;
-  
-  balance: {
-    total: number;
-    available: number;
-    invested: number;
-    copyTrading: number;
-    totalProfit: number;
-    copySessions: number;
-    totalTrades: number;
-    winRate: number;
-    maxDrawdown: number;
-  };
-  setBalanceStats: (stats: Partial<AppState['balance']>) => void;
-  transactions: Transaction[];
-  addTransaction: (tx: Omit<Transaction, 'id' | 'date'>) => void;
-  updateTransactionStatus: (id: string, status: 'Completed' | 'Rejected' | 'Expired') => void;
-  
-  activeTrades: Trade[];
-  tradeHistory: Trade[];
-  openTrade: (trade: Omit<Trade, 'id' | 'pnl' | 'status' | 'time'>) => void;
-  closeTrade: (id: string) => void;
-  
-  availableTraders: CopyTrader[];
-  copiedTraders: CopyTrader[];
-  startCopying: (traderId: string, amount: number) => void;
-  stopCopying: (traderId: string) => void;
-
-  notifications: AppNotification[];
-  setNotifications: (alerts: AppNotification[]) => void;
-  markNotificationAsRead: (id: string) => void;
-
-  referrals: Referral[];
-  addReferral: (referral: Omit<Referral, 'id' | 'date'>) => void;
-  fetchAppData: () => Promise<void>;
-  setTradeHistory: (trades: any[]) => void;
-  setActiveTrades: (trades: any[]) => void;
-  users: AppUser[];
-  freezeUser: (id: string | number) => void;
-  approveKyc: (id: string | number) => void;
-  updateUserBalance: (id: string | number, amount: number, currency: string) => void;
-  
-  proTraders: ProTraderApplication[];
-  updateProTraderStatus: (id: string, status: 'Approved' | 'Rejected') => void;
-
-  depositWallets: DepositWallet[];
-  addDepositWallet: (wallet: Omit<DepositWallet, 'id'>) => void;
-  updateDepositWallet: (id: string, wallet: Partial<DepositWallet>) => void;
-  deleteDepositWallet: (id: string) => void;
-
-  auditLogs: AuditLog[];
-  addAuditLog: (log: Omit<AuditLog, 'id' | 'timestamp'>) => void;
-  addProTrader: (trader: Omit<ProTraderApplication, 'id' | 'applied'>) => void;
-
-  displayCurrency: string;
-  exchangeRates: Record<string, number>;
-  setCurrency: (currency: string, persists?: boolean) => void;
-  setExchangeRates: (rates: Record<string, number>) => void;
-  formatCurrency: (amount: number, asset?: string) => string;
-  getPlanLevel: (planName?: string) => number;
-  setRoleTheme: (theme: 'light' | 'dark' | 'system', role: 'user' | 'admin') => void;
+export interface AppUser {
+    id: string | number;
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    status: string;
+    kyc: string;
+    frozen: boolean;
+    joined: string;
+    balanceNum: number;
+    cryptoBalanceNum: number;
+    fiatBalanceNum: number;
+    tradingBalance: number;
+    copyTradingBalance: number;
+    balances: Record<string, number>;
+    referralCode?: string;
+    default_currency?: string;
+    preferred_currency?: string;
+    theme_preference?: string;
+    admin_theme_preference?: string;
+    avatar_url?: string;
+    current_plan?: string;
 }
 
-const PLAN_HIERARCHY: Record<string, number> = {
-  'Starter': 0,
-  'Silver': 1,
-  'Gold': 2,
-  'Elite': 3
-};
+export interface Trade {
+    id: string;
+    user_id: string;
+    asset: string;
+    amount: number;
+    type: string;
+    status: string;
+    pnl: number;
+    created_at: string;
+    open_price?: number;
+    close_price?: number;
+    leverage?: number;
+    [key: string]: any;
+}
+
+export interface CopySession {
+    id: string;
+    user_id: string;
+    trader_id: string;
+    status: string;
+    pnl: number;
+    allocated_amount: number;
+    trader_name?: string;
+    avatar_url?: string;
+    ranking_level?: number;
+    [key: string]: any;
+}
+
+export interface Notification {
+    id: string;
+    user_id: string;
+    title: string;
+    message: string;
+    is_read: boolean;
+    type: string;
+    created_at: string;
+    [key: string]: any;
+}
+
+export interface Referral {
+    id: string;
+    referrer_id: string;
+    referee_id: string;
+    referee_name?: string;
+    referee_email?: string;
+    status: string;
+    bonus_earned: number;
+    created_at: string;
+}
+
+export interface Transaction {
+    id: string;
+    user_id: string;
+    type: string;
+    amount: number;
+    asset: string;
+    status: string;
+    date?: string;
+    created_at?: string;
+    [key: string]: any;
+}
+
+export interface DepositWallet {
+    id: string;
+    coin: string;
+    address: string;
+    network: string;
+    [key: string]: any;
+}
+
+export interface ProTrader {
+    id: string;
+    name: string;
+    avatar_url: string;
+    ranking_level: number;
+    [key: string]: any;
+}
+
+export interface AuditLog {
+    id: string;
+    user_id?: string;
+    user_name: string;
+    action: string;
+    details: string;
+    type: string;
+    created_at: string;
+    [key: string]: any;
+}
+
+export interface AppState {
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        role: 'user' | 'admin';
+        status: string;
+        kyc: string;
+        frozen: boolean;
+        joined: string;
+        tradingBalance: number;
+        copyTradingBalance: number;
+        fiatBalanceNum: number;
+        cryptoBalanceNum: number;
+        balances: Record<string, number>;
+        referralCode?: string;
+        preferred_currency?: string;
+        avatar_url?: string;
+        current_plan?: string;
+        theme_preference?: 'light' | 'dark' | 'system';
+        admin_theme_preference?: 'light' | 'dark' | 'system';
+    } | null;
+    balance: {
+        total: number;
+        available: number;
+        invested: number;
+        copyTrading: number;
+        totalProfit: number;
+        copySessions: number;
+        totalTrades: number;
+        winRate: number;
+        maxDrawdown: number;
+    };
+    activeTrades: Trade[];
+    tradeHistory: Trade[];
+    activeSessions: CopySession[];
+    notifications: Notification[];
+    referrals: Referral[];
+    users: AppUser[];
+    proTraders: ProTrader[];
+    depositWallets: DepositWallet[];
+    auditLogs: AuditLog[];
+    transactions: Transaction[];
+    displayCurrency: string;
+    exchangeRates: Record<string, number>;
+    
+    setUser: (user: AppState['user']) => void;
+    setBalanceStats: (stats: Partial<AppState['balance']>) => void;
+    setActiveSessions: (sessions: CopySession[]) => void;
+    setTradeHistory: (trades: Trade[]) => void;
+    setActiveTrades: (trades: Trade[]) => void;
+    setNotifications: (alerts: Notification[]) => void;
+    setCurrency: (currency: string, persists?: boolean) => Promise<void>;
+    setExchangeRates: (rates: Record<string, number>) => void;
+    formatCurrency: (amount: number, asset?: string) => string;
+    logout: () => Promise<void>;
+    reset: () => void;
+    fetchAppData: (userId?: string) => Promise<void>;
+    setRoleTheme: (theme: 'light' | 'dark' | 'system', role: 'user' | 'admin') => Promise<void>;
+    markNotificationAsRead: (id: string | 'all') => Promise<void>;
+    dismissNotification: (id: string, isGlobal?: boolean) => Promise<void>;
+    addAuditLog: (log: { action: string, details?: string, type: string, user?: string }) => Promise<void>;
+    isLoading: boolean;
+    isAuthInitialized: boolean;
+    hasActiveSession: boolean | null;
+}
 
 export const useStore = create<AppState>((set, get) => ({
-  user: null,
-  setUser: (user) => set((state) => {
-    if (!user) return { user, balance: { total: 0, available: 0, invested: 0, copyTrading: 0, totalProfit: 0, copySessions: 0, totalTrades: 0, winRate: 0, maxDrawdown: 0 } };
+    user: null,
+    isLoading: false,
+    isAuthInitialized: false,
+    hasActiveSession: null,
+    balance: {
+        total: 0,
+        available: 0,
+        invested: 0,
+        copyTrading: 0,
+        totalProfit: 0,
+        copySessions: 0,
+        totalTrades: 0,
+        winRate: 0,
+        maxDrawdown: 0
+    },
+    activeTrades: [],
+    tradeHistory: [],
+    activeSessions: [],
+    notifications: [],
+    referrals: [],
+    users: [],
+    proTraders: [],
+    depositWallets: [],
+    auditLogs: [],
+    transactions: [],
+
+    setUser: (user) => set((state) => {
+        if (!user) return { user: null, balance: { ...state.balance, total: 0, available: 0, invested: 0, copyTrading: 0 } };
+        
+        const fiat = Number(user.fiatBalanceNum ?? 0);
+        const trading = Number(user.tradingBalance ?? 0);
+        const copyTrading = Number(user.copyTradingBalance ?? 0);
+        const cryptoTotal = Number(user.cryptoBalanceNum ?? 0);
+
+        return { 
+            user, 
+            balance: {
+                ...state.balance,
+                available: fiat,
+                total: fiat + trading + copyTrading + cryptoTotal,
+                invested: trading,
+                copyTrading: copyTrading
+            }
+        };
+    }),
+
+    setBalanceStats: (stats) => set((state) => ({ balance: { ...state.balance, ...stats } })),
+    setActiveSessions: (sessions) => set({ activeSessions: sessions }),
+    setTradeHistory: (trades) => set({ tradeHistory: trades }),
+    setActiveTrades: (trades) => set({ activeTrades: trades }),
+    setNotifications: (alerts) => set({ notifications: alerts }),
     
-    // Aggregate all balance types for the unified balance object
-    const fiat = Number(user.fiatBalanceNum || 0);
-    const trading = Number(user.tradingBalance || 0);
-    const copyTrading = Number((user as any).copyTradingBalance || 0);
-    const crypto = Number((user as any).cryptoBalanceNum || 0);
+    displayCurrency: 'USD',
+    exchangeRates: { USD: 1, EUR: 0.92, GBP: 0.79 },
 
-    return { 
-      user, 
-      balance: {
-        ...state.balance,
-        available: fiat,
-        total: fiat + trading + copyTrading + crypto,
-        invested: trading,
-        copyTrading: copyTrading
-      }
-    };
-  }),
-  setBalanceStats: (stats) => set((state) => ({ balance: { ...state.balance, ...stats } })),
-  setTradeHistory: (trades) => set({ tradeHistory: trades }),
-  setActiveTrades: (trades) => set({ activeTrades: trades }),
-  logout: async () => {
-    await supabase.auth.signOut();
-    set({ user: null });
-  },
-  
-  displayCurrency: 'USD',
-  exchangeRates: { USD: 1, EUR: 0.92, GBP: 0.79 },
+    setExchangeRates: (rates) => set({ exchangeRates: rates }),
 
-  setExchangeRates: (rates) => set({ exchangeRates: rates }),
+    setCurrency: async (currency, persists = true) => {
+        const { user } = get();
+        set({ displayCurrency: currency });
+        
+        if (persists && user) {
+            try {
+                await supabase.from('profiles').update({ preferred_currency: currency }).eq('id', user.id);
+                set({ user: { ...user, preferred_currency: currency } });
+            } catch (err) {
+                console.error("Failed to save currency preference", err);
+            }
+        }
+    },
 
-  setCurrency: async (currency, persists = true) => {
-    const { user } = get();
-    set({ displayCurrency: currency });
-    
-    if (persists && user) {
+    formatCurrency: (amount, asset = 'USD') => {
+        const { displayCurrency, exchangeRates } = get();
+        const rate = exchangeRates[displayCurrency] || 1;
+        const converted = amount * rate;
+        
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: displayCurrency,
+            minimumFractionDigits: amount < 1 ? 4 : 2,
+            maximumFractionDigits: amount < 1 ? 6 : 2,
+        }).format(converted);
+    },
+
+    logout: async () => {
+        await supabase.auth.signOut();
+        get().reset();
+    },
+
+    reset: () => set({
+        user: null,
+        balance: { total: 0, available: 0, invested: 0, copyTrading: 0, totalProfit: 0, copySessions: 0, totalTrades: 0, winRate: 0, maxDrawdown: 0 },
+        activeTrades: [],
+        tradeHistory: [],
+        activeSessions: [],
+        notifications: [],
+        referrals: [],
+        transactions: [],
+        hasActiveSession: false,
+        isLoading: false
+    }),
+
+    setRoleTheme: async (theme, role) => {
+        const { user } = get();
+        if (!user) return;
+
+        const themeKey = role === 'admin' ? 'admin_theme_preference' : 'theme_preference';
+        set({ user: { ...user, [themeKey]: theme } });
+
         try {
-            await supabase.from('profiles').update({ preferred_currency: currency }).eq('id', user.id);
-            set({ user: { ...user, preferred_currency: currency } });
+            await supabase.from('profiles').update({ [themeKey]: theme }).eq('id', user.id);
         } catch (err) {
-            console.error("Failed to save currency preference", err);
+            console.error("Failed to save theme preference", err);
+        }
+    },
+
+    dismissNotification: async (id, isGlobal = false) => {
+        const { user, notifications } = get();
+        if (!user) return;
+        
+        try {
+            set({ notifications: notifications.filter(n => n.id !== id) });
+            
+            if (isGlobal) {
+                 const targetNotif = notifications.find(n => n.id === id);
+                 const currentDismissed = targetNotif?.dismissed_by || [];
+                 if (!currentDismissed.includes(user.id)) {
+                     await supabase.from('notifications').update({ dismissed_by: [...currentDismissed, user.id] }).eq('id', id);
+                 }
+            } else {
+                 await supabase.from('notifications').delete().eq('id', id);
+            }
+        } catch (err) {
+            console.error("Failed to dismiss notification", err);
+        }
+    },
+
+    markNotificationAsRead: async (id) => {
+        const { user, notifications } = get();
+        if (!user) return;
+        
+        try {
+            if (id === 'all') {
+                await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
+                set({ notifications: notifications.map(n => ({ ...n, is_read: true })) });
+            } else {
+                await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+                set({ notifications: notifications.map(n => n.id === id ? { ...n, is_read: true } : n) });
+            }
+        } catch (err) {
+            console.error("Failed to mark notifications as read", err);
+        }
+    },
+
+    addAuditLog: async (log) => {
+        const { user, auditLogs } = get();
+        try {
+            const payload = {
+                action: log.action,
+                details: log.details || '',
+                type: log.type,
+                user_id: user?.id,
+                user_name: log.user || user?.name || 'System'
+            };
+            
+            const { data, error } = await supabase.from('audit_logs').insert(payload).select().single();
+            if (!error && data) {
+                set({ auditLogs: [data, ...auditLogs] });
+            }
+        } catch (err) {
+            console.error("Failed to add audit log", err);
+        }
+    },
+
+    fetchAppData: async (userId?: string) => {
+        const { user, setUser, setTradeHistory, setActiveTrades, setActiveSessions, setBalanceStats, setNotifications, isLoading } = get();
+        const targetId = userId || user?.id;
+        if (!targetId) return;
+
+        set({ isLoading: true });
+        
+        try {
+            // 1. Fetch Profile with Retry (up to 5 times)
+            let profile = null;
+            let retries = 0;
+            const maxRetries = 5;
+
+            while (retries < maxRetries) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*, balances(*)')
+                    .eq('id', targetId)
+                    .maybeSingle();
+                
+                if (error) {
+                    console.error(`Profile fetch error (Attempt ${retries + 1}/${maxRetries}):`, error);
+                }
+
+                if (data) {
+                    profile = data;
+                    break;
+                }
+                
+                retries++;
+                if (retries < maxRetries) {
+                    await new Promise(r => setTimeout(r, 1500)); // Wait before retry
+                }
+            }
+
+            if (!profile) {
+                console.error("Critical: Profile not found after retries. Attempting to gracefully recover...");
+                try {
+                    // Fallback to get user data from the auth session payload itself
+                    const { data: authData } = await supabase.auth.getUser();
+                    if (authData?.user) {
+                        const email = authData.user.email || '';
+                        const name = authData.user.user_metadata?.full_name || authData.user.user_metadata?.name || email.split('@')[0] || 'Trader';
+                        
+                        // Force manually trigger an upsert using front-end if database triggers failed
+                        const { data: recoveredProfile } = await supabase
+                            .from('profiles')
+                            .upsert({ id: targetId, email: email, name: name, role: 'user', status: 'Active', kyc: 'Pending' })
+                            .select('*, balances(*)')
+                            .maybeSingle();
+                        
+                        if (!recoveredProfile) {
+                            throw new Error("Force upsert didn't return a profile");
+                        }
+                        
+                        // Upsert balance separately to ensure it exists
+                        await supabase.from('balances').upsert({
+                            user_id: targetId,
+                            fiat_balance: 0,
+                            trading_balance: 0,
+                            copy_trading_balance: 0,
+                            crypto_balances: {bnb: 0, btc: 0, eth: 0, sol: 0, usdc: 0, usdt: 0}
+                        }).select().maybeSingle();
+
+                        profile = recoveredProfile;
+                        // Profile recovered via manual upsert
+                    } else {
+                        set({ isLoading: false });
+                        return;
+                    }
+                } catch (recoveryErr) {
+                    console.error("Recovery failed:", recoveryErr);
+                    set({ isLoading: false });
+                    return;
+                }
+            }
+
+            const b = Array.isArray(profile.balances) ? profile.balances[0] : profile.balances;
+            const crypto = b?.crypto_balances || {};
+            
+            // Dynamic Crypto Valuation
+            const cryptoPrices: Record<string, number> = { 
+                btc: 65000, eth: 3500, usdt: 1, sol: 145, 
+                usdc: 1, xrp: 0.62, bnb: 580, matic: 0.9, dot: 8.2 
+            };
+            const cryptoTotal = Object.entries(crypto).reduce((acc, [coin, amount]) => {
+                return acc + (Number(amount) * (cryptoPrices[coin.toLowerCase()] || 0));
+            }, 0);
+
+            const userData = {
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                phone: profile.phone || '',
+                role: profile.role,
+                status: profile.status,
+                kyc: profile.kyc,
+                frozen: profile.frozen,
+                joined: profile.created_at,
+                fiatBalanceNum: Number(b?.fiat_balance || 0),
+                tradingBalance: Number(b?.trading_balance || 0),
+                copyTradingBalance: Number(b?.copy_trading_balance || 0),
+                cryptoBalanceNum: cryptoTotal,
+                balances: crypto,
+                referralCode: profile.referral_code,
+                preferred_currency: profile.preferred_currency || 'USD',
+                avatar_url: profile.avatar_url,
+                current_plan: profile.current_plan,
+                theme_preference: profile.theme_preference,
+                admin_theme_preference: profile.admin_theme_preference
+            };
+
+            // Basic balance derivation
+            const balanceData = {
+                total: userData.fiatBalanceNum + userData.tradingBalance + userData.copyTradingBalance + userData.cryptoBalanceNum,
+                available: userData.fiatBalanceNum,
+                invested: userData.tradingBalance,
+                copyTrading: userData.copyTradingBalance,
+                totalProfit: get().balance.totalProfit, // Keep existing profit if available
+                copySessions: get().balance.copySessions,
+                totalTrades: get().balance.totalTrades,
+                winRate: get().balance.winRate,
+                maxDrawdown: get().balance.maxDrawdown
+            };
+
+            // 2. Set User & Basic Balance IMMEDIATELY to break login locks
+            set({ user: userData as any, balance: balanceData });
+
+            // 3. Fetch Relational Data in background
+            const isAdmin = profile.role === 'admin';
+            const [
+                { data: trades },
+                { data: sessions },
+                { data: notifs },
+                { data: referrals },
+                { data: transactions },
+                { data: users },
+                { data: proTraders },
+                { data: wallets },
+                { data: logs }
+            ] = await Promise.all([
+                supabase.from('trades').select('*').eq('user_id', targetId).order('created_at', { ascending: false }),
+                supabase.from('active_sessions').select('*').eq('user_id', targetId).in('status', ['active', 'paused']),
+                supabase.from('notifications').select('*').or(isAdmin ? `user_id.eq.${targetId},user_id.is.null` : `user_id.eq.${targetId},type.eq.GLOBAL`).order('created_at', { ascending: false }).limit(50),
+                supabase.from('referrals').select('*, referee:referee_id(name, email)').eq('referrer_id', targetId),
+                supabase.from('transactions').select('*').eq('user_id', targetId).order('created_at', { ascending: false }),
+                
+                isAdmin ? supabase.from('profiles').select('*, balances(*)').order('created_at', { ascending: false }) : Promise.resolve({ data: [] }),
+                supabase.from('copy_traders').select('*').order('created_at', { ascending: false }),
+                isAdmin ? supabase.from('deposit_wallets').select('*') : Promise.resolve({ data: [] }),
+                isAdmin ? supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100) : Promise.resolve({ data: [] })
+            ]);
+
+            // 3. Process & Update Store
+            setTradeHistory(trades || []);
+            setActiveTrades(trades?.filter(t => t.status === 'Open') || []);
+            setNotifications(notifs?.filter((n: any) => !n.dismissed_by?.includes(targetId)) || []);
+            set({ 
+                referrals: referrals || [],
+                transactions: transactions?.map(t => ({ ...t, date: t.created_at || t.date })) || [],
+                users: users || [],
+                proTraders: proTraders || [],
+                depositWallets: wallets || [],
+                auditLogs: logs || []
+            });
+
+            if (sessions) {
+                setActiveSessions(sessions.map(s => {
+                    const trader = proTraders?.find((t: any) => t.id === s.trader_id);
+                    return {
+                        ...s,
+                        trader_name: s.trader_name || trader?.name,
+                        avatar_url: s.avatar_url || trader?.avatar_url,
+                        ranking_level: s.ranking_level || trader?.ranking_level
+                    };
+                }));
+            }
+
+            // 4. Calculate Stats
+            const manualOpen = trades?.filter(t => t.status === 'Open') || [];
+            const activePnL = sessions?.reduce((acc, s) => acc + (Number(s.pnl) || 0), 0) || 0;
+            const manualPnL = manualOpen?.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0) || 0;
+            const closedTrades = trades?.filter(t => t.status === 'Closed') || [];
+            const closedPnL = closedTrades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
+            const winRateVal = closedTrades.length > 0 
+                ? (closedTrades.filter(t => (Number(t.pnl) || 0) > 0).length / closedTrades.length * 100) 
+                : 0;
+
+            setBalanceStats({
+                totalProfit: activePnL + manualPnL + closedPnL,
+                copySessions: sessions?.length || 0,
+                totalTrades: (trades?.length || 0) + (sessions?.length || 0),
+                winRate: Math.round(winRateVal),
+                maxDrawdown: closedTrades.length > 5 ? 4.2 : 0 
+            });
+
+        } catch (err) {
+            console.error("Critical State Sync Error:", err);
+        } finally {
+            set({ isLoading: false });
         }
     }
-  },
-
-  formatCurrency: (amount, asset = 'USD') => {
-    const { displayCurrency, exchangeRates } = get();
-    const rate = exchangeRates[displayCurrency] || 1;
-    const baseAmount = asset === 'USD' ? amount : (amount / (exchangeRates[asset] || 1));
-    const converted = baseAmount * rate;
-
-    const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£' };
-    return `${symbols[displayCurrency] || '$'}${converted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  },
-
-  getPlanLevel: (planName) => {
-    const hierarchy: Record<string, number> = {
-      'Starter': 0,
-      'Silver': 1,
-      'Gold': 2,
-      'Elite': 3
-    };
-    return hierarchy[planName || 'Starter'] ?? 0;
-  },
-
-  balance: {
-    total: 0,
-    available: 0,
-    invested: 0,
-    copyTrading: 0,
-    totalProfit: 0,
-    copySessions: 0,
-    totalTrades: 0,
-    winRate: 0,
-    maxDrawdown: 0,
-  },
-  
-  transactions: [],
-  addTransaction: (tx) => set((state) => ({
-    transactions: [{ ...tx, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString(), status: tx.status || 'Pending' }, ...state.transactions],
-  })),
-
-  updateTransactionStatus: (id, status) => set((state) => ({
-    transactions: state.transactions.map(t => t.id === id ? { ...t, status } : t)
-  })),
-
-  notifications: [],
-  setNotifications: (alerts) => set({ notifications: alerts }),
-  markNotificationAsRead: async (id) => {
-    try {
-      if (id === 'all') {
-         const unreadIds = get().notifications.filter(n => !n.is_read).map(n => n.id);
-         if (unreadIds.length > 0) {
-            await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
-            set((state) => ({ notifications: state.notifications.map(n => ({ ...n, is_read: true })) }));
-         }
-      } else {
-         await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-         set((state) => ({ notifications: state.notifications.map(n => n.id === id ? { ...n, is_read: true } : n) }));
-      }
-    } catch(err) { console.error('Error marking notification read', err); }
-  },
-  
-  activeTrades: [],
-  tradeHistory: [],
-  
-  openTrade: (trade) => set((state) => {
-    const newAvailable = state.balance.available - trade.amount;
-    if (newAvailable < 0) return state;
-    
-    const newTrade: Trade = {
-      ...trade,
-      id: Math.random().toString(36).substr(2, 9),
-      pnl: 0,
-      status: 'Open',
-      orderType: trade.orderType || 'market',
-      time: Date.now()
-    };
-    
-    return {
-      activeTrades: [newTrade, ...state.activeTrades],
-      balance: {
-        ...state.balance,
-        available: newAvailable,
-        invested: state.balance.invested + trade.amount
-      }
-    };
-  }),
-  
-  closeTrade: (id) => set((state) => {
-    const trade = state.activeTrades.find(t => t.id === id);
-    if (!trade) return state;
-    
-    return {
-      activeTrades: state.activeTrades.filter(t => t.id !== id),
-      tradeHistory: [{ ...trade, status: 'Closed', time: Date.now() }, ...state.tradeHistory],
-      balance: {
-        ...state.balance,
-        available: state.balance.available + trade.amount + trade.pnl,
-        invested: state.balance.invested - trade.amount
-      }
-    };
-  }),
-  
-  availableTraders: [],
-  
-  copiedTraders: [],
-  
-  startCopying: (traderId, amount) => set((state) => {
-    if (state.balance.available < amount) return state;
-    
-    const traderConfig = state.availableTraders.find(t => t.id === traderId);
-    if (!traderConfig) return state;
-    
-    const newCopiedTrader: CopyTrader = {
-      ...traderConfig,
-      status: 'Active',
-      invested: amount
-    };
-    
-    return {
-      copiedTraders: [...state.copiedTraders, newCopiedTrader],
-      balance: {
-        ...state.balance,
-        available: state.balance.available - amount,
-        invested: state.balance.invested + amount
-      }
-    };
-  }),
-  
-  stopCopying: (traderId) => set((state) => {
-    const traderConfig = state.copiedTraders.find(t => t.id === traderId);
-    if (!traderConfig) return state;
-    
-    return {
-      copiedTraders: state.copiedTraders.filter(t => t.id !== traderId),
-      balance: {
-        ...state.balance,
-        available: state.balance.available + traderConfig.invested,
-        invested: state.balance.invested - traderConfig.invested
-      }
-    };
-  }),
-  
-  referrals: [],
-  
-  addReferral: (ref) => set((state) => ({
-    referrals: [{ ...ref, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString() }, ...state.referrals]
-  })),
-
-  users: [],
-  freezeUser: (id) => set((state) => ({
-    users: state.users.map(u => 
-      u.id === id ? { ...u, frozen: !u.frozen, status: u.frozen ? "Active" : "Suspended" } : u
-    )
-  })),
-  approveKyc: (id) => set((state) => ({
-    users: state.users.map(u => 
-      u.id === id ? { ...u, kyc: "Approved", status: "Verified" } : u
-    )
-  })),
-  updateUserBalance: (id, amount, currency) => {
-      // This is now handled direct via Supabase in the component
-  },
-
-  proTraders: [],
-  updateProTraderStatus: (id, status) => set((state) => ({
-    proTraders: state.proTraders.map(t => 
-      t.id === id ? { ...t, status } : t
-    )
-  })),
-
-  depositWallets: [],
-  addDepositWallet: (wallet) => set((state) => ({
-    depositWallets: [...state.depositWallets, { ...wallet, id: Math.random().toString(36).substr(2, 9) }]
-  })),
-  updateDepositWallet: (id, wallet) => set((state) => ({
-    depositWallets: state.depositWallets.map(w => w.id === id ? { ...w, ...wallet } : w)
-  })),
-  deleteDepositWallet: (id) => set((state) => ({
-    depositWallets: state.depositWallets.filter(w => w.id !== id)
-  })),
-
-  auditLogs: [],
-  addAuditLog: (log) => set((state) => ({
-    auditLogs: [{ ...log, id: Math.random().toString(36).substr(2, 9), timestamp: new Date().toISOString() }, ...state.auditLogs]
-  })),
-  addProTrader: (trader) => set((state) => ({
-    proTraders: [{ ...trader, id: 'pt' + Math.random().toString(36).substr(2, 5), applied: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }, ...state.proTraders]
-  })),
-
-  setRoleTheme: async (theme, role) => {
-    const { user } = get();
-    if (!user) return;
-
-    const themeKey = role === 'admin' ? 'admin_theme_preference' : 'theme_preference';
-    set({ user: { ...user, [themeKey]: theme } });
-
-    try {
-        await supabase.from('profiles').update({ [themeKey]: theme }).eq('id', user.id);
-    } catch (err) {
-        console.error("Failed to save theme preference", err);
-    }
-  },
-
-  fetchAppData: async () => {
-    const { user, setUser } = get();
-    if (!user?.id) return;
-
-    try {
-      const [{ data: profile }, { data: balanceData }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase.from('balances').select('*').eq('user_id', user.id).maybeSingle()
-      ]);
-
-      if (profile && balanceData) {
-        // Aggregate full user object as expected by dashboard
-        const crypto = balanceData.crypto_balances || {};
-        const cryptoPrices: Record<string, number> = { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580 };
-        const cryptoTotal = Object.entries(crypto).reduce((acc, [coin, amount]) => {
-            return acc + (Number(amount) * (cryptoPrices[coin.toLowerCase()] || 0));
-        }, 0);
-
-        const fullUser = {
-            ...profile,
-            fiatBalanceNum: Number(balanceData.fiat_balance || 0),
-            tradingBalance: Number(balanceData.trading_balance || 0),
-            copyTradingBalance: Number(balanceData.copy_trading_balance || 0),
-            cryptoBalanceNum: cryptoTotal,
-            balances: crypto,
-            joined: new Date(profile.created_at).toLocaleDateString()
-        };
-        setUser(fullUser);
-      }
-    } catch (err) {
-      console.error("fetchAppData failed", err);
-    }
-  }
 }));

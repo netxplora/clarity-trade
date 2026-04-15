@@ -60,14 +60,50 @@ const TradingPage = () => {
   const [activeLedgerTab, setActiveLedgerTab] = useState("Open Positions");
   const [isTradeLoading, setIsTradeLoading] = useState(false);
 
-  const { user, balance, formatCurrency, fetchAppData } = useStore();
+  const { user, balance, formatCurrency, fetchAppData, activeTrades: storeActiveTrades, tradeHistory: storeTradeHistory } = useStore();
   const [activeTrades, setActiveTrades] = useState<any[]>([]);
   const [tradeHistory, setTradeHistory] = useState<any[]>([]);
   
   const [dbPairs, setDbPairs] = useState<any[]>([]);
 
+  // Sync trades from global store (kept in sync by AuthListener real-time subscription)
+  useEffect(() => {
+    if (storeActiveTrades && storeActiveTrades.length > 0) {
+      setActiveTrades(storeActiveTrades.map(t => ({
+        id: t.id,
+        pair: t.pair,
+        type: t.type,
+        amount: t.amount,
+        entryPrice: t.entry_price ?? t.entryPrice,
+        currentPrice: t.current_price ?? t.currentPrice,
+        pnl: t.pnl,
+        time: t.time,
+        status: t.status
+      })));
+    }
+  }, [storeActiveTrades]);
+
+  useEffect(() => {
+    if (storeTradeHistory && storeTradeHistory.length > 0) {
+      setTradeHistory(storeTradeHistory.filter(t => t.status === 'Closed').map(t => ({
+        id: t.id,
+        pair: t.pair,
+        type: t.type,
+        amount: t.amount,
+        entryPrice: t.entry_price ?? t.entryPrice,
+        currentPrice: t.current_price ?? t.currentPrice,
+        pnl: t.pnl,
+        time: t.time,
+        status: t.status
+      })));
+    }
+  }, [storeTradeHistory]);
+
   const fetchUserTrades = async () => {
     if (!user?.id) return;
+    // Only fetch directly if global store hasn't populated yet
+    if (storeActiveTrades.length > 0 || storeTradeHistory.length > 0) return;
+    
     const { data } = await supabase.from('trades').select('*').eq('user_id', user.id).order('time', { ascending: false });
     if (data) {
         const mapped = data.map(t => ({
@@ -107,7 +143,6 @@ const TradingPage = () => {
         const { error } = await supabase.from('trades').delete().eq('id', orderId);
         if (!error) {
             toast.success("Order Cancelled");
-            fetchUserTrades();
             fetchAppData();
         }
     } catch(err) {
@@ -343,7 +378,7 @@ const TradingPage = () => {
           </div>
 
           <div className="ml-auto flex items-center gap-4">
-             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-100 text-green-700 text-xs font-bold uppercase tracking-wider">
+             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 text-xs font-bold uppercase tracking-wider">
                 <Target className="w-4 h-4" /> Live Market
              </div>
           </div>
@@ -355,24 +390,24 @@ const TradingPage = () => {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                {/* Market Selection Column */}
                <div className="hidden xl:col-span-3 xl:block">
-                  <div className="bg-card border border-border h-[720px] flex flex-col shadow-sm rounded-3xl overflow-hidden">
+                  <div className="bg-card border border-border/50 h-[720px] flex flex-col shadow-huge rounded-[2rem] overflow-hidden">
                     <div className="p-4 bg-secondary/30 border-b border-border space-y-3">
                         <div className="flex p-1 bg-secondary rounded-xl border border-border">
                            {(["CRYPTO", "FOREX", "COMMODITIES"] as MarketCategory[]).map(cat => (
                               <button 
                                  key={cat}
                                  onClick={() => setCategory(cat)}
-                                 className={`flex-1 py-1.5 text-[9px] font-bold tracking-widest uppercase transition-all rounded-lg ${category === cat ? "bg-card text-primary border border-border shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-card/50"}`}
+                                 className={`flex-1 py-1.5 text-[9px] font-black tracking-[0.2em] uppercase transition-all rounded-lg ${category === cat ? "bg-card text-primary border border-border shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-card/50"}`}
                               >
                                  {cat.substring(0, 3)}
                               </button>
                            ))}
                         </div>
                        <div className="relative group">
-                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground transition-colors" />
+                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                          <input 
-                           className="w-full bg-white border border-border rounded-xl pl-9 pr-4 py-2.5 text-xs font-semibold uppercase tracking-wider focus:border-primary/50 outline-none transition-all text-zinc-950" 
-                           placeholder="Search Pairs..."
+                           className="w-full bg-secondary/50 border border-border rounded-xl pl-11 pr-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] focus:border-primary/50 outline-none transition-all text-foreground shadow-inner" 
+                           placeholder="Search markets..."
                            value={searchQuery}
                            onChange={(e) => setSearchQuery(e.target.value)}
                          />
@@ -466,7 +501,7 @@ const TradingPage = () => {
                                     </td>
                                     <td className="px-6 py-5">
                                        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                                          trade.type === 'Buy' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                                          trade.type === 'Buy' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-red-500/10 text-red-600 border-red-500/20'
                                        }`}>
                                           {trade.type}
                                        </span>
@@ -487,7 +522,7 @@ const TradingPage = () => {
                                           variant="outline" 
                                           size="sm" 
                                           onClick={() => handleCloseTrade(trade.id)}
-                                          className="h-9 px-4 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all"
+                                          className="h-9 px-4 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/20 transition-all"
                                        >
                                            Close Trade
                                         </Button>
@@ -525,7 +560,7 @@ const TradingPage = () => {
                                     <td className="px-6 py-5 font-bold text-sm">{trade.pair}</td>
                                     <td className="px-6 py-5">
                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
-                                          trade.type === 'Buy' ? 'text-green-600 border-green-200 bg-green-50' : 'text-red-600 border-red-200 bg-red-50'
+                                          trade.type === 'Buy' ? 'text-green-600 border-green-500/20 bg-green-500/10' : 'text-red-600 border-red-500/20 bg-red-500/10'
                                        }`}>
                                           {trade.type}
                                        </span>
@@ -583,7 +618,7 @@ const TradingPage = () => {
                                           variant="ghost" 
                                           size="sm" 
                                           onClick={() => handleCancelOrder(order.id)}
-                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-[10px] font-bold uppercase tracking-widest"
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-500/10 text-[10px] font-bold uppercase tracking-widest"
                                        >
                                           Cancel
                                        </Button>
@@ -598,25 +633,24 @@ const TradingPage = () => {
             </div>
           </div>
 
-          {/* Order Form */}
           <div className="col-span-12 lg:col-span-3">
-             <div className="bg-card border border-border p-6 mt-0 space-y-8 sticky top-10 shadow-sm rounded-3xl overflow-hidden relative">
+             <div className="bg-card border border-border/50 p-6 mt-0 space-y-8 sticky top-10 shadow-huge rounded-[2rem] overflow-hidden relative">
                 <div className="flex rounded-2xl bg-secondary p-1.5 border border-border relative z-10">
                   <button
                     onClick={() => setSide("buy")}
-                    className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 ${
-                      side === "buy" ? "bg-green-600 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                    className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300 ${
+                      side === "buy" ? "bg-gradient-to-r from-profit to-emerald-600 text-white shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                     }`}
                   >
-                    Buy
+                    Buy Market
                   </button>
                   <button
                     onClick={() => setSide("sell")}
-                    className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 ${
-                      side === "sell" ? "bg-red-600 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                    className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300 ${
+                      side === "sell" ? "bg-gradient-to-r from-loss to-rose-600 text-white shadow-glow-loss" : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                     }`}
                   >
-                    Sell
+                    Sell Market
                   </button>
                 </div>
 
@@ -647,7 +681,7 @@ const TradingPage = () => {
                           <input 
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                            className="w-full bg-white border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-zinc-950 shadow-inner" 
+                            className="w-full bg-secondary/50 border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-foreground shadow-inner" 
                             type="number" 
                           />
                         </div>
@@ -666,7 +700,7 @@ const TradingPage = () => {
                            <input 
                               value={amount}
                               onChange={(e) => setAmount(e.target.value)}
-                              className="w-full bg-white border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-zinc-950 shadow-inner" 
+                              className="w-full bg-secondary/50 border border-border h-12 rounded-xl px-4 text-sm font-bold focus:border-primary/50 outline-none transition-all text-foreground shadow-inner" 
                               placeholder="0.0000"
                               type="number" 
                            />
@@ -712,16 +746,16 @@ const TradingPage = () => {
 
                     <div className="space-y-3 pt-2">
                         <Button
-                         onClick={handleExecuteTrade}
-                         disabled={isTradeLoading}
-                         className={`w-full h-12 rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all ${
-                            side === "sell" 
-                            ? "bg-red-600 hover:bg-red-700 text-white" 
-                            : "bg-green-600 hover:bg-green-700 text-white"
-                         } disabled:opacity-50`}
-                        >
-                          {isTradeLoading ? "Processing..." : `${side} ${selectedPair.split("/")[0]}`}
-                        </Button>
+                          onClick={handleExecuteTrade}
+                          disabled={isTradeLoading}
+                          className={`w-full h-14 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-huge transition-all ${
+                             side === "sell" 
+                             ? "bg-gradient-to-r from-loss to-rose-600 hover:scale-[1.02] text-white shadow-glow-loss" 
+                             : "bg-gradient-to-r from-profit to-emerald-600 hover:scale-[1.02] text-white shadow-glow"
+                          } disabled:opacity-50 border-none`}
+                         >
+                           {isTradeLoading ? "Processing Fill..." : `Execute ${side} ${selectedPair.split("/")[0]}`}
+                         </Button>
 
                        <div className="flex items-start gap-2 justify-center py-2 px-3 rounded-xl bg-secondary border border-border">
                           <ShieldCheck className="w-4 h-4 text-primary shrink-0 opacity-80" />

@@ -74,7 +74,7 @@ const Register = () => {
           >
             <h1 className="text-5xl font-bold font-playfair text-white mb-6 leading-tight">
                Built for the <br />
-               <span className="text-transparent bg-clip-text bg-gradient-gold">Next Generation</span>
+               <span className="text-transparent bg-clip-text bg-gradient-gold">Professional</span>
             </h1>
             <p className="text-lg text-white/50 leading-relaxed">
                Open an institutional-grade account in minutes. Securely deposit fiat or crypto and trade across 150+ global markets.
@@ -84,7 +84,7 @@ const Register = () => {
       </div>
 
       {/* Left side — Form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 relative bg-white">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 relative bg-background">
         <motion.div
            initial={{ opacity: 0, x: -20 }}
            animate={{ opacity: 1, x: 0 }}
@@ -95,51 +95,51 @@ const Register = () => {
             <Link to="/" className="w-16 h-16 transition-transform hover:scale-105 mb-6">
                 <img src="/logo.png" alt="Clarity Trade Logo" className="w-full h-full object-contain drop-shadow-gold" />
             </Link>
-            <h2 className="text-3xl font-bold font-playfair text-zinc-950 mb-3">Create an account</h2>
-            <p className="text-zinc-700 text-sm max-w-[280px] font-medium">Fill in your details to start trading immediately.</p>
+            <h2 className="text-3xl font-bold font-playfair text-foreground mb-3">Create an account</h2>
+            <p className="text-muted-foreground text-sm max-w-[280px] font-medium">Fill in your details to start trading immediately.</p>
 
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2.5">
-                  <label className="text-[13px] font-bold text-zinc-900">First Name</label>
+                  <label className="text-[13px] font-bold text-foreground">First Name</label>
                   <input 
                      type="text" 
                      required
                      value={firstName}
                      onChange={(e) => setFirstName(e.target.value)}
                      placeholder="John" 
-                     className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
+                     className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                   />
                </div>
                <div className="space-y-2.5">
-                  <label className="text-[13px] font-bold text-zinc-900">Last Name</label>
+                  <label className="text-[13px] font-bold text-foreground">Last Name</label>
                   <input 
                      type="text" 
                      required
                      value={lastName}
                      onChange={(e) => setLastName(e.target.value)}
                      placeholder="Doe" 
-                      className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
+                      className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                    />
                 </div>
              </div>
 
              <div className="space-y-2.5">
-                <label className="text-[13px] font-bold text-zinc-900">Email address</label>
+                <label className="text-[13px] font-bold text-foreground">Email address</label>
                 <input 
                    type="email" 
                    required
                    value={email}
                    onChange={(e) => setEmail(e.target.value)}
                    placeholder="name@company.com" 
-                   className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
+                   className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                 />
              </div>
 
              <div className="space-y-2.5">
-                <label className="text-[13px] font-bold text-zinc-900">Password</label>
+                <label className="text-[13px] font-bold text-foreground">Password</label>
                 <div className="relative">
                   <input 
                      type={showPassword ? "text" : "password"} 
@@ -147,29 +147,29 @@ const Register = () => {
                      value={password}
                      onChange={(e) => setPassword(e.target.value)}
                      placeholder="••••••••" 
-                     className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 pr-12 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm tracking-widest text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
+                     className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 pr-12 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm tracking-widest text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors">
                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-zinc-500 mt-1.5 ml-1 font-medium">Must be at least 8 characters.</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5 ml-1 font-medium">Must be at least 8 characters.</p>
              </div>
 
              <div className="space-y-2.5">
-                <label className="text-[13px] font-bold text-zinc-900">Referral Code (Optional)</label>
+                <label className="text-[13px] font-bold text-foreground">Referral Code (Optional)</label>
                 <input 
                    type="text" 
                    value={referralCode}
                    onChange={(e) => setReferralCode(e.target.value)}
                    placeholder="E.g. JD777" 
-                   className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm uppercase font-bold text-zinc-950 placeholder:text-muted-foreground/30 shadow-sm" 
+                   className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm uppercase font-bold text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                 />
             </div>
 
             <div className="flex items-start gap-3 mt-4">
                <input type="checkbox" className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary/40 bg-secondary" required />
-               <p className="text-xs text-zinc-900 font-bold whitespace-normal leading-relaxed">
+               <p className="text-xs text-foreground font-bold whitespace-normal leading-relaxed">
    By joining, you agree to our <Link to="/terms-of-service" className="text-primary hover:underline font-black">Terms of Service</Link> and <Link to="/privacy-policy" className="text-primary hover:underline font-black">Privacy Policy</Link>.
 </p>
             </div>
@@ -182,7 +182,7 @@ const Register = () => {
 
 
 
-          <p className="text-center text-sm text-zinc-600 mt-10">
+          <p className="text-center text-sm text-muted-foreground mt-10">
             Already have an account?{" "}
             <Link to="/auth/login" className="font-semibold text-primary hover:text-primary/80 transition-colors">
                Sign In

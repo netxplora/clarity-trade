@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Input } from "@/components/ui/input";
@@ -18,11 +18,43 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
+import { supabase } from "@/lib/supabase";
 
 const ReferralManagement = () => {
-  const referrals = useStore(state => state.referrals);
-  const users = useStore(state => state.users);
+  const [referrals, setReferrals] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const fetchData = useCallback(async () => {
+    const { data } = await supabase
+      .from('referrals')
+      .select('*, referee:referee_id(name, email)')
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      setReferrals(data.map(r => ({
+        id: r.id,
+        referrerId: r.referrer_id,
+        refereeName: r.referee?.name || 'Anonymous',
+        refereeEmail: r.referee?.email || 'No email',
+        status: r.status,
+        bonusEarned: r.bonus_earned,
+        date: r.created_at
+      })));
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+
+    const channel = supabase
+      .channel('admin-referrals-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'referrals' }, () => fetchData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchData]);
 
   const filteredReferrals = referrals.filter(ref => 
     ref.refereeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,9 +62,9 @@ const ReferralManagement = () => {
   );
 
   const stats = [
-    { label: "Active Affiliates", value: "24", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
-    { label: "Total Commissions", value: `$${referrals.reduce((acc, r) => acc + r.bonusEarned, 0).toLocaleString()}`, icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
-    { label: "Conversion Rate", value: "12.5%", icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "Active Affiliates", value: "24", icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Total Commissions", value: `$${referrals.reduce((acc, r) => acc + r.bonusEarned, 0).toLocaleString()}`, icon: DollarSign, color: "text-green-500", bg: "bg-green-500/10" },
+    { label: "Conversion Rate", value: "12.5%", icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Top Bonus", value: "$1,200", icon: Award, color: "text-primary", bg: "bg-primary/10" },
   ];
 
@@ -118,7 +150,7 @@ const ReferralManagement = () => {
                     </td>
                     <td className="py-3 px-4">
                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center text-[10px] font-bold border border-pink-100 uppercase">
+                          <div className="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-600 flex items-center justify-center text-[10px] font-bold border border-pink-500/20 uppercase">
                              {ref.referrerId.toString().substring(0, 2)}
                           </div>
                            <span className="font-mono text-xs font-bold text-muted-foreground">ID_{ref.referrerId}</span>
@@ -126,9 +158,9 @@ const ReferralManagement = () => {
                     </td>
                     <td className="py-3 px-8">
                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-                          ref.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                          ref.status === 'Completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                           ref.status === 'Trading' ? 'bg-primary/10 text-primary border-primary/20' :
-                          'bg-amber-50 text-amber-700 border-amber-200'
+                          'bg-amber-500/10 text-amber-600 border-amber-500/20'
                         }`}>
                           {ref.status === 'Completed' ? <CheckCircle2 className="w-3.5 h-3.5" /> :
                            ref.status === 'Trading' ? <Zap className="w-3.5 h-3.5" /> :

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import {
   ArrowUpRight, Wallet, Activity, TrendingUp, BarChart3,
-  Users, Gift, ArrowRight, ShieldCheck, Search
+  Users, Gift, ArrowRight, ShieldCheck, Search, LayoutGrid
 } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useStore } from "@/store/useStore";
@@ -13,41 +13,53 @@ import { supabase } from "@/lib/supabase";
 const traderAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100&h=100";
 
 const Overview = () => {
-  const { user, balance, formatCurrency } = useStore();
+  const { user, balance, formatCurrency, activeTrades, activeSessions, transactions, tradeHistory } = useStore();
   const navigate = useNavigate();
-  const [activeTrades, setActiveTrades] = useState<any[]>([]);
-  const [copiedTraders, setCopiedTraders] = useState<any[]>([]);
 
-  const fetchData = useCallback(async () => {
-    if (!user) return;
-    try {
-      const [{ data: trades }, { data: sessions }] = await Promise.all([
-        supabase.from('trades').select('*').eq('user_id', user.id).eq('status', 'Open').limit(5),
-        supabase.from('active_sessions').select('*').eq('user_id', user.id)
-      ]);
+  // Aggregate all activity types (Trades, Transactions, Sessions)
+  const combinedActivity = [
+    ...transactions.map(t => ({
+      id: t.id,
+      pair: t.asset || 'Cash',
+      type: t.type, // Deposit, Withdrawal, etc.
+      amount: t.amount,
+      pnl: null,
+      created_at: t.created_at,
+      status: t.status,
+      isTransaction: true,
+      isTrade: false
+    })),
+    ...activeTrades.map(t => ({
+      id: t.id,
+      pair: t.pair || t.asset,
+      type: t.type, // Buy/Sell
+      amount: t.amount,
+      pnl: t.pnl,
+      created_at: t.created_at,
+      status: t.status,
+      isTransaction: false,
+      isTrade: true
+    })),
+    ...tradeHistory.filter(t => t.status === 'Closed').map(t => ({
+      id: t.id,
+      pair: t.pair || t.asset,
+      type: t.type,
+      amount: t.amount,
+      pnl: t.pnl,
+      created_at: t.created_at,
+      status: t.status,
+      isTransaction: false,
+      isTrade: true
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+   .slice(0, 10);
 
-      if (trades) setActiveTrades(trades);
-      if (sessions) setCopiedTraders(sessions);
-    } catch (err) {
-      console.error("Error fetching overview data:", err);
-    }
-  }, [user]);
+  const [filterQuery, setFilterQuery] = useState("");
 
-  useEffect(() => {
-    fetchData();
-
-    if (!user?.id) return;
-
-    const mainSub = supabase
-      .channel('overview-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${user.id}` }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${user.id}` }, () => fetchData())
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(mainSub);
-    };
-  }, [fetchData, user?.id]);
+  const filteredActivity = combinedActivity.filter(item => 
+    item.pair.toLowerCase().includes(filterQuery.toLowerCase()) || 
+    item.type.toLowerCase().includes(filterQuery.toLowerCase())
+  );
 
   const stats = [
     { label: "Total Balance", value: formatCurrency(balance.total), change: "Combined Assets", icon: Wallet, up: true, color: "text-primary" },
@@ -62,18 +74,27 @@ const Overview = () => {
 
 
         {/* Welcome Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
-          <div>
-            <div className="flex items-center gap-2 text-primary mb-2">
-               <ShieldCheck className="w-4 h-4 shadow-gold" />
-               <span className="text-[10px] font-black tracking-[0.3em] uppercase">Account Secure</span>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4">
+          <div className="relative group">
+            <div className="flex items-center gap-2 text-primary mb-3">
+               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-glow-gold" />
+               <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-70">Platform Status: Online</span>
             </div>
-            <h1 className="text-3xl lg:text-5xl font-black text-foreground tracking-tight leading-none">
-              Welcome Back, <span className="text-primary italic">{user?.name?.split(' ')[0] || "Trader"}</span>
+            <h1 className="text-4xl lg:text-6xl font-black text-foreground tracking-tight leading-[0.9] flex flex-col">
+              <span className="opacity-40 font-bold text-2xl lg:text-3xl mb-1">Portfolio Overview</span>
+              <span>Welcome Back, <span className="text-primary italic font-serif pr-2">{user?.name?.split(' ')[0] || "Trader"}</span></span>
             </h1>
-            <p className="text-muted-foreground text-sm font-semibold mt-2 max-w-xl opacity-80">
-               Ready to trade crypto and manage your portfolio.
+            <p className="text-muted-foreground text-sm font-semibold mt-4 max-w-xl opacity-60 leading-relaxed">
+               Monitor global market positions, equity performance, and automated copy-trading sessions in real-time.
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+             <Button variant="outline" className="h-14 px-8 rounded-2xl border-border bg-card/50 font-bold uppercase tracking-widest text-[10px] hover:border-primary/50 transition-all" onClick={() => navigate("/dashboard/wallet")}>
+                Deposit
+             </Button>
+             <Button variant="hero" className="h-14 px-8 rounded-2xl shadow-gold font-bold uppercase tracking-widest text-[10px]" onClick={() => navigate("/dashboard/trading")}>
+                Trade Now
+             </Button>
           </div>
         </div>
 
@@ -83,24 +104,26 @@ const Overview = () => {
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-card p-6 rounded-3xl border border-border shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.5, ease: "circOut" }}
+              className="bg-card p-8 rounded-[2rem] border border-border shadow-huge hover:border-primary/30 transition-all group relative overflow-hidden ring-1 ring-border/5"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`p-3 rounded-2xl bg-secondary ${stat.color} group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-5 h-5" />
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <div className={`p-4 rounded-2xl bg-secondary ${stat.color} group-hover:scale-110 transition-all duration-500 shadow-sm`}>
+                  <stat.icon className="w-6 h-6" />
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">{stat.change}</span>
-                  {stat.up && <ArrowUpRight className="w-3 h-3 text-green-500 mt-1" />}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest leading-none">{stat.change}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-green-500/60" />
+                  </div>
                 </div>
               </div>
               <div className="relative z-10">
-                <div className="text-2xl font-black text-foreground tracking-tight mb-0.5">{stat.value}</div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{stat.label}</div>
+                <div className="text-3xl font-black text-foreground tracking-tighter mb-1.5 tabular-nums drop-shadow-sm">{stat.value}</div>
+                <div className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">{stat.label}</div>
               </div>
             </motion.div>
           ))}
@@ -108,116 +131,166 @@ const Overview = () => {
 
         {/* Dynamic Panels */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Active Trades */}
-          <div className="lg:col-span-8 bg-card p-4 sm:p-6 rounded-3xl border border-border shadow-sm flex flex-col min-h-[500px]">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-              <h2 className="text-xl font-bold font-sans text-foreground">Recent Activity</h2>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Recent Activity Ledger */}
+          <div className="lg:col-span-8 bg-card p-6 sm:p-10 rounded-[2.5rem] border border-border shadow-huge flex flex-col min-h-[550px] relative overflow-hidden group/panel">
+            <div className="absolute top-0 right-0 p-10 opacity-[0.01] pointer-events-none group-hover/panel:opacity-[0.03] transition-opacity">
+               <Activity className="w-64 h-64 rotate-12" />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-6 relative z-10">
+              <div>
+                <h2 className="text-2xl font-black text-foreground tracking-tight mb-1">Recent Activity</h2>
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">Transaction History</span>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input className="h-10 pl-9 pr-4 bg-secondary border border-border rounded-xl text-xs font-semibold w-full focus:border-primary/50 transition-all outline-none" placeholder="Search pair..." />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input 
+                    className="h-12 pl-12 pr-4 bg-secondary/50 border border-border rounded-xl text-xs font-bold w-full focus:border-primary/50 transition-all outline-none placeholder:opacity-50" 
+                    placeholder="Filter records..." 
+                    value={filterQuery}
+                    onChange={(e) => setFilterQuery(e.target.value)}
+                  />
                 </div>
-                <Button variant="outline" size="icon" className="h-10 w-10 border-border bg-secondary shrink-0"><LayoutGrid className="w-4 h-4" /></Button>
+                <Button variant="outline" size="icon" className="h-12 w-12 border-border bg-secondary shrink-0 rounded-xl"><LayoutGrid className="w-4 h-4" /></Button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full text-sm min-w-[600px]">
+            <div className="flex-1 overflow-x-auto relative z-10 custom-scrollbar">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead>
-                  <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
-                    <th className="text-left pb-4">Asset</th>
-                    <th className="text-left pb-4">Type</th>
-                    <th className="text-left pb-4">Amount</th>
-                    <th className="text-left pb-4">P&L</th>
-                    <th className="text-right pb-4">Time</th>
+                  <tr className="text-muted-foreground/30 border-b border-border/50 text-[10px] font-black uppercase tracking-[0.2em]">
+                    <th className="text-left pb-6">Event / Asset</th>
+                    <th className="text-left pb-6">Category</th>
+                    <th className="text-left pb-6">Value</th>
+                    <th className="text-left pb-6">Result</th>
+                    <th className="text-right pb-6">Time</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
-                  {activeTrades.length === 0 ? (
+                <tbody className="divide-y divide-border/20">
+                  {filteredActivity.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-20 text-center">
+                      <td colSpan={5} className="py-24 text-center">
                         <div className="flex flex-col items-center text-muted-foreground">
-                          <Activity className="w-10 h-10 mb-3 opacity-20" />
-                          <p className="text-sm font-semibold uppercase tracking-widest opacity-40">No recent activity detected.</p>
+                          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-6 opacity-40">
+                             <Activity className="w-8 h-8" />
+                          </div>
+                          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40">No activity logged in the current cycle.</p>
+                          <Button variant="link" className="mt-4 text-primary font-bold text-[10px] uppercase tracking-widest" onClick={() => navigate("/dashboard/trading")}>Start Trading Now <ArrowRight className="w-3 h-3 ml-2" /></Button>
                         </div>
                       </td>
                     </tr>
-                  ) : activeTrades.map((trade, i) => (
-                    <tr key={trade.id} className="group/row hover:bg-secondary/30 transition-colors">
-                      <td className="py-5">
-                        <div className="font-bold text-foreground text-sm tracking-tight flex items-center gap-2">
-                          {trade.pair}
-                        </div>
-                        <div className="text-[9px] font-black text-muted-foreground/40 uppercase mt-1 tracking-tighter">ID: {trade.id?.substring(0, 12)}</div>
-                      </td>
-                      <td className="py-5">
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-[0.1em] border ${trade.type === "Buy" || trade.type === "Long" ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"
-                          }`}>
-                          {trade.type}
-                        </span>
-                      </td>
-                      <td className="py-5 font-bold text-foreground tabular-nums text-sm">{formatCurrency(trade.amount)}</td>
-                      <td className="py-5 font-bold tabular-nums">
-                        <div className={`flex items-center gap-1.5 text-sm ${ (trade.pnl || 0) >= 0 ? "text-green-500" : "text-red-500"}`}>
-                          { (trade.pnl || 0) >= 0 ? "+" : ""}{formatCurrency(trade.pnl || 0)}
-                        </div>
-                      </td>
-                      <td className="py-5 text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums uppercase tracking-tighter">
-                        {new Date(trade.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                    </tr>
-                  ))}
+                  ) : combinedActivity.map((item, i) => {
+                    const isTransaction = item.isTransaction;
+                    const isWin = item.pnl !== null && (item.pnl || 0) >= 0;
+                    const isLoss = item.pnl !== null && (item.pnl || 0) < 0;
+                    
+                    return (
+                      <tr key={`${item.id}-${i}`} className="group/row hover:bg-primary/[0.02] transition-colors">
+                        <td className="py-6">
+                          <div className="font-black text-foreground text-base tracking-tighter flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center border border-border group-hover/row:border-primary/30 transition-colors">
+                               {isTransaction ? <Wallet className="w-4 h-4 opacity-50" /> : <BarChart3 className="w-4 h-4 opacity-50" />}
+                            </div>
+                            <div className="flex flex-col">
+                              <span>{item.pair}</span>
+                              <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-tighter font-mono whitespace-nowrap">ID: {item.id?.substring(0, 10)}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-6">
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border flex items-center w-fit gap-1.5 ${
+                            isTransaction 
+                              ? "bg-blue-500/10 text-blue-500 border-blue-500/20" 
+                              : item.type === "Buy" || item.type === "Long" 
+                                ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-glow-win" 
+                                : "bg-red-500/10 text-red-500 border-red-500/20 shadow-glow-loss"
+                            }`}>
+                            <div className={`w-1 h-1 rounded-full ${
+                              isTransaction ? "bg-blue-500" : item.type === "Buy" || item.type === "Long" ? "bg-green-500" : "bg-red-500"
+                            }`} />
+                            {isTransaction ? `${item.type}` : item.type}
+                          </span>
+                        </td>
+                        <td className="py-6 font-black text-foreground tabular-nums text-sm font-mono tracking-tight">
+                          {formatCurrency(item.amount)}
+                        </td>
+                        <td className="py-6 font-black tabular-nums">
+                          {item.pnl !== null ? (
+                            <div className={`flex items-center gap-1.5 text-sm font-mono ${isWin ? "text-green-500" : "text-red-500"}`}>
+                              {isWin ? "+" : ""}{formatCurrency(item.pnl || 0)}
+                            </div>
+                          ) : (
+                            <div className={`text-[10px] font-black uppercase tracking-widest ${item.status === 'Completed' || item.status === 'approved' ? 'text-green-500/50' : 'text-amber-500/50'}`}>
+                              {item.status || 'Processed'}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-6 text-right text-[10px] font-black text-muted-foreground/50 tabular-nums uppercase tracking-tighter font-mono">
+                          {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <div className="text-[8px] opacity-40">{new Date(item.created_at).toLocaleDateString([], { day: '2-digit', month: 'short' })}</div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div />
-              <Button variant="ghost" className="h-9 px-4 text-xs font-bold text-primary hover:bg-primary/10 transition-all uppercase tracking-widest" asChild>
-                <Link to="/dashboard/trading">Start Trading <ArrowRight className="w-3 h-3 ml-2" /></Link>
+            <div className="mt-8 pt-6 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-10">
+              <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Live Market Data: Active</span>
+              <Button variant="ghost" className="h-10 px-6 text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase tracking-[0.2em]" asChild>
+                <Link to="/dashboard/trading">Go to Trading Platform <ArrowRight className="w-3.5 h-3.5 ml-2" /></Link>
               </Button>
             </div>
           </div>
 
           {/* Active Portfolios & Profit Forecast */}
           <div className="lg:col-span-4 space-y-8">
-            <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-huge flex flex-col min-h-[480px] relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
-                  <Activity className="w-48 h-48 rotate-12" />
-               </div>
+            <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-huge flex flex-col min-h-[550px] relative overflow-hidden group/session">
+               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover/session:bg-primary/10 transition-all duration-700" />
+               
               <div className="flex items-center justify-between mb-10 relative z-10">
-                <h2 className="text-xl font-black font-sans text-foreground tracking-tight">Copy Trading</h2>
-                <Link to="/dashboard/copy-trading" className="text-[10px] font-black text-primary hover:underline group flex items-center gap-1.5 uppercase tracking-widest">View All <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /></Link>
+                <div>
+                  <h2 className="text-xl font-black text-foreground tracking-tight mb-1">Copied Portfolios</h2>
+                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">Automated Strategies</span>
+                </div>
+                <Link to="/dashboard/copy-trading" className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center hover:border-primary/50 transition-all group/arrow">
+                   <ArrowUpRight className="w-4 h-4 text-muted-foreground group-hover/arrow:text-primary transition-colors" />
+                </Link>
               </div>
 
-              <div className="flex-1 space-y-6 relative z-10">
-                {copiedTraders.length === 0 ? (
-                  <div className="py-16 text-center border-2 border-dashed border-border rounded-3xl group hover:border-primary/40 transition-all cursor-pointer">
-                    <Users className="w-12 h-12 mx-auto mb-5 text-muted-foreground/20 group-hover:text-primary/40 transition-colors" />
-                    <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest leading-loose">No Active Sessions.<br />Follow top traders to copy their strategies.</p>
+              <div className="flex-1 space-y-5 relative z-10">
+                {activeSessions.length === 0 ? (
+                  <div className="py-24 text-center border-2 border-dashed border-border/10 rounded-[2rem] group/empty hover:border-primary/20 transition-all cursor-pointer bg-secondary/5">
+                    <Users className="w-16 h-16 mx-auto mb-6 text-muted-foreground/10 group-hover/empty:text-primary/20 transition-colors duration-500" />
+                    <p className="text-xs font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-loose px-4">No active trading sessions.<br />Follow experts to automate growth.</p>
                   </div>
-                ) : copiedTraders.map((trader) => {
+                ) : activeSessions.map((trader) => {
                   const pnlNum = trader.pnl || 0;
                   const roi = trader.allocated_amount > 0 ? (pnlNum / trader.allocated_amount * 100).toFixed(2) : "0.00";
                   return (
-                    <div key={trader.id} className="flex items-center justify-between p-5 rounded-2xl bg-secondary/50 border border-border hover:border-primary/30 transition-all group shadow-sm">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-huge relative border-2 border-background shrink-0">
-                          <img src={trader.avatar || traderAvatar} alt="Trader" className="w-full h-full object-cover" />
-                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+                    <div key={trader.id} className="flex items-center justify-between p-6 rounded-2xl bg-secondary/30 border border-border/50 hover:border-primary/40 transition-all group/card shadow-sm hover:translate-y-[-2px]">
+                      <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-huge relative border-2 border-background shrink-0">
+                          <img src={trader.avatar || traderAvatar} alt="Trader" className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110" />
+                          <div className="absolute bottom-[-2px] right-[-2px] w-4.5 h-4.5 bg-green-500 border-[3px] border-background rounded-full shadow-sm" />
                         </div>
                         <div className="min-w-0">
-                          <div className="font-bold text-sm text-foreground truncate">{trader.trader_name}</div>
-                          <div className="text-[10px] text-muted-foreground font-black mt-1 uppercase tracking-tighter opacity-60 tabular-nums">
-                            {formatCurrency(trader.allocated_amount)} EQU
+                          <div className="font-black text-sm text-foreground tracking-tight truncate">{trader.trader_name}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                             <div className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-pulse" />
+                             <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60 tabular-nums">
+                               {formatCurrency(trader.allocated_amount)}
+                             </div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className={`text-lg font-black tabular-nums transition-colors ${pnlNum >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className={`text-xl font-black tabular-nums tracking-tighter ${pnlNum >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                            {pnlNum >= 0 ? '+' : ''}{roi}%
                         </div>
-                        <div className={`text-[9px] font-black uppercase tracking-widest mt-1 ${pnlNum >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
+                        <div className={`text-[10px] font-black uppercase tracking-tighter font-mono mt-1 ${pnlNum >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
                           {pnlNum >= 0 ? '+' : ''}{formatCurrency(pnlNum)}
                         </div>
                       </div>
@@ -226,18 +299,17 @@ const Overview = () => {
                 })}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-border">
-                <Button variant="hero" className="w-full h-12 rounded-xl text-white font-semibold text-sm shadow-gold" asChild>
+              <div className="mt-8 pt-6 border-t border-border/50 relative z-10">
+                <Button variant="hero" className="w-full h-14 rounded-2xl text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-gold-huge hov-scale" asChild>
                   <Link to="/dashboard/copy-trading">
-                    Browse Top Traders
+                    Browse Strategies
                   </Link>
                 </Button>
               </div>
             </div>
-
-
           </div>
         </div>
+
 
         {/* Global Referral CTA */}
         <motion.div

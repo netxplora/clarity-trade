@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useStore } from "@/store/useStore";
 import { supabase } from "@/lib/supabase";
-
+import { Link } from "react-router-dom";
 const AdminSettings = () => {
   const { depositWallets, user } = useStore();
   const [activeTab, setActiveTab] = useState("general");
@@ -265,32 +265,19 @@ const AdminSettings = () => {
                        </div>
                     </div>
                     
-                    <div className="space-y-4">
-                        {[
-                          { name: "Changelly Onramp", provider: "Changelly API", status: "Active" },
-                          { name: "MoonPay Gateway", provider: "MoonPay SDK", status: "Inactive" },
-                          { name: "Stripe Connect", provider: "Stripe Fiat", status: "Maintenance" },
-                        ].map((gw) => (
-                           <div key={gw.name} className="flex items-center justify-between p-5 rounded-2xl bg-secondary border border-border">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border">
-                                  <Zap className={`w-5 h-5 ${gw.status === 'Active' ? 'text-green-500' : 'text-muted-foreground'}`} />
-                                </div>
-                                <div>
-                                   <div className="text-sm font-bold text-foreground">{gw.name}</div>
-                                   <div className="text-[10px] font-bold text-muted-foreground uppercase">{gw.provider}</div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                 <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
-                                   gw.status === 'Active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-card text-muted-foreground border-border'
-                                 }`}>
-                                   {gw.status}
-                                 </span>
-                                 <Switch defaultChecked={gw.status === 'Active'} />
-                              </div>
-                           </div>
-                        ))}
+                    <div className="p-8 rounded-2xl bg-secondary border border-border flex flex-col items-center text-center space-y-4">
+                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                           <Globe className="w-8 h-8" />
+                       </div>
+                       <h3 className="text-lg font-bold text-foreground">Third Party Crypto Providers</h3>
+                       <p className="text-xs text-muted-foreground max-w-md">
+                           Manage authorized iframe providers for purchasing crypto. Configure priority, failover mechanisms, URLs, and logos entirely dynamically.
+                       </p>
+                       <Link to="/admin/crypto-providers" className="mt-4 inline-block">
+                           <Button variant="hero" className="h-12 px-8 text-xs font-black uppercase tracking-widest text-white shadow-gold flex items-center">
+                               Manage Providers <ArrowRight className="w-4 h-4 ml-2" />
+                           </Button>
+                       </Link>
                     </div>
                   </div>
                 </motion.div>

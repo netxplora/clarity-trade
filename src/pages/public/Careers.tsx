@@ -198,7 +198,7 @@ export default function Careers() {
               <div className="relative z-10">
                  <Rocket className="w-16 h-16 text-primary mx-auto mb-8 animate-bounce-slow" />
                  <h2 className="text-4xl font-black text-white mb-6 uppercase italic tracking-tight">Ready to launch <span className="text-primary">your career?</span></h2>
-                 <p className="text-white/60 text-lg mb-10 font-medium">Join us in London, Dubai, or Singapore and help us build the next generation of trading tools.</p>
+                 <p className="text-white/60 text-lg mb-10 font-medium">Join us in London, Dubai, or Singapore and help us build professional trading tools.</p>
                  <div className="flex flex-wrap justify-center gap-4">
                     <Button variant="hero" className="h-14 px-10 rounded-xl text-white shadow-gold font-bold uppercase tracking-widest">
                        View Open Positions

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,13 @@ import {
 const ReferralPage = () => {
   const user = useStore(state => state.user);
   const referrals = useStore(state => state.referrals);
+  const fetchAppData = useStore(state => state.fetchAppData);
   const [copied, setCopied] = useState(false);
+
+  // Ensure referral data is populated from the database
+  useEffect(() => {
+    fetchAppData();
+  }, []);
 
   const referralLink = `${window.location.origin}/auth/register?ref=${user?.referralCode || "USER_REF"}`;
 
@@ -156,7 +162,7 @@ const ReferralPage = () => {
                          </td>
                          <td className="py-4 px-6">
                             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border ${
-                              ref.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                              ref.status === 'Completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                               ref.status === 'Trading' ? 'bg-primary/10 text-primary border-primary/20' :
                               'bg-secondary text-muted-foreground border-border'
                             }`}>

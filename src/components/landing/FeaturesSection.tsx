@@ -30,7 +30,7 @@ const features = [
   {
     icon: Cpu,
     title: "AI Optimization",
-    description: "Get smart insights and trade optimizations powered by our intelligent systems.",
+    description: "Get smart insights and trade optimizations based on market data analysis.",
   },
 ];
 

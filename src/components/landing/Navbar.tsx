@@ -3,8 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight, ChevronDown, User, LogIn, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+
 import { useStore } from "@/store/useStore";
+import { SoundToggle } from "@/components/SoundToggle";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -62,8 +63,8 @@ const Navbar = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <div className="transition-colors hidden sm:flex items-center">
-             <LanguageSwitcher variant={(!scrolled && isHome) ? "transparent" : "default"} />
+          <div className="transition-colors hidden sm:flex items-center gap-2">
+             <SoundToggle variant="navbar" className="hidden lg:flex" />
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -73,7 +74,7 @@ const Navbar = () => {
                  className="btn-gold !py-2.5 !px-6 text-[10px] uppercase tracking-[0.2em] shadow-lg flex items-center gap-2 group"
                >
                   <LayoutDashboard className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
-                  <span className="font-black truncate max-w-[150px]">{user.name.split(' ')[0]} PORTAL</span>
+                  <span className="font-black truncate max-w-[150px]">DASHBOARD</span>
                </Link>
              ) : (
                <>
@@ -125,7 +126,6 @@ const Navbar = () => {
               
               {/* Mobile Translation Widget */}
               <div className="flex items-center py-3 border-b border-gray-50 text-gray-800">
-                <LanguageSwitcher />
               </div>
 
               <div className="pt-4">

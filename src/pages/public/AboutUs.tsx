@@ -216,7 +216,7 @@ export default function AboutUs() {
             <div className="hyip-card">
               <Rocket className="w-10 h-10 text-[#D4AF37] mb-6" />
               <h3 className="text-lg font-bold text-gray-900 mb-4">FinTech Scholarships</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">Supporting the next generation of engineers with over 50 scholarships annually for students pursuing financial technology.</p>
+              <p className="text-sm text-gray-500 leading-relaxed">Supporting upcoming engineers with over 50 scholarships annually for students pursuing financial technology.</p>
             </div>
           </div>
         </div>

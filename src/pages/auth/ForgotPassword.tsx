@@ -24,7 +24,7 @@ const ForgotPassword = () => {
          initial={{ opacity: 0, scale: 0.95 }}
          animate={{ opacity: 1, scale: 1 }}
          transition={{ duration: 0.5 }}
-         className="w-full max-w-md bg-white rounded-3xl p-8 md:p-12 shadow-huge border border-border"
+         className="w-full max-w-md bg-card rounded-3xl p-8 md:p-12 shadow-huge border border-border"
       >
         <div className="flex justify-center mb-8">
             <Link to="/" className="w-14 h-14 transition-transform hover:scale-105">
@@ -49,7 +49,7 @@ const ForgotPassword = () => {
                      value={email}
                      onChange={(e) => setEmail(e.target.value)}
                      placeholder="name@company.com" 
-                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-zinc-950 text-sm" 
+                     className="w-full h-12 bg-secondary border border-border rounded-xl px-4 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all text-foreground text-sm" 
                   />
                </div>
 
@@ -60,7 +60,7 @@ const ForgotPassword = () => {
             </form>
         ) : (
             <div className="flex flex-col items-center gap-6">
-                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-green-600 mb-2">
+                <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 mb-2">
                     <Mail className="w-8 h-8" />
                 </div>
                 <Button variant="outline" className="w-full h-12 rounded-xl border-border hover:bg-secondary text-sm font-semibold" onClick={() => setIsSent(false)}>

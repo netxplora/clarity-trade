@@ -26,14 +26,18 @@ const AdminOverview = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [platformRevenue, setPlatformRevenue] = useState(0);
+  const [tradeVolume, setTradeVolume] = useState(0);
+  const [buyOrders, setBuyOrders] = useState(0);
+  const [sellOrders, setSellOrders] = useState(0);
   
   const fetchAppData = useCallback(async () => {
     try {
-        const [{ data: sessionsData }, { data: usersData }, { data: txData }, { data: feeData }] = await Promise.all([
+        const [{ data: sessionsData }, { data: usersData }, { data: txData }, { data: feeData }, { data: tradeData }] = await Promise.all([
            supabase.from('active_sessions').select('*'),
            supabase.from('profiles').select('*, balances:balances(*)'),
            supabase.from('transactions').select('*, profiles(name)').order('created_at', { ascending: false }),
-           supabase.from('fee_ledger').select('fee_amount')
+           supabase.from('fee_ledger').select('fee_amount'),
+           supabase.from('trades').select('*')
         ]);
         
         if (sessionsData) setActiveSessions(sessionsData);
@@ -64,6 +68,11 @@ const AdminOverview = () => {
         }
         if (txData) setTransactions(txData);
         if (feeData) setPlatformRevenue(feeData.reduce((acc, r) => acc + (Number(r.fee_amount) || 0), 0));
+        if (tradeData) {
+            setTradeVolume(tradeData.reduce((acc, t) => acc + (Number(t.amount) || 0), 0));
+            setBuyOrders(tradeData.filter(t => t.type?.toLowerCase() === 'buy' || t.type?.toLowerCase() === 'long').length);
+            setSellOrders(tradeData.filter(t => t.type?.toLowerCase() === 'sell' || t.type?.toLowerCase() === 'short').length);
+        }
     } catch (err) {
         console.error("Failed to fetch admin data", err);
     }
@@ -78,6 +87,7 @@ const AdminOverview = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions' }, () => fetchAppData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchAppData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => fetchAppData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trades' }, () => fetchAppData())
       .subscribe();
 
     return () => {
@@ -402,7 +412,7 @@ const AdminOverview = () => {
                             <Database className="w-5 h-5 text-primary" />
                          </div>
                          <div>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Server Speed</span>
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">System Response</span>
                             <div className="text-xs font-black text-foreground">Healthy</div>
                          </div>
                       </div>
@@ -539,7 +549,7 @@ const AdminOverview = () => {
               <div className="relative z-10 flex items-center justify-between">
                  <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-bold text-foreground font-sans tracking-tight">Trade Activity</h2>
-                    <p className="text-xs text-primary font-medium uppercase tracking-[0.2em]">Platform Stats</p>
+                    <p className="text-xs text-primary font-medium uppercase tracking-[0.2em]">Platform Insights</p>
                  </div>
                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shadow-gold">
                     <BarChart3 className="w-5 h-5" />
@@ -548,18 +558,18 @@ const AdminOverview = () => {
 
               <div className="relative z-10 space-y-8">
                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">24h volume</p>
-                    <div className="text-4xl font-black text-foreground tracking-tighter tabular-nums">{formatCurrency(9420000)}</div>
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Global Vol</p>
+                    <div className="text-4xl font-black text-foreground tracking-tighter tabular-nums">{formatCurrency(tradeVolume)}</div>
                  </div>
 
                  <div className="grid grid-cols-2 gap-6 pb-2">
                     <div className="space-y-1">
                        <span className="text-[10px] text-muted-foreground font-bold uppercase">Buy Orders</span>
-                       <div className="text-lg font-bold text-green-500 tabular-nums">4,812</div>
+                       <div className="text-lg font-bold text-green-500 tabular-nums">{buyOrders.toLocaleString()}</div>
                     </div>
                     <div className="space-y-1">
                        <span className="text-[10px] text-muted-foreground font-bold uppercase">Sell Orders</span>
-                       <div className="text-lg font-bold text-foreground tabular-nums">3,429</div>
+                       <div className="text-lg font-bold text-foreground tabular-nums">{sellOrders.toLocaleString()}</div>
                     </div>
                  </div>
 

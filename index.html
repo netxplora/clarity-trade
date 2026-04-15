@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Clarity Trade — Institutional Multi-Asset Trading Platform</title>
     <meta name="description" content="Trade smarter with Clarity Trade. Access crypto, forex, and commodities markets with institutional-grade execution, copy trading, and real-time analytics." />
     <meta name="author" content="Clarity Trade" />
@@ -16,24 +19,5 @@
     <div id="root"></div>
 
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      (function() {
-        var s = document.createElement('script');
-        s.src = 'https://cdn.weglot.com/weglot.min.js';
-        s.async = true;
-        s.onload = function() {
-          try {
-            Weglot.initialize({
-              api_key: 'wg_408b04a11b6443c683ac424b94f31c22d',
-              hide_switcher: true,
-              auto_switch: true,
-              auto_switch_fallback: 'en'
-            });
-          } catch(e) { console.warn('Weglot init skipped:', e); }
-        };
-        s.onerror = function() { console.warn('Weglot CDN unavailable — language switcher disabled.'); };
-        document.body.appendChild(s);
-      })();
-    </script>
   </body>
 </html>

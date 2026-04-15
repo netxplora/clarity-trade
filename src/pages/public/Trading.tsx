@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 export default function Trading() {
   const features = [
-    { title: "Advanced Charting", desc: "Powered by deep liquidity. 100+ indicators and real-time order books.", icon: BarChart3 },
+    { title: "Advanced Charting", desc: "Access 100+ indicators and real-time order books with reliable liquidity.", icon: BarChart3 },
     { title: "Microsecond Execution", desc: "Ultra-low latency trading system capable of 1M+ TPS.", icon: Zap },
     { title: "Global Markets", desc: "Trade crypto, forex, and commodities from a single marginalized account.", icon: Globe },
     { title: "Algorithmic Orders", desc: "TWAP, VWAP, Iceberg, and conditional trigger orders built in.", icon: Target },
@@ -81,7 +81,7 @@ export default function Trading() {
         <div className="flex flex-col lg:flex-row gap-16 items-center mb-24">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="lg:w-1/2 space-y-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest leading-none">
-                   <Zap className="w-3.5 h-3.5" /> High Frequency Infrastructure
+                   <Zap className="w-3.5 h-3.5" /> Trading Infrastructure
                 </div>
                 <h2 className="text-4xl lg:text-5xl font-display font-black text-gray-900 leading-tight uppercase">Surgical Precision in <span className="text-primary underline underline-offset-8 decoration-gold/30">Every Order</span></h2>
                 <div className="space-y-6">

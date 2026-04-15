@@ -6,9 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useStore } from "@/store/useStore";
+import { useStore, Transaction, DepositWallet } from "@/store/useStore";
 import { supabase } from "@/lib/supabase";
-import BuyCryptoModule from "@/components/dashboard/BuyCryptoModule";
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -25,13 +24,15 @@ import {
   CreditCardIcon,
   RefreshCw,
   Coins,
-  ArrowRightLeft
+  ArrowRightLeft,
+  History
 } from "lucide-react";
 import CardDepositModule from "@/components/dashboard/CardDepositModule";
+import CryptoDepositModule from "@/components/dashboard/CryptoDepositModule";
 import TransferModule from "@/components/dashboard/TransferModule";
 import ConvertModule from "@/components/dashboard/ConvertModule";
 
-type Tab = "deposit" | "buy" | "transfer" | "convert" | "withdraw" | "history";
+type Tab = "deposit" | "transfer" | "convert" | "withdraw" | "history";
 type MethodType = "crypto" | "fiat";
 
 const WalletPage = () => {
@@ -41,7 +42,7 @@ const WalletPage = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab') as Tab;
-    if (tabParam && ["deposit", "buy", "transfer", "convert", "withdraw", "history"].includes(tabParam)) {
+    if (tabParam && ["deposit", "transfer", "convert", "withdraw", "history"].includes(tabParam)) {
         setTab(tabParam);
     }
   }, [window.location.search]);
@@ -53,19 +54,29 @@ const WalletPage = () => {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [fiatDepositType, setFiatDepositType] = useState<"selector" | "bank" | "card">("selector");
   
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [depositWallets, setDepositWallets] = useState<any[]>([]);
+  const [transactions, setLocalTransactions] = useState<Transaction[]>([]);
+  const [depositWallets, setDepositWallets] = useState<DepositWallet[]>([]);
   
-  const { user, balance, formatCurrency } = useStore();
+  const { user, balance, formatCurrency, transactions: storeTransactions, fetchAppData } = useStore();
+
+  // Sync transactions from global store (kept in sync by AuthListener real-time subscription)
+  useEffect(() => {
+    if (storeTransactions && storeTransactions.length > 0) {
+      setLocalTransactions(storeTransactions);
+    }
+  }, [storeTransactions]);
 
   const fetchWalletData = async () => {
      if (!user?.id) return;
-     const [{ data: txData }, { data: walletData }] = await Promise.all([
-         supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-         supabase.from('deposit_wallets').select('*').eq('status', 'Active')
-     ]);
-     if (txData) setTransactions(txData);
+     // Fetch deposit wallets (admin config, not covered by user-level real-time)
+     const { data: walletData } = await supabase.from('deposit_wallets').select('*').eq('status', 'Active');
      if (walletData) setDepositWallets(walletData);
+     
+     // If store transactions are empty, do an initial fetch
+     if (!storeTransactions || storeTransactions.length === 0) {
+       const { data: txData } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+       if (txData) setLocalTransactions(txData);
+     }
   };
 
   useEffect(() => {
@@ -346,7 +357,7 @@ const WalletPage = () => {
            <div className="lg:col-span-8">
               <div className="bg-card rounded-3xl border border-border shadow-sm h-full flex flex-col overflow-hidden">
                 <div className="flex border-b border-border bg-secondary/30 overflow-x-auto no-scrollbar">
-                  {(["deposit", "buy", "transfer", "convert", "withdraw", "history"] as Tab[]).map((t) => (
+                  {(["deposit", "transfer", "convert", "withdraw", "history"] as Tab[]).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTab(t)}
@@ -354,7 +365,7 @@ const WalletPage = () => {
                         tab === t ? "bg-card text-primary border-b-2 border-primary shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                       }`}
                     >
-                      {t === 'buy' ? 'Buy Crypto' : t}
+                      {t}
                     </button>
                   ))}
                 </div>
@@ -381,92 +392,14 @@ const WalletPage = () => {
                     <div className="max-w-xl mx-auto">
                       <AnimatePresence mode="wait">
                          {method === 'crypto' ? (
-                           <motion.div 
-                              key="crypto-dep"
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="space-y-8"
-                           >
-                               <div className="flex flex-col lg:flex-row gap-10 items-center">
-                                 <div className="flex-1 space-y-6 w-full">
-                                   <div>
-                                     <label className="text-xs font-bold text-muted-foreground mb-3 block uppercase tracking-widest">1. Select Crypto</label>
-                                     <div className="flex flex-wrap gap-2">
-                                       {["BTC", "ETH", "USDT"].map((c) => (
-                                         <button
-                                           key={c}
-                                           onClick={() => setSelectedCoin(c)}
-                                           className={`px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
-                                             selectedCoin === c ? "bg-gradient-gold text-white shadow-gold border-transparent" : "bg-secondary/40 text-muted-foreground hover:border-primary/20 hover:text-white"
-                                           }`}
-                                         >
-                                           {c}
-                                         </button>
-                                       ))}
-                                     </div>
-                                   </div>
-
-                                   {currentWallet ? (
-                                     <div className="space-y-6">
-                                       <div>
-                                         <label className="text-xs font-bold text-muted-foreground mb-3 block uppercase tracking-widest">2. Deposit Address</label>
-                                         <div className="flex items-center gap-2">
-                                           <div className="flex-1 h-14 bg-secondary border border-border font-mono text-sm rounded-2xl flex items-center px-6 overflow-x-auto no-scrollbar text-foreground">
-                                              {currentWallet.address}
-                                           </div>
-                                           <Button variant="outline" size="icon" className="h-14 w-14 shrink-0 border-border bg-card rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all shadow-huge group" onClick={handleCopy}>
-                                             <Copy className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                           </Button>
-                                         </div>
-                                         {currentWallet.network && (
-                                           <div className="mt-3 flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 w-fit">
-                                              <Zap className="w-3 h-3 text-primary" />
-                                              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Network: {currentWallet.network} ONLY</span>
-                                           </div>
-                                         )}
-                                       </div>
-                                     </div>
-                                   ) : (
-                                     <div className="p-8 rounded-2xl bg-secondary/40 border border-border text-center italic text-muted-foreground text-sm">
-                                        Deposit address for {selectedCoin} is temporarily unavailable. 
-                                        Please contact support or select another method.
-                                     </div>
-                                   )}
-                                 </div>
-
-                                 {currentWallet && (
-                                   <div className="flex flex-col items-center gap-4 group">
-                                     <div className="p-4 bg-white shadow-huge rounded-[2.5rem] w-48 h-48 border border-white/10 group-hover:scale-105 transition-transform duration-500">
-                                       <img 
-                                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentWallet.address}`} 
-                                          alt="Deposit QR" 
-                                          className="w-full h-full object-contain" 
-                                       />
-                                     </div>
-                                     <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-black animate-pulse">Your QR Code</span>
-                                   </div>
-                                 )}
-                               </div>
-
-                               <div className="flex items-start gap-5 p-8 rounded-[2.5rem] bg-secondary/20 border border-white/5 relative overflow-hidden">
-                                  <div className="absolute top-0 right-0 p-4 opacity-5">
-                                     <ShieldCheck className="w-12 h-12" />
-                                  </div>
-                                  <Clock className="w-6 h-6 text-primary mt-0.5 shrink-0" />
-                                  <div className="space-y-2">
-                                     <h4 className="text-xs font-bold text-white uppercase tracking-widest">Important Notes</h4>
-                                     <ul className="text-[11px] text-muted-foreground leading-relaxed font-medium list-disc pl-4 space-y-1 decoration-primary">
-                                        <li>Minimum deposit: 50.00 USD equivalent. Deposits below this amount will not be credited.</li>
-                                        <li>Trading access is determined by your <span className="text-primary font-bold">Total Wallet Balance</span>. Ensure you meet the minimum requirement for your chosen trader.</li>
-                                        <li>Withdrawal limits are strictly tied to your <span className="text-primary font-bold">KYC Verification Level</span>.</li>
-                                        <li>Ensure you are sending via the <span className="text-primary">{currentWallet?.network || 'correct'}</span> network.</li>
-                                        <li>Only send the selected crypto to this address.</li>
-                                     </ul>
-
-                                  </div>
-                               </div>
-                           </motion.div>
+                            <motion.div 
+                               key="crypto-dep"
+                               initial={{ opacity: 0, y: 10 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               exit={{ opacity: 0, y: -10 }}
+                            >
+                                <CryptoDepositModule onComplete={() => setTab("history")} />
+                            </motion.div>
                          ) : (
                             <motion.div 
                                key="fiat-dep"
@@ -524,7 +457,7 @@ const WalletPage = () => {
                                         </div>
                                         <div>
                                           <label className="text-xs font-semibold text-foreground mb-3 block">Amount To Deposit</label>
-                                          <Input placeholder="0.00" type="number" className="h-14 bg-card border-border rounded-xl text-lg font-bold text-zinc-950" />
+                                          <Input placeholder="0.00" type="number" className="h-14 bg-card border-border rounded-xl text-lg font-bold text-foreground" />
 
                                         </div>
                                          <Button variant="outline" className="w-full h-14 rounded-xl border-primary text-primary font-semibold flex items-center justify-center">
@@ -599,11 +532,7 @@ const WalletPage = () => {
                     </div>
                   )}
 
-                  {tab === "buy" && (
-                    <div className="space-y-8">
-                        <BuyCryptoModule />
-                    </div>
-                  )}
+
 
                   {tab === "transfer" && (
                     <div className="space-y-8">
@@ -697,7 +626,7 @@ const WalletPage = () => {
                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Amount</label>
                                <div className="relative">
                                   <Input 
-                                    className="h-14 bg-secondary/50 border-border rounded-xl font-bold text-lg text-zinc-950" 
+                                    className="h-14 bg-secondary/50 border-border rounded-xl font-bold text-lg text-foreground" 
                                     placeholder="0.00"
                                     value={withdrawAmount}
                                     onChange={(e) => setWithdrawAmount(e.target.value)}
@@ -728,7 +657,7 @@ const WalletPage = () => {
                              </label>
                              <div className="relative">
                                 <Input 
-                                  className="h-16 bg-secondary/50 border-border rounded-xl font-mono text-sm tracking-tighter text-zinc-950" 
+                                  className="h-16 bg-secondary/50 border-border rounded-xl font-mono text-sm tracking-tighter text-foreground" 
                                   placeholder={method === 'crypto' ? "Enter your wallet address" : "Enter bank details or card alias"}
                                   value={withdrawAddress}
                                   onChange={(e) => setWithdrawAddress(e.target.value)}
@@ -755,7 +684,7 @@ const WalletPage = () => {
                               </div>
                               <Button 
                                  onClick={handleWithdraw}
-                                 className="w-full h-16 rounded-2xl bg-white text-black font-black uppercase tracking-[0.2em] hover:bg-white/90 transition-all shadow-huge"
+                                 className="w-full h-16 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-[0.2em] hover:bg-primary/90 transition-all shadow-huge"
                               >
                                  Request Withdrawal
                               </Button>
@@ -765,56 +694,93 @@ const WalletPage = () => {
                   )}
 
                   {tab === "history" && (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-
-                          <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
-                            <th className="text-left pb-4 pl-4">Type</th>
-                            <th className="text-left pb-4">Amount</th>
-                            <th className="text-left pb-4">Asset</th>
-                            <th className="text-left pb-4">Status</th>
-                            <th className="text-right pb-4 pr-4">Date</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {transactions.length === 0 ? (
-                            <tr><td colSpan={5} className="py-20 text-center text-muted-foreground">No recent transactions found.</td></tr>
-                          ) : transactions.map((tx) => (
-                            <tr key={tx.id} className="group hover:bg-secondary/50 transition-colors">
-                              <td className="py-4 px-4">
-                                <div className="flex items-center gap-4">
-                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border border-border group-hover:scale-110 transition-transform ${
-                                    tx.type === "Deposit" || tx.type === "Bank Transfer" ? "bg-green-50 text-green-600" : tx.type === "Withdrawal" ? "bg-red-50 text-red-600" : "bg-primary/10 text-primary"
-                                  }`}>
-                                    {tx.type === "Deposit" ? <Download className="w-4 h-4" /> : tx.type === "Bank Transfer" ? <Landmark className="w-4 h-4" /> : <Send className="w-4 h-4" />}
-                                  </div>
-                                  <div>
-                                    <div className="font-bold text-foreground text-sm">{tx.type}</div>
-                                  </div>
+                    <div className="space-y-6">
+                      {transactions.length === 0 ? (
+                        <div className="py-24 text-center">
+                           <div className="w-16 h-16 rounded-2xl bg-secondary/30 flex items-center justify-center mx-auto mb-4 border border-border/50">
+                              <History className="w-8 h-8 text-muted-foreground/30" />
+                           </div>
+                           <p className="text-sm font-bold text-muted-foreground">No transaction history found.</p>
+                           <p className="text-xs text-muted-foreground/50 mt-1 uppercase tracking-widest font-medium">Your financial activity will appear here.</p>
+                        </div>
+                      ) : (
+                        Object.entries(
+                          transactions.reduce((groups: any, tx) => {
+                            const date = new Date(tx.created_at).toLocaleDateString("en-US", { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            });
+                            if (!groups[date]) groups[date] = [];
+                            groups[date].push(tx);
+                            return groups;
+                          }, {})
+                        ).map(([date, group]: [string, any]) => (
+                          <div key={date} className="space-y-3">
+                             <div className="flex items-center gap-4 px-4">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap">{date}</h4>
+                                <div className="h-px w-full bg-border/50" />
+                             </div>
+                             <div className="bg-card/30 border border-border/30 rounded-3xl overflow-hidden backdrop-blur-sm shadow-sm hover:shadow-md transition-all">
+                                <div className="overflow-x-auto">
+                                   <table className="w-full text-sm">
+                                      <tbody className="divide-y divide-border/30">
+                                         {group.map((tx: any) => (
+                                         <tr key={tx.id} className="group hover:bg-secondary/40 transition-colors">
+                                            <td className="py-4.5 px-6">
+                                               <div className="flex items-center gap-4">
+                                               <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border border-border group-hover:scale-110 transition-all duration-500 ${
+                                                  tx.type === "Deposit" || tx.type === "Bank Transfer" ? "bg-green-500/10 text-green-600 shadow-glow-green" : tx.type === "Withdrawal" ? "bg-red-500/10 text-red-600 shadow-glow-loss" : "bg-primary/10 text-primary shadow-glow"
+                                               }`}>
+                                                  {tx.type === "Deposit" ? <Download className="w-5 h-5" /> : tx.type === "Bank Transfer" ? <Landmark className="w-5 h-5" /> : <Send className="w-5 h-5" />}
+                                               </div>
+                                               <div>
+                                                  <div className="font-bold text-foreground text-sm flex items-center gap-2">
+                                                     {tx.type}
+                                                     {tx.type === "Deposit" && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 font-black uppercase tracking-tighter">Inbound</span>}
+                                                     {tx.type === "Withdrawal" && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 font-black uppercase tracking-tighter">Outbound</span>}
+                                                  </div>
+                                                  <div className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-widest">{new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Ref: {tx.id.substring(0,8)}</div>
+                                               </div>
+                                               </div>
+                                            </td>
+                                            <td className="py-4.5">
+                                               <div className="flex flex-col">
+                                                  <span className={`text-[15px] font-black tracking-tight ${tx.type === "Withdrawal" ? "text-red-600" : "text-green-600"}`}>
+                                                     {tx.type === "Withdrawal" ? "- " : "+ "}{formatCurrency(tx.amount)}
+                                                  </span>
+                                                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Settled Amount</span>
+                                               </div>
+                                            </td>
+                                            <td className="py-4.5">
+                                               <div className="flex items-center gap-2">
+                                                  <div className="w-6 h-6 rounded-lg bg-secondary/50 flex items-center justify-center font-black text-[9px] text-foreground border border-border/50">
+                                                     {tx.asset.substring(0, 3)}
+                                                  </div>
+                                                  <span className="font-bold text-foreground text-xs">{tx.asset}</span>
+                                               </div>
+                                            </td>
+                                            <td className="py-4.5 px-6 text-right">
+                                               <div className="flex flex-col items-end gap-1.5">
+                                                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${
+                                                  tx.status === "Completed" ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                                  }`}>
+                                                     {tx.status === "Completed" ? <ShieldCheck className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                                                     {tx.status}
+                                                  </div>
+                                                  <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] pr-2">Verification Passed</span>
+                                               </div>
+                                            </td>
+                                         </tr>
+                                         ))}
+                                      </tbody>
+                                   </table>
                                 </div>
-                              </td>
-                              <td className={`py-4 font-bold ${tx.type === "Withdrawal" ? "text-red-600" : "text-green-600"}`}>
-                                {tx.type === "Withdrawal" ? "- " : "+ "}{formatCurrency(tx.amount)}
-                              </td>
-                              <td className="py-4">
-                                 <span className="font-bold text-foreground text-xs">{tx.asset}</span>
-                              </td>
-                              <td className="py-4">
-                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full w-fit text-[10px] font-bold border ${
-                                  tx.status === "Completed" ? "bg-green-50 text-green-700 border-green-200" : "bg-orange-50 text-orange-700 border-orange-200"
-                                }`}>
-                                   {tx.status === "Completed" ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                   {tx.status}
-                                </div>
-                              </td>
-                              <td className="py-4 px-4 text-right">
-                                 <div className="text-xs text-muted-foreground font-medium">{new Date(tx.created_at).toLocaleDateString()}</div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                             </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>

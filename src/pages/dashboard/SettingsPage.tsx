@@ -558,7 +558,7 @@ const SettingsPage = () => {
                                             </div>
                                         </div>
                                         <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                                            log.status === 'Alerted' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-card text-muted-foreground border-border'
+                                            log.status === 'Alerted' ? 'bg-red-500/10 text-red-600 border-red-500/20' : 'bg-card text-muted-foreground border-border'
                                         }`}>
                                             {log.status}
                                         </span>

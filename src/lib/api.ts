@@ -18,14 +18,12 @@ export const validateWalletBackend = async (address: string, coin: string, netwo
     });
 
     if (!response.ok) {
-       // Fallback to local regex if backend is down or returns error
-       console.warn("Backend validation unreachable, falling back to local validation.");
-       return { isValid: true }; // Just skip or use localRegex if we had integrated it
+       // Reject validation when backend is unreachable — do not auto-approve
+       return { isValid: false, error: 'Validation service temporarily unavailable. Please try again.' };
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Backend validation error:", error);
-    return { isValid: true }; // Assume valid if check fails to not block users (or handle as needed)
+    return { isValid: false, error: 'Unable to verify wallet address. Please try again.' };
   }
 };

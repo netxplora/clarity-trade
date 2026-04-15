@@ -1,2 +1,0 @@
-﻿src/pages/dashboard/AnalyticsPage.tsx(8,40): error TS2307: Cannot find module 'lightweight-charts' or its corresponding type declarations.
-src/store/useStore.ts(1,24): error TS2307: Cannot find module 'zustand' or its corresponding type declarations.

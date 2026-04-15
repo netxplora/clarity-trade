@@ -3,24 +3,31 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wallet, LineChart, Copy, FileText,
   Settings, LogOut, TrendingUp, Menu, X, Bell, ChevronDown, Shield,
-  Activity, Zap, ShieldCheck, Database, Globe, Lock, Radio, Gift
+  Activity, Zap, ShieldCheck, Database, Globe, Lock, Radio, Gift, AlertTriangle,
+  CreditCard, MessageSquare, ShieldAlert
 } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { useTheme } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import { SoundToggle } from "@/components/SoundToggle";
+import { playAppOpenSound } from "@/lib/sound";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin", description: "Dashboard" },
   { icon: Users, label: "Users", path: "/admin/users", description: "Manage Accounts" },
+  { icon: ShieldCheck, label: "KYC Management", path: "/admin/kyc", description: "Verify Identities" },
   { icon: Wallet, label: "Finances", path: "/admin/finances", description: "Money & Balance" },
   { icon: LineChart, label: "Trading", path: "/admin/trading", description: "Market Control" },
   { icon: Copy, label: "Copy Trading", path: "/admin/copy-trading", description: "Top Traders" },
   { icon: Gift, label: "Referrals", path: "/admin/referrals", description: "User Program" },
   { icon: FileText, label: "Content", path: "/admin/content", description: "Blog & Pages" },
+  { icon: MessageSquare, label: "Support Hub", path: "/admin/support", description: "Live Chat" },
+  { icon: LineChart, label: "Investments", path: "/admin/investments", description: "Plans & Portfolios" },
+  { icon: CreditCard, label: "Crypto Providers", path: "/admin/crypto-providers", description: "Widget Failover" },
   { icon: Settings, label: "Settings", path: "/admin/settings", description: "System Config" },
 ];
 
@@ -36,31 +43,31 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [prevUnreadCount, setPrevUnreadCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const systemNotifications = notificationsOrEmpty.filter((n: any) => !n.user_id && (n.type === 'SYSTEM' || n.type === 'WITHDRAWAL'));
-  const unreadSystemNotifs = systemNotifications.filter((n: any) => !n.is_read);
+  const unreadCount = notificationsOrEmpty.filter((n: any) => !n.is_read).length;
 
   useEffect(() => {
-    if (unreadSystemNotifs.length > prevUnreadCount) {
+    if (unreadCount > prevUnreadCount) {
         if (audioRef.current) {
             audioRef.current.play().catch(e => console.log("Audio play failed:", e));
         }
     }
-    if (unreadSystemNotifs.length !== prevUnreadCount) {
-        setPrevUnreadCount(unreadSystemNotifs.length);
+    if (unreadCount !== prevUnreadCount) {
+        setPrevUnreadCount(unreadCount);
     }
-  }, [unreadSystemNotifs.length, prevUnreadCount]);
+  }, [unreadCount, prevUnreadCount]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate("/login");
     });
 
+    playAppOpenSound();
+
     document.documentElement.classList.add("dashboard-scale");
     return () => {
       document.documentElement.classList.remove("dashboard-scale");
     };
   }, [navigate]);
-
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -207,8 +214,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                </div>
             </div>
 
-            <LanguageSwitcher />
+            <SoundToggle />
+            <ThemeToggle />
             
+            <div className="relative">
               <button 
                 onClick={() => {
                   setNotificationsOpen(!notificationsOpen);
@@ -219,7 +228,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 }`}
               >
                 <Bell className={`w-4.5 h-4.5 transition-colors ${notificationsOpen ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
-                {unreadSystemNotifs.length > 0 && (
+                {unreadCount > 0 && (
                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-glow animate-pulse" />
                 )}
                 <audio ref={audioRef} src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto" />
@@ -233,77 +242,113 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-4 w-80 sm:w-96 z-50 bg-card border border-border shadow-huge rounded-2xl overflow-hidden"
-                    >                       <div className="p-6 border-b border-border bg-secondary/30 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <Bell className="w-5 h-5 text-primary" />
-                           </div>
-                           <h3 className="text-lg font-bold text-foreground font-sans">System Alerts</h3>
+                      className="absolute right-0 mt-4 w-80 sm:w-[420px] z-50 bg-card border border-border shadow-huge rounded-[2rem] overflow-hidden"
+                    >
+                      <div className="p-7 border-b border-border bg-secondary/30 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-black text-foreground tracking-tight">System Alerts</h3>
+                          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-40 mt-0.5">Real-time administration feed</p>
                         </div>
-                        {unreadSystemNotifs.length > 0 && (
-                          <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">
-                            {unreadSystemNotifs.length} New
-                          </span>
-                        )}
+                        <div className="flex items-center gap-3">
+                          {unreadCount > 0 && (
+                            <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                              {unreadCount} Unread
+                            </span>
+                          )}
+                          <button 
+                            onClick={() => setNotificationsOpen(false)}
+                            className="w-8 h-8 rounded-xl bg-background border border-border flex items-center justify-center hover:bg-secondary transition-all"
+                          >
+                            <X className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        </div>
                       </div>
-                       <div className="max-h-[400px] overflow-y-auto">
-                        {systemNotifications.length > 0 ? (
-                          systemNotifications.map((n: any) => {
-                            const isDeposit = n.title?.toLowerCase()?.includes('deposit');
-                            const isWithdrawal = n.type === 'WITHDRAWAL' || n.title?.toLowerCase()?.includes('withdrawal');
-                            const Icon = isDeposit ? Wallet : isWithdrawal ? AlertTriangle : ShieldCheck;
-                            const colorClass = isDeposit ? 'text-green-500' : isWithdrawal ? 'text-red-500' : 'text-blue-500';
-                            const bgClass = isDeposit ? 'bg-green-500/10' : isWithdrawal ? 'bg-red-500/10' : 'bg-blue-500/10';
-                            
-                            return (
-                              <div 
-                                key={n.id} 
-                                onClick={() => {
-                                  useStore.getState().markNotificationAsRead(n.id);
-                                  if (isWithdrawal) navigate('/admin/finances');
-                                }} 
-                                className={`p-5 border-b border-border hover:bg-secondary/50 transition-colors cursor-pointer group ${!n.is_read ? 'bg-secondary/20' : ''}`}
-                              >
-                                <div className="flex gap-4">
-                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${!n.is_read ? bgClass : 'bg-secondary'} ${isWithdrawal && !n.is_read ? 'animate-pulse' : ''}`}>
-                                    <Icon className={`w-5 h-5 ${!n.is_read ? colorClass : 'text-muted-foreground'}`} />
-                                  </div>
-                                  <div className="flex flex-col flex-1">
-                                    <div className="flex items-center justify-between gap-2">
-                                      <span className={`text-sm font-bold transition-colors ${!n.is_read ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>
-                                        {n.title || 'Notification'}
-                                      </span>
-                                      {isWithdrawal && !n.is_read && (
-                                        <span className="text-[8px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded uppercase tracking-tighter shadow-glow-loss">High Priority</span>
-                                      )}
+
+                      <div className="max-h-[480px] overflow-y-auto custom-scrollbar">
+                        {notificationsOrEmpty.length > 0 ? (
+                          <div className="divide-y divide-border/50">
+                            {notificationsOrEmpty.map((n: any) => {
+                              const isDeposit = n.type === 'DEPOSIT' || n.title?.toLowerCase()?.includes('deposit');
+                              const isWithdrawal = n.type === 'WITHDRAWAL' || n.title?.toLowerCase()?.includes('withdrawal');
+                              const Icon = isDeposit ? Wallet : isWithdrawal ? AlertTriangle : n.type === 'SYSTEM' ? ShieldAlert : MessageSquare;
+                              const colorClass = isDeposit ? 'text-green-500' : isWithdrawal ? 'text-red-500' : 'text-blue-500';
+                              const bgClass = isDeposit ? 'bg-green-500/10' : isWithdrawal ? 'bg-red-500/10' : 'bg-blue-500/10';
+                              
+                              return (
+                                <div 
+                                  key={n.id} 
+                                  onClick={() => {
+                                    useStore.getState().markNotificationAsRead(n.id);
+                                    if (isWithdrawal) navigate('/admin/finances');
+                                  }} 
+                                  className={`relative p-6 hover:bg-secondary/50 transition-all cursor-pointer group ${!n.is_read ? 'bg-primary/[0.02]' : ''}`}
+                                >
+                                  {!n.is_read && (
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+                                  )}
+
+                                  <button 
+                                    onClick={(e) => { 
+                                      e.stopPropagation(); 
+                                      useStore.getState().dismissNotification(n.id, n.user_id === null || n.type === 'GLOBAL'); 
+                                    }} 
+                                    className="absolute top-4 right-4 w-7 h-7 rounded-lg opacity-0 group-hover:opacity-100 bg-background border border-border flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all text-muted-foreground"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+
+                                  <div className="flex gap-5">
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-border/50 ${!n.is_read ? bgClass : 'bg-secondary'} ${isWithdrawal && !n.is_read ? 'animate-pulse' : ''}`}>
+                                      <Icon className={`w-5 h-5 ${!n.is_read ? colorClass : 'text-muted-foreground/40'}`} />
                                     </div>
-                                    <span className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.message || ''}</span>
-                                    <span className="text-[10px] font-medium text-muted-foreground/40 mt-2 uppercase tracking-widest">{n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                    <div className="flex flex-col flex-1 pr-6">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-xs font-black uppercase tracking-wide transition-colors ${!n.is_read ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                          {n.title || 'Notification'}
+                                        </span>
+                                        {isWithdrawal && !n.is_read && (
+                                          <span className="text-[7px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded shadow-glow-loss uppercase tracking-tighter">Urgent</span>
+                                        )}
+                                      </div>
+                                      <span className="text-[11px] font-medium text-muted-foreground leading-relaxed line-clamp-2">{n.message || ''}</span>
+                                      <div className="flex items-center gap-3 mt-3">
+                                        <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-widest">{n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                        <span className="w-1 h-1 rounded-full bg-border" />
+                                        <span className="text-[9px] font-black text-primary/40 uppercase tracking-widest">{n.type || 'SYSTEM'}</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })
-
+                              );
+                            })}
+                          </div>
                         ) : (
-                          <div className="p-8 text-center text-muted-foreground">
-                             <Bell className="w-8 h-8 opacity-20 mx-auto mb-3" />
-                             <p className="text-sm font-bold">No Alerts</p>
-                             <p className="text-xs mt-1 font-medium">System is running smoothly.</p>
+                          <div className="py-20 text-center px-8">
+                             <div className="w-16 h-16 rounded-[1.5rem] bg-secondary/30 flex items-center justify-center mx-auto mb-5 border border-border/50">
+                                <Bell className="w-8 h-8 opacity-10 text-muted-foreground" />
+                             </div>
+                             <p className="text-sm font-black text-foreground uppercase tracking-tight">Zero Pending Alerts</p>
+                             <p className="text-[10px] mt-1.5 font-bold text-muted-foreground uppercase tracking-widest opacity-40">System is performing optimally</p>
                           </div>
                         )}
                       </div>
-                      <div className="p-4 bg-secondary/30 text-center border-t border-border">
-                        <button onClick={() => useStore.getState().markNotificationAsRead('all')} className="text-xs font-bold text-primary uppercase tracking-[0.2em] hover:opacity-80 transition-opacity">Mark All as Read</button>
+                      
+                      <div className="p-5 bg-secondary/30 text-center border-t border-border flex items-center justify-center">
+                        <button 
+                          onClick={() => useStore.getState().markNotificationAsRead('all')} 
+                          className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:tracking-[0.25em] transition-all"
+                        >
+                          Mark all as processed
+                        </button>
                       </div>
                     </motion.div>
                   </>
                 )}
               </AnimatePresence>
-            
+            </div>
+
             <div className="h-8 w-px bg-border mx-1" />
-            
+
             <div className="relative">
               <div 
                 className={`flex items-center gap-3 pl-1 group cursor-pointer transition-all ${profileOpen ? "opacity-70" : "hover:opacity-80"}`}
@@ -363,11 +408,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8 relative overflow-x-hidden overflow-y-auto">
+        <main className="flex-1 p-4 lg:p-8 relative overflow-x-hidden">
           <div className="relative z-10 max-w-[1440px] mx-auto w-full">
             <PageTransition>{children}</PageTransition>
           </div>
-        </main>
+       </main>
       </div>
     </div>
   );
