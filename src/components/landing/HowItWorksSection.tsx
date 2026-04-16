@@ -1,40 +1,39 @@
 import { motion } from "framer-motion";
-import { UserPlus, Wallet, BarChart3, ArrowRight } from "lucide-react";
+import { UserPlus, Compass, TrendingUp } from "lucide-react";
 
 const steps = [
   {
     number: "01",
     title: "Create Account",
-    description: "Sign up and create your free Clarity Trade account in minutes.",
+    description: "Sign up and verify your identity in minutes.",
     icon: UserPlus,
   },
   {
     number: "02",
-    title: "Deposit Funds",
-    description: "Fund your wallet with world-leading crypto assets safely and quickly.",
-    icon: Wallet,
+    title: "Choose Trader or Investment",
+    description: "Select professional traders to copy or choose investment plans.",
+    icon: Compass,
   },
   {
     number: "03",
-    title: "Start Earning",
-    description: "Begin trading yourself or copy top experts to build your portfolio.",
-    icon: BarChart3,
+    title: "Earn Returns Automatically",
+    description: "Watch your portfolio grow with automated real-time execution.",
+    icon: TrendingUp,
   },
 ];
 
 const HowItWorksSection = () => {
   return (
-    <section className="section-bg-white" id="how-it-works">
+    <section className="py-24 bg-[#0a0a0a]" id="how-it-works">
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 px-4">
-          <span className="heading-gold">How to Begin</span>
-          <h2 className="title-hyip text-gray-900">
-            Three Simple Steps to <span className="text-[#D4AF37]">Start Trading</span>
+          <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">How to Begin</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+            Simple Steps to Start Investing
           </h2>
-          <p className="p-hyip">
-            Getting started with Clarity Trade is easy. Follow these steps to 
-            join the leading trading community today.
+          <p className="text-gray-400">
+            Get started with Clarity Trade in three easy steps and let your capital work for you.
           </p>
         </div>
 
@@ -47,26 +46,24 @@ const HowItWorksSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
-              className="relative p-8 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow group h-full flex flex-col items-center text-center"
+              className="relative p-8 rounded-xl bg-[#1A1A1A] border border-[#333] hover:border-[#D4AF37]/50 transition-colors group h-full flex flex-col items-center text-center"
             >
               {/* Connector line for desktop */}
               {i < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-[2.5rem] left-[65%] w-[70%] h-[2px] bg-gray-100 z-0">
-                  <div className="w-[10px] h-[10px] rounded-full bg-[#D4AF37] absolute top-[-4px] left-[50%]" />
-                </div>
+                <div className="hidden md:block absolute top-16 -right-1/2 w-full h-[1px] bg-gradient-to-r from-[#D4AF37]/50 to-transparent z-0" />
               )}
 
-              <div className="w-20 h-20 rounded-full bg-[#D4AF37]/5 flex items-center justify-center mb-8 relative z-10 group-hover:bg-[#D4AF37]/10 group-hover:scale-105 transition-all outline outline-gray-50 outline-offset-4">
-                <step.icon className="w-10 h-10 text-[#D4AF37]" />
-                <span className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-white border-2 border-[#D4AF37] text-gray-900 font-bold flex items-center justify-center text-sm shadow-sm group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-full bg-[#111] border border-[#333] flex items-center justify-center mb-6 relative z-10 group-hover:border-[#D4AF37] transition-all">
+                <step.icon className="w-6 h-6 text-[#D4AF37]" />
+                <span className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#D4AF37] text-white font-bold flex items-center justify-center text-xs shadow-sm">
                    {step.number}
                 </span>
               </div>
               
-              <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#D4AF37] transition-colors">
+              <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
                 {step.title}
               </h3>
-              <p className="p-hyip text-sm">
+              <p className="text-gray-400 text-sm">
                 {step.description}
               </p>
             </motion.div>

@@ -1,100 +1,87 @@
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Globe, Coins, Gem, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Coins, Globe, Gem, Droplet, ArrowRight } from "lucide-react";
 
-const markets = [
-  { category: "Crypto", pairs: [
-    { name: "BTC/USDT", price: "$64,281.40", change: "+5.24%", up: true, volume: "$1.2B" },
-    { name: "ETH/USDT", price: "$3,542.80", change: "+3.18%", up: true, volume: "$842M" },
-    { name: "SOL/USDT", price: "$155.20", change: "-1.42%", up: false, volume: "$312M" },
-  ]},
-  { category: "Forex", pairs: [
-    { name: "EUR/USD", price: "1.0855", change: "+0.12%", up: true, volume: "$5.4B" },
-    { name: "GBP/USD", price: "1.2641", change: "+0.08%", up: true, volume: "$3.2B" },
-    { name: "USD/JPY", price: "156.84", change: "-0.24%", up: false, volume: "$4.1B" },
-  ]},
-  { category: "Commodities", pairs: [
-    { name: "GOLD", price: "$2,342.60", change: "+0.86%", up: true, volume: "$2.1B" },
-    { name: "SILVER", price: "$27.85", change: "+1.24%", up: true, volume: "$890M" },
-    { name: "OIL (WTI)", price: "$82.45", change: "-0.58%", up: false, volume: "$1.4B" },
-  ]},
+const assets = [
+  {
+    category: "Forex",
+    icon: Globe,
+    description: "Trade major, minor, and exotic currency pairs with tight spreads and high liquidity.",
+    roi: "Up to 15% Monthly",
+    link: "/about-us",
+  },
+  {
+    category: "Crypto",
+    icon: Coins,
+    description: "Invest in top-performing digital assets including Bitcoin, Ethereum, and major altcoins.",
+    roi: "Up to 25% Monthly",
+    link: "/crypto",
+  },
+  {
+    category: "Gold",
+    icon: Gem,
+    description: "Hedge against inflation with physical and synthetic gold investments.",
+    roi: "Up to 10% Monthly",
+    link: "/about-us",
+  },
+  {
+    category: "Oil",
+    icon: Droplet,
+    description: "Capitalize on global energy demands with continuous oil market trading.",
+    roi: "Up to 12% Monthly",
+    link: "/about-us",
+  },
 ];
-
-const categoryIcons: Record<string, typeof Coins> = { Crypto: Coins, Forex: Globe, Commodities: Gem };
 
 const MarketPreviewSection = () => {
   return (
-    <section className="section-bg-light" id="markets">
+    <section className="py-24 bg-[#0a0a0a] border-t border-[#333]/50" id="markets">
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 px-4">
-          <span className="heading-gold">Live Market Overview</span>
-          <h2 className="title-hyip text-gray-900">
-            Institutional-Grade Markets <span className="text-[#D4AF37]">Active Now</span>
+          <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">Investment Instruments</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+            Supported Assets
           </h2>
-          <p className="p-hyip">
-            Explore diverse trading opportunities across multiple asset classes with 
-            real-time price updates and lightning-fast execution.
+          <p className="text-gray-400">
+            Build a diversified portfolio across multiple asset classes with our professional-grade trading infrastructure.
           </p>
         </div>
 
-        {/* Market Categories Grid */}
-        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
-          {markets.map((market, mi) => {
-            const Icon = categoryIcons[market.category];
-            return (
-              <motion.div
-                key={market.category}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: mi * 0.1 }}
-                className="hyip-card !p-0 overflow-hidden group shadow-sm hover:shadow-lg transition-all duration-300"
-              >
-                {/* Category Header */}
-                <div className="p-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50/30 group-hover:bg-gray-50/50 transition-colors">
-                  <div className="w-12 h-12 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
-                    <Icon className="w-6 h-6 text-[#D4AF37]" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-lg uppercase tracking-wide">{market.category}</h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-[10px] uppercase font-bold text-green-600">Trading Live</span>
-                    </div>
-                  </div>
-                </div>
+        {/* Assets Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto items-start">
+          {assets.map((asset, i) => (
+            <motion.div
+              key={asset.category}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#D4AF37]/50 transition-colors group flex flex-col h-full"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#111] border border-[#333] flex items-center justify-center mb-6 group-hover:border-[#D4AF37] transition-all">
+                <asset.icon className="w-6 h-6 text-[#D4AF37]" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
+                {asset.category}
+              </h3>
+              
+              <p className="text-gray-400 text-sm mb-6 flex-grow">
+                {asset.description}
+              </p>
 
-                {/* Pairs List */}
-                <div className="divide-y divide-gray-50">
-                  {market.pairs.map((pair) => (
-                    <div key={pair.name} className="px-6 py-5 flex items-center justify-between hover:bg-gray-50/30 transition-colors group/pair cursor-pointer">
-                      <div>
-                        <div className="font-bold text-gray-900 text-sm flex items-center gap-1 group-hover/pair:text-[#D4AF37] transition-colors">
-                           {pair.name}
-                        </div>
-                        <div className="text-[10px] uppercase font-semibold text-gray-400 mt-0.5 tracking-wider">Vol: {pair.volume}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900 text-sm tabular-nums">{pair.price}</div>
-                        <div className={`text-[10px] font-bold flex items-center justify-end gap-1 mt-1 ${pair.up ? 'text-green-500' : 'text-red-500'}`}>
-                          {pair.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          {pair.change}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              <div className="flex items-center justify-between mt-auto pt-6 border-t border-[#333]/50">
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-400 uppercase font-semibold">Target ROI</span>
+                  <span className="text-sm font-bold text-[#D4AF37]">{asset.roi}</span>
                 </div>
-
-                {/* Footer Link */}
-                <div className="p-4 bg-gray-50/30 border-t border-gray-50">
-                  <Link to="/crypto" className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider flex items-center justify-center gap-2 group/link px-4 py-2 hover:bg-[#D4AF37]/10 border border-transparent hover:border-[#D4AF37]/30 rounded transition-all">
-                    Explore All Assets <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </motion.div>
-            );
-          })}
+                <Link to={asset.link} className="w-8 h-8 rounded-full bg-[#333] text-white flex items-center justify-center group-hover:bg-[#D4AF37] transition-colors">
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

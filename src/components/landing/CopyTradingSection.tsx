@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Users, TrendingUp, Shield, Copy, ArrowRight } from "lucide-react";
+import { Users, TrendingUp, Shield, Copy, ArrowRight, Activity } from "lucide-react";
 
 const traders = [
   { name: "Alex M.", roi: "+125%", risk: "Moderate", followers: "1,220", avatar: "AM", specialty: "Crypto" },
@@ -10,102 +10,81 @@ const traders = [
 
 const CopyTradingSection = () => {
   return (
-    <section className="section-bg-dark border-t border-white/5 relative overflow-hidden" id="copy-trading">
-      {/* Background Hero */}
-      <div className="absolute top-0 inset-x-0 h-[600px] z-0 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 scale-[1.02]"
-          style={{ backgroundImage: "url('/images/hero-trading-bg.png')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/60 to-[#0B0F14]" />
-      </div>
-
+    <section className="py-24 bg-[#0a0a0a] border-t border-[#333]/50 relative overflow-hidden" id="copy-trading">
       <div className="container mx-auto px-6 relative z-10">
-        {/* Header */}
-        <div className="flex flex-col items-center max-w-4xl mx-auto mb-20 lg:mb-24 pt-20 text-center">
-          <span className="heading-gold text-center">Expert Trading Strategies</span>
-          <h2 className="title-hyip text-center text-white leading-tight mt-2 mb-6">
-            Copy the <span className="text-[#D4AF37]">Best Traders</span> and <br className="hidden md:block" />
-            Grow Your Portfolio
-          </h2>
-          <p className="p-hyip-dark mx-auto text-lg">
-            Our copy trading feature allows you to mirror the trades of professional experts 
-            automatically, so you can earn passively while the pros work.
-          </p>
-        </div>
+        
+        <div className="flex flex-col lg:flex-row items-center gap-12 max-w-7xl mx-auto">
+          {/* Content Left */}
+          <div className="lg:w-1/3">
+            <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">Expert Strategies</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
+              Copy the Best Traders Automatically
+            </h2>
+            <p className="text-gray-400 mb-8">
+              Our copy trading platform allows you to mirror the trades of professional experts in real-time. 
+              Earn passive returns while maintaining full control over your risk and capital.
+            </p>
+            
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-center gap-3 text-gray-300">
+                <Activity className="w-5 h-5 text-[#D4AF37]" /> Real-time profit tracking
+              </li>
+              <li className="flex items-center gap-3 text-gray-300">
+                <Shield className="w-5 h-5 text-[#D4AF37]" /> Advanced risk control settings
+              </li>
+              <li className="flex items-center gap-3 text-gray-300">
+                <TrendingUp className="w-5 h-5 text-[#D4AF37]" /> Verified historical performance
+              </li>
+            </ul>
 
-        {/* Trader Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {traders.map((trader, i) => (
-            <motion.div
-              key={trader.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="hyip-card-dark group"
-            >
-              <div className="flex items-center gap-5 mb-8 border-b border-white/5 pb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#D4AF37]/50 to-[#D4AF37]/20 flex items-center justify-center text-white font-extrabold text-2xl group-hover:scale-110 transition-transform shadow-lg border-2 border-white/10">
-                  {trader.avatar}
-                </div>
-                <div>
-                  <h4 className="font-bold text-white text-xl tracking-tight">{trader.name}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] px-2 py-0.5 rounded bg-[#D4AF37]/10">
-                      ROI: {trader.roi}
-                    </span>
+            <Link to="/auth/register" className="btn-gold inline-flex items-center gap-2 group px-8 py-4">
+              Explore Copy Trading <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {/* Trader Cards Right */}
+          <div className="lg:w-2/3">
+            <div className="grid md:grid-cols-2 gap-6 w-full">
+              {traders.slice(0, 2).map((trader, i) => (
+                <motion.div
+                  key={trader.name}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#D4AF37]/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#333]/50">
+                    <div className="w-14 h-14 rounded-full bg-[#111] border border-[#333] flex items-center justify-center text-white font-bold text-xl group-hover:border-[#D4AF37] transition-all">
+                      {trader.avatar}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-lg tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>{trader.name}</h4>
+                      <span className="text-xs text-gray-400">{trader.specialty} Trader</span>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="p-4 rounded-lg bg-white/5 border border-white/5 flex flex-col items-center justify-center text-center">
-                   <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-1">Followers</div>
-                   <div className="text-white font-bold text-lg">{trader.followers}</div>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5 border border-white/5 flex flex-col items-center justify-center text-center">
-                   <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-1">Risk Level</div>
-                   <div className={`font-bold text-lg ${
-                     trader.risk === 'Low' ? 'text-green-400' :
-                     trader.risk === 'Moderate' ? 'text-[#D4AF37]' :
-                     'text-red-400'
-                   }`}>{trader.risk}</div>
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                       <div className="text-gray-500 text-xs font-semibold uppercase mb-1">Return (12M)</div>
+                       <div className="text-green-500 font-bold">{trader.roi}</div>
+                    </div>
+                    <div>
+                       <div className="text-gray-500 text-xs font-semibold uppercase mb-1">Risk Level</div>
+                       <div className="text-white font-medium">{trader.risk}</div>
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-gray-500 mb-8 px-2">
-                 <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-green-400" />
-                    <span className="text-white">{trader.roi}</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#D4AF37]" />
-                    <span className="text-white">{trader.followers}</span>
-                 </div>
-              </div>
-
-              <Link to="/auth/register" className="w-full btn-gold !h-12 !px-0 flex items-center justify-center gap-2 group/btn">
-                 <Copy className="w-4 h-4" /> Start Copying <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </Link>
-            </motion.div>
-          ))}
-            <motion.div 
-               initial={{ opacity: 0, y: 20 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true }}
-               transition={{ delay: 0.4 }}
-               className="mt-16 text-center"
-            >
-               <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
-                  Ready to amplify your results?
-               </p>
-               <a href="#packages" className="inline-flex items-center gap-2 text-[#D4AF37] font-black uppercase text-xs tracking-[0.3em] hover:text-white transition-colors group">
-                  View Access Packages <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-               </a>
-            </motion.div>
+                  <Link to="/auth/register" className="w-full btn-gold-outline !h-10 flex items-center justify-center gap-2 group border border-[#333] text-gray-300 hover:text-[#D4AF37] hover:border-[#D4AF37] bg-transparent rounded transition-all">
+                     <Copy className="w-4 h-4" /> Copy Trader
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
+
+      </div>
     </section>
   );
 };

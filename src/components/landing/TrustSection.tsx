@@ -12,42 +12,18 @@ const trustPoints = [
 
 const TrustSection = () => {
   return (
-    <section className="section-bg-dark border-t border-white/5 relative overflow-hidden" id="security">
-      {/* Background Hero */}
-      <div className="absolute top-0 inset-x-0 h-[600px] z-0 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 scale-[1.02]"
-          style={{ backgroundImage: "url('/images/hero-trading-bg.png')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/60 to-[#0B0F14]" />
-      </div>
-
+    <section className="py-24 bg-[#050505] border-t border-[#333]/50 relative overflow-hidden" id="security">
       <div className="container mx-auto px-6 relative z-10">
-        {/* Header with 3D Visual */}
-        <div className="flex flex-col lg:flex-row items-center gap-12 max-w-6xl mx-auto mb-20 lg:mb-24 pt-20">
-          <div className="lg:w-2/3 text-center lg:text-left">
-            <span className="heading-gold lg:text-left text-center">Your Capital is Protected</span>
-            <h2 className="title-hyip lg:text-left text-center text-white leading-tight">
-              Institutional-Grade <span className="text-[#D4AF37]">Security</span> & <br className="hidden md:block" />
-              Advanced Compliance
-            </h2>
-            <p className="p-hyip-dark lg:mx-0 mx-auto text-lg">
-              We employ world-class security protocols and multi-layered protection systems 
-              to ensure your assets are always safe and your trading environment is secure.
-            </p>
-          </div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="lg:w-1/3 flex justify-center"
-          >
-            <img 
-              src="/images/3d-security.png" 
-              alt="Security Shield" 
-              className="w-48 h-48 lg:w-64 lg:h-64 object-contain animate-float"
-            />
-          </motion.div>
+        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
+          <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">Your Capital is Protected</span>
+          <h2 className="text-3xl md:text-5xl font-bold text-white mt-4 mb-6 leading-tight" style={{ fontFamily: "Inter, sans-serif" }}>
+            Institutional-Grade <span className="italic text-[#D4AF37]">Security</span> & <br className="hidden md:block" />
+            Advanced Compliance
+          </h2>
+          <p className="text-gray-400 text-lg">
+            We employ world-class security protocols and multi-layered protection systems 
+            to ensure your assets are always safe and your trading environment is secure.
+          </p>
         </div>
 
         {/* Trust Points Grid */}
@@ -59,12 +35,12 @@ const TrustSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="hyip-card-dark flex flex-col items-center text-center group h-full"
+              className="bg-[#111] border border-[#222] rounded-xl p-8 flex flex-col items-center text-center group h-full hover:border-[#D4AF37]/50 hover:bg-[#1A1A1A] transition-all"
             >
-              <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] group-hover:scale-110 transition-all duration-300">
-                <point.icon className="w-6 h-6 text-[#D4AF37] group-hover:text-white transition-colors" />
+              <div className="w-14 h-14 rounded-full bg-[#1A1A1A] border border-[#333] flex items-center justify-center mb-6 group-hover:border-[#D4AF37] transition-colors">
+                <point.icon className="w-6 h-6 text-[#D4AF37]" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-3 tracking-tight group-hover:text-[#D4AF37] transition-colors">{point.title}</h3>
+              <h3 className="text-lg font-bold text-white mb-3 tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>{point.title}</h3>
               <p className="text-gray-400 text-sm leading-relaxed">{point.description}</p>
             </motion.div>
           ))}
