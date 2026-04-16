@@ -14,570 +14,664 @@ import {
   Globe, 
   Fingerprint,
   ShieldCheck,
-  ShieldAlert,
   Clock,
   ChevronRight,
   Settings,
   CreditCard,
   Mail,
-  History,
   Eye,
   EyeOff,
-  Briefcase,
-  ExternalLink,
-  CheckCircle2,
-  AlertCircle,
   Upload,
   RefreshCw,
-  Trash2, 
-  UserCog, 
-  UserCheck, 
   TrendingUp,
-  X
+  Users,
+  Share2,
+  Activity,
+  Wallet,
+  SmartphoneNfc,
+  Laptop,
+  Save,
+  Copy,
+  Building2,
+  AlertTriangle,
+  ChevronDown,
+  Info
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { useStore } from "@/store/useStore";
-import { CurrencySelector } from "@/components/CurrencySelector";
-import { useTheme } from "@/components/ThemeProvider";
 
 const SettingsPage = () => {
-  const navigate = useNavigate();
-  const { user, setRoleTheme, fetchAppData } = useStore();
-  const { setTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState("profile");
-  const [showPassword, setShowPassword] = useState(false);
+  const { user, fetchAppData } = useStore();
+  const [activeTab, setActiveTab] = useState("account");
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const [activityData, setActivityData] = useState<{
-    transactions: any[],
-    copyTrades: any[],
-    lastLogin: string,
-    securityAlerts: any[]
-  }>({
-    transactions: [],
-    copyTrades: [],
-    lastLogin: new Date().toISOString(),
-    securityAlerts: []
+  // --- MENU ITEMS ---
+  const menuItems = [
+    { id: "account", icon: User, label: "Account" },
+    { id: "security", icon: Shield, label: "Security" },
+    { id: "investment", icon: TrendingUp, label: "Investments" },
+    { id: "notifications", icon: Bell, label: "Notifications" },
+    { id: "payments", icon: CreditCard, label: "Payments" },
+    { id: "referrals", icon: Users, label: "Referrals" },
+  ];
+
+  // --- STATE ---
+  const [accountData, setAccountData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    country: "United States",
+    timezone: "(GMT-05:00) Eastern Time"
   });
 
-  const fetchActivity = async () => {
-    try {
-        const { data: txs } = await supabase.from('transactions').select('*').eq('user_id', user?.id).order('created_at', { ascending: false });
-        const { data: sessions } = await supabase.from('active_sessions').select('*').eq('user_id', user?.id);
-        
-        setActivityData({
-            transactions: txs || [],
-            copyTrades: sessions || [],
-            lastLogin: new Date().toISOString(),
-            securityAlerts: []
-        });
-    } catch (err) {
-        console.error("Failed to fetch activity", err);
-    }
-  };
+  const [passwordData, setPasswordData] = useState({ current: "", new: "", confirm: "" });
+  const [showPass, setShowPass] = useState(false);
+  const [twoFactor, setTwoFactor] = useState(true);
 
-  useEffect(() => {
-    import("@/lib/supabase").then(m => {
-        // Just making sure supabase is imported
-    });
-  }, []);
+  const [investmentData, setInvestmentData] = useState({
+    riskLevel: "Balanced",
+    autoCopy: true,
+    withdrawalPreference: "Monthly"
+  });
 
-  useEffect(() => {
-    if (activeTab === "activity") {
-        fetchActivity();
-    }
-  }, [activeTab]);
+  const [notifData, setNotifData] = useState({
+    email: true,
+    sms: false,
+    push: true,
+    alerts: true
+  });
 
-  const combinedLogs = [
-    ...activityData.transactions.map(t => ({
-        type: 'Transaction',
-        action: `${t.type}: ${t.asset} ${t.amount || t.crypto_amount}`,
-        device: t.status,
-        time: new Date(t.date || t.created_at).toLocaleString(),
-        status: t.status === 'Completed' ? 'Verified' : 'Pending'
-    })),
-    ...activityData.copyTrades.map(ct => ({
-        type: 'Trading',
-        action: `Copy Trade: ${ct.traderName}`,
-        device: `Allocated: ${ct.allocated_amount}`,
-        time: new Date(ct.created_at).toLocaleString(),
-        status: ct.status === 'active' ? 'Verified' : 'History'
-    }))
-  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-
-  const [profileData, setProfileData] = useState({
-    name: user?.name,
-    email: user?.email,
-    phone: user?.phone
+  const [paymentData, setPaymentData] = useState({
+    bankName: "",
+    accountNum: "",
+    cryptoWallet: "",
+    defaultMethod: "Crypto Wallet"
   });
 
   useEffect(() => {
     if (user) {
-        setProfileData({
-            name: user.name,
-            email: user.email,
-            phone: user.phone
-        });
+      setAccountData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        country: "United States"
+      }));
     }
   }, [user]);
+
+  // --- HANDLERS ---
+  const handleSave = async (section: string) => {
+    setLoading(true);
+    try {
+      if (section === "Account") {
+        if (!user) return;
+        const { error } = await supabase.from('profiles').update({
+          name: accountData.name,
+          phone: accountData.phone
+        }).eq('id', user.id);
+        if (error) throw error;
+        await fetchAppData();
+      }
+      toast.success(`${section} settings updated`, {
+        description: "Your changes have been saved successfully."
+      });
+    } catch (err: any) {
+      toast.error("Update failed", { description: err.message || "Please try again." });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-
     setUploading(true);
     try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        // Standard bucket check (avatars)
-        const { error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ avatar_url: publicUrl })
-            .eq('id', user.id);
-
-        if (updateError) throw updateError;
-        
-        toast.success("Profile photo updated", {
-            description: "Your new avatar has been synced platform-wide."
-        });
-        
-        // Refresh app data in store
-        await fetchAppData();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+      if (updateError) throw updateError;
+      toast.success("Profile photo updated");
+      await fetchAppData();
     } catch (error: any) {
-        console.error("Upload error:", error);
-        toast.error("Upload failed", {
-            description: "Please check your storage bucket setup (ensure 'avatars' exists)."
-        });
+      toast.error("Upload failed");
     } finally {
-        setUploading(false);
+      setUploading(false);
     }
   };
 
-  const handleSave = async (section: string) => {
-    if (section === "Profile") {
-        try {
-            if (!user) return;
-            const { error } = await supabase.from('profiles').update({
-                name: profileData.name,
-                phone: profileData.phone
-            }).eq('id', user.id);
-            
-            if (!error) {
-                toast.success(`${section} saved successfully.`, {
-                    description: "Changes have been persisted globally."
-                });
-            } else {
-                throw error;
-            }
-        } catch (err) {
-            toast.error("Process Failed", { description: "Unable to sync with data servers." });
-        }
-    } else {
-        toast.success(`${section} updated successfully.`, {
-            description: "Your changes have been saved."
-        });
+  const handlePasswordUpdate = async () => {
+    if (!passwordData.new || passwordData.new !== passwordData.confirm) {
+       toast.error("Passwords do not match");
+       return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: passwordData.new });
+      if (error) throw error;
+      toast.success("Password updated");
+      setPasswordData({ current: "", new: "", confirm: "" });
+    } catch (err: any) {
+      toast.error("Update failed", { description: err.message });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const menuItems = [
-    { id: "profile", icon: User, label: "Profile" },
-    { id: "security", icon: Shield, label: "Security & 2FA" },
-    { id: "notifications", icon: Bell, label: "Alerts" },
-    { id: "preferences", icon: Globe, label: "Local Preferences" },
-    { id: "activity", icon: Clock, label: "History" },
-  ];
+  const referralLink = `https://claritytrade.com/ref/${user?.id?.substring(0, 8)}`;
+
+  // --- REUSABLE COMPONENTS ---
+
+  const SettingsCard = ({ 
+    title, 
+    desc, 
+    children, 
+    onSave, 
+    isPending = false
+  }: { 
+    title: string, 
+    desc: string, 
+    children: React.ReactNode, 
+    onSave?: () => void, 
+    isPending?: boolean
+  }) => {
+    return (
+      <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-sm space-y-6 mb-6 overflow-hidden">
+        <div className="space-y-1">
+          <h4 className="text-lg font-black text-foreground uppercase tracking-tight">{title}</h4>
+          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">{desc}</p>
+        </div>
+        <div className="space-y-6 pt-2">
+          {children}
+        </div>
+        {onSave && (
+          <div className="pt-6 border-t border-border/50 flex justify-end">
+            <Button 
+              onClick={onSave} 
+              disabled={isPending}
+              className="w-full sm:w-auto h-12 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white transition-all shadow-main"
+            >
+              <Save className="w-4 h-4 mr-2" /> {isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // --- SECTIONS ---
+
+  const AccountTab = () => (
+    <div className="space-y-6">
+      <SettingsCard title="Profile Photo" desc="Your public identity on the platform" onSave={() => handleAvatarUpload({ target: { files: [] } } as any)} isPending={uploading}>
+        <div className="flex items-center gap-6">
+          <div className="relative group cursor-pointer" onClick={() => document.getElementById('avatarInput')?.click()}>
+            <div className="w-24 h-24 rounded-3xl bg-secondary border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover:border-primary shadow-inner">
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-8 h-8 text-muted-foreground" />
+              )}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Upload className="w-5 h-5 text-white" />
+              </div>
+            </div>
+            {uploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-card/80 rounded-3xl">
+                  <RefreshCw className="w-6 h-6 text-primary animate-spin" />
+                </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-sm font-bold text-foreground">Update Photo</p>
+            <p className="text-[10px] text-muted-foreground font-medium italic max-w-[150px]">Choose a clean, professional headshot. Max 2MB.</p>
+            <input id="avatarInput" type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Personal Details" desc="Basic account information and contact info" onSave={() => handleSave("Account")} isPending={loading}>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="settings-label">Full Name</Label>
+            <Input value={accountData.name} onChange={e => setAccountData({...accountData, name: e.target.value})} className="settings-input" />
+          </div>
+          <div className="space-y-2">
+            <Label className="settings-label">Email Address</Label>
+            <Input value={accountData.email} disabled className="settings-input opacity-60 bg-secondary/50" />
+          </div>
+          <div className="space-y-2">
+            <Label className="settings-label">Phone Number</Label>
+            <Input value={accountData.phone} onChange={e => setAccountData({...accountData, phone: e.target.value})} className="settings-input" />
+          </div>
+          <div className="space-y-2">
+            <Label className="settings-label">Country</Label>
+            <div className="h-[3.5rem] bg-secondary/30 border border-border rounded-2xl px-5 flex items-center gap-3">
+              <Globe className="w-4.5 h-4.5 text-muted-foreground" />
+              <span className="text-sm font-bold text-foreground">{accountData.country}</span>
+            </div>
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Preferences" desc="Localize your dashboard experience">
+        <div className="space-y-2">
+          <Label className="settings-label">Timezone</Label>
+          <select 
+            className="settings-select" 
+            value={accountData.timezone} 
+            onChange={e => setAccountData({...accountData, timezone: e.target.value})}
+          >
+            <option>(GMT-05:00) Eastern Time</option>
+            <option>(GMT+00:00) London / GMT</option>
+            <option>(GMT+01:00) Paris / CET</option>
+            <option>(GMT+08:00) Singapore / HK</option>
+          </select>
+        </div>
+      </SettingsCard>
+    </div>
+  );
+
+  const SecurityTab = () => (
+    <div className="space-y-6">
+      <SettingsCard title="Security Password" desc="Change your account entry credentials" onSave={handlePasswordUpdate} isPending={loading}>
+        <div className="grid gap-6 sm:grid-cols-1">
+          <div className="space-y-2">
+            <Label className="settings-label">New Password</Label>
+            <div className="relative">
+              <Input 
+                type={showPass ? "text" : "password"} 
+                className="settings-input pr-12" 
+                value={passwordData.new} 
+                onChange={e => setPasswordData({...passwordData, new: e.target.value})}
+                placeholder="Minimum 8 characters"
+              />
+              <button 
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-2"
+              >
+                {showPass ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="settings-label">Confirm New Password</Label>
+            <Input 
+              type={showPass ? "text" : "password"} 
+              className="settings-input"
+              value={passwordData.confirm}
+              onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
+              placeholder="Repeat new password"
+            />
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Two-Factor Security" desc="Add an extra layer of protection to your funds">
+        <div className="flex items-center justify-between p-5 rounded-3xl bg-primary/5 border border-primary/10 shadow-sm">
+          <div className="flex gap-4 items-center">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-foreground uppercase tracking-tight">2FA Authentication</p>
+              <p className="text-[10px] text-muted-foreground font-medium italic">Require code for withdrawals</p>
+            </div>
+          </div>
+          <Switch checked={twoFactor} onCheckedChange={setTwoFactor} className="data-[state=checked]:bg-primary" />
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Active Logins" desc="Recent login activity from your devices">
+        <div className="space-y-3">
+          {[
+            { device: "MacBook Pro 16", loc: "New York, NY", time: "Now (Active)", icon: Laptop, current: true },
+            { device: "iPhone 15 Pro", loc: "New York, NY", time: "2 hours ago", icon: SmartphoneNfc, current: false },
+          ].map((session, i) => (
+            <div key={i} className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${session.current ? 'bg-secondary/30 border-primary/20' : 'bg-secondary/10 border-border'}`}>
+              <div className="flex items-center gap-4">
+                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${session.current ? 'bg-primary/10 text-primary' : 'bg-muted/10 text-muted-foreground'}`}>
+                    <session.icon className="w-5.5 h-5.5" />
+                 </div>
+                 <div>
+                    <p className="text-xs font-black text-foreground uppercase tracking-wide">{session.device}</p>
+                    <p className="text-[9px] text-muted-foreground font-bold">{session.loc} • {session.time}</p>
+                 </div>
+              </div>
+              {!session.current && (
+                <Button variant="ghost" className="h-9 px-4 text-[9px] font-black uppercase text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/10">Log out</Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </SettingsCard>
+    </div>
+  );
+
+  const InvestmentTab = () => (
+    <div className="space-y-6">
+      <SettingsCard title="Trading Preferences" desc="Guidelines for your investment portfolio" onSave={() => handleSave("Investment")} isPending={loading}>
+        <div className="grid gap-6 sm:grid-cols-2">
+           <div className="space-y-2">
+              <Label className="settings-label">Risk Level Preference</Label>
+              <select 
+                className="settings-select"
+                value={investmentData.riskLevel}
+                onChange={e => setInvestmentData({...investmentData, riskLevel: e.target.value})}
+              >
+                <option>Conservative (Low Risk)</option>
+                <option>Balanced (Moderate)</option>
+                <option>Aggressive (High Return)</option>
+              </select>
+           </div>
+           <div className="space-y-2">
+              <Label className="settings-label">Profit Withdrawal Schedule</Label>
+              <select 
+                className="settings-select"
+                value={investmentData.withdrawalPreference}
+                onChange={e => setInvestmentData({...investmentData, withdrawalPreference: e.target.value})}
+              >
+                <option>Manual Withdrawal</option>
+                <option>Auto-Withdraw Weekly</option>
+                <option>Auto-Withdraw Monthly</option>
+              </select>
+           </div>
+        </div>
+        <div className="p-5 rounded-3xl bg-amber-500/5 border border-amber-500/20 flex gap-4 mt-2">
+          <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-[10px] font-bold text-amber-800/80 leading-relaxed italic">
+            Note: Changing these settings might affect your portfolio balance and margin requirements.
+          </p>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Automated Copy Trading" desc="Settings for mirroring expert portfolio moves">
+        <div className="flex items-center justify-between p-5 rounded-3xl bg-secondary/20 border border-border">
+           <div className="flex gap-4 items-center">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner">
+                <RefreshCw className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-foreground uppercase tracking-tight">Auto-Copy Trades</p>
+                <p className="text-[10px] text-muted-foreground font-medium italic">Execute mirror trades automatically</p>
+              </div>
+           </div>
+           <Switch checked={investmentData.autoCopy} onCheckedChange={val => setInvestmentData({...investmentData, autoCopy: val})} />
+        </div>
+      </SettingsCard>
+    </div>
+  );
+
+  const NotificationsTab = () => (
+    <SettingsCard title="Contact Preferences" desc="Decide how we keep you informed" onSave={() => handleSave("Notification")} isPending={loading}>
+      <div className="space-y-4">
+        {[
+          { id: 'email', icon: Mail, label: "Email Notifications", desc: "For security alerts and statements" },
+          { id: 'sms', icon: Smartphone, label: "SMS Notifications", desc: "Urgent withdrawal and login alerts" },
+          { id: 'push', icon: Bell, label: "Mobile Push Alerts", desc: "Instant updates to your smartphone" },
+          { id: 'alerts', icon: Activity, label: "Trade Execution Alerts", desc: "Notifications for every trade result" },
+        ].map((item) => (
+          <div key={item.id} className="flex items-center justify-between p-5 rounded-3xl bg-secondary/30 border border-border transition-all hover:border-primary/20">
+            <div className="flex gap-4 items-center">
+               <div className="w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground">
+                  <item.icon className="w-5 h-5 transition-colors group-hover:text-primary" />
+               </div>
+               <div>
+                  <p className="text-sm font-black text-foreground uppercase tracking-wide">{item.label}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium italic">{item.desc}</p>
+               </div>
+            </div>
+            <Switch 
+              checked={notifData[item.id as keyof typeof notifData]} 
+              onCheckedChange={val => setNotifData({...notifData, [item.id]: val})} 
+            />
+          </div>
+        ))}
+      </div>
+    </SettingsCard>
+  );
+
+  const PaymentsTab = () => (
+    <div className="space-y-6">
+      <SettingsCard title="Bank Account Details" desc="Required for fiat wire transfers" onSave={() => handleSave("Payment")} isPending={loading}>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="settings-label">Bank Institution</Label>
+            <Input className="settings-input" placeholder="e.g. JPMorgan Chase" />
+          </div>
+          <div className="space-y-2">
+            <Label className="settings-label">Account Number</Label>
+            <Input className="settings-input" placeholder="1234 5678 9012" />
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Crypto Wallet" desc="Your external destination for digital assets" onSave={() => handleSave("Payment")} isPending={loading}>
+        <div className="space-y-3">
+          <Label className="settings-label">Personal Wallet Address</Label>
+          <div className="relative">
+            <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input 
+              className="settings-input pl-12 font-mono text-[11px] h-16 tracking-tighter" 
+              placeholder="Enter your BTC, ETH or USDT address" 
+            />
+          </div>
+        </div>
+      </SettingsCard>
+    </div>
+  );
+
+  const ReferralsTab = () => (
+    <div className="space-y-6">
+      <SettingsCard title="Referral Invitation" desc="Earn rewards by inviting other traders">
+        <div className="p-7 rounded-[2rem] bg-gradient-to-br from-primary to-primary-foreground text-white space-y-6 shadow-huge relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+          <div className="relative z-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-4">Your Invitation Link</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/10 p-4 rounded-2xl border border-white/10">
+              <p className="text-base font-black truncate max-w-full sm:max-w-[200px] whitespace-nowrap">{referralLink}</p>
+              <Button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(referralLink);
+                    toast.success("Link copied to clipboard");
+                  }}
+                  className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 h-11 px-6 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                >
+                  <Copy className="w-4 h-4 mr-2" /> Copy link
+                </Button>
+            </div>
+          </div>
+        </div>
+      </SettingsCard>
+
+      <div className="grid grid-cols-2 gap-4">
+        {[
+          { label: "Direct Referral Count", val: user?.referral_count || "0", icon: Users },
+          { label: "Total Bonus Earned", val: "$0.00", icon: TrendingUp },
+        ].map((stat, i) => (
+          <div key={i} className="bg-card border border-border p-7 rounded-[2rem] text-center shadow-sm hover:shadow-md transition-shadow group">
+            <div className={`w-10 h-10 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-colors ${i === 0 ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500'}`}>
+               <stat.icon className="w-5 h-5" />
+            </div>
+            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest mb-1.5 opacity-60 group-hover:opacity-100 transition-opacity">{stat.label}</p>
+            <p className="text-2xl font-black text-foreground tracking-tight">{stat.val}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch(activeTab) {
+      case "account": return <AccountTab />;
+      case "security": return <SecurityTab />;
+      case "investment": return <InvestmentTab />;
+      case "notifications": return <NotificationsTab />;
+      case "payments": return <PaymentsTab />;
+      case "referrals": return <ReferralsTab />;
+      default: return <AccountTab />;
+    }
+  };
 
   return (
     <DashboardLayout>
-      <div className="space-y-8 max-w-6xl mx-auto">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <h1 className="text-3xl font-black font-sans text-foreground">Account Settings</h1>
-            <p className="text-muted-foreground mt-1 text-sm font-medium">Manage your personal information, security, and preferences.</p>
-          </div>
-          <div className="flex gap-3">
-             <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-secondary border border-border text-foreground text-[10px] font-black uppercase tracking-widest shadow-sm">
-               <ShieldCheck className="w-4 h-4 text-primary" /> Encrypted
+      <div className="min-h-screen bg-background/50 relative">
+        
+        {/* Mobile Header Title */}
+        <div className="lg:hidden px-6 pt-10 pb-4">
+           <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-primary/15 flex items-center justify-center text-primary">
+                 <Settings className="w-5 bg h-5" />
+              </div>
+              <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter">Settings</h1>
+           </div>
+           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Control your account data and safety</p>
+        </div>
+
+        <div className="max-w-4xl mx-auto lg:pt-12">
+          
+          {/* Desktop Header */}
+          <header className="hidden lg:block px-6 py-8 md:px-0 mb-4 text-left">
+            <div className="flex items-center gap-4 mb-2">
+               <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center text-primary shadow-sm border border-primary/10">
+                  <Settings className="w-6 h-6" />
+               </div>
+               <div>
+                  <h1 className="text-4xl font-black text-foreground uppercase tracking-tighter">Account Settings</h1>
+                  <p className="text-muted-foreground text-sm font-medium mt-1">Manage your professional profile and security preferences.</p>
+               </div>
+            </div>
+          </header>
+
+          {/* Category Selector - Sticky below main layout header */}
+          <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-xl border-y border-border mb-8 shadow-sm">
+             <div 
+               ref={scrollRef}
+               className="flex items-center gap-2 overflow-x-auto no-scrollbar px-6 py-4 scroll-smooth"
+             >
+                {menuItems.map((item) => {
+                  const active = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`flex items-center gap-2.5 px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all whitespace-nowrap border-2 ${
+                        active 
+                        ? "bg-primary text-white border-primary shadow-huge scale-105" 
+                        : "bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className={`w-4 h-4 ${active ? 'text-white' : 'text-muted-foreground'}`} />
+                      {item.label}
+                    </button>
+                  );
+                })}
              </div>
           </div>
-        </header>
 
-        <div className="grid lg:grid-cols-[280px_1fr] gap-12">
-            {/* Navigation */}
-            <aside className="space-y-2">
-                {menuItems.map((item) => (
-                    <button 
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id)}
-                        className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                            activeTab === item.id 
-                            ? "bg-card border-primary/20 text-primary shadow-gold" 
-                            : "text-muted-foreground hover:text-foreground hover:bg-secondary border-transparent"
-                        }`}
-                    >
-                        <item.icon className={`w-4 h-4 ${activeTab === item.id ? "text-primary" : "text-muted-foreground"}`} />
-                        {item.label}
-                        {activeTab === item.id && <ChevronRight className="w-3 h-3 ml-auto" />}
-                    </button>
-                ))}
-            </aside>
+          {/* Main Content Areas */}
+          <main className="px-6 pb-40">
+             <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                >
+                   {renderContent()}
+                </motion.div>
+             </AnimatePresence>
+          </main>
 
-            {/* Content Area */}
-            <main className="space-y-6">
-               <AnimatePresence mode="wait">
-                 {activeTab === "profile" && (
-                    <motion.div 
-                        key="profile"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8"
-                    >
-                        <div className="bg-card p-8 md:p-10 rounded-[2.5rem] border border-border shadow-sm relative overflow-hidden group">
-                           <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="relative group/avatar cursor-pointer" onClick={() => document.getElementById('avatarInput')?.click()}>
-                                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20 text-primary shadow-xl overflow-hidden backdrop-blur-sm transition-all group-hover/avatar:border-primary">
-                                    {user?.avatar_url ? (
-                                      <img src={user.avatar_url} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <User className="w-10 h-10" />
-                                    )}
-                                    <div className="absolute inset-0 bg-secondary/80 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
-                                       <Upload className="w-6 h-6 text-primary" />
-                                    </div>
-                                 </div>
-                                 {uploading && (
-                                   <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 rounded-2xl z-20">
-                                      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
-                                   </div>
-                                 )}
-                                 <input 
-                                   id="avatarInput" 
-                                   type="file" 
-                                   accept="image/*" 
-                                   className="hidden" 
-                                   onChange={handleAvatarUpload} 
-                                   disabled={uploading}
-                                 />
-                              </div>
-                              <div>
-                                 <h2 className="text-2xl font-black text-foreground">Personal Information</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1 italic">Account ID: {user?.id}</p>
-                              </div>
-                           </div>
+          {/* Mobile Sticky Save Button */}
+          <div className="lg:hidden fixed bottom-6 left-0 right-0 px-6 z-40 pointer-events-none">
+             <motion.div 
+               initial={{ y: 100 }}
+               animate={{ y: 0 }}
+               className="pointer-events-auto"
+             >
+                <Button 
+                  onClick={() => handleSave(activeTab.charAt(0).toUpperCase() + activeTab.slice(1))}
+                  disabled={loading}
+                  className="w-full h-16 rounded-[2rem] bg-foreground text-background font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl active:scale-95 transition-all border border-foreground/10"
+                >
+                   <Save className="w-5 h-5 mr-3" />
+                   {loading ? "Saving Progress..." : "Save Changes"}
+                </Button>
+             </motion.div>
+          </div>
 
-                           <div className="grid md:grid-cols-2 gap-8">
-                              <div className="space-y-3">
-                                 <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] px-1">Full Legal Name</Label>
-                                 <Input 
-                                    value={profileData.name} 
-                                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                                    className="h-14 bg-secondary border-border rounded-xl font-bold focus:ring-1 ring-primary" 
-                                 />
-                              </div>
-                              <div className="space-y-3">
-                                 <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] px-1">Primary Email</Label>
-                                 <Input 
-                                    value={profileData.email} 
-                                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                                    className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                                 />
-                              </div>
-                              <div className="space-y-3">
-                                 <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] px-1">Mobile Contact</Label>
-                                 <Input 
-                                    value={profileData.phone} 
-                                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                                    className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                                 />
-                              </div>
-                              <div className="space-y-3">
-                                 <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] px-1">Residency</Label>
-                                 <div className="h-14 bg-secondary border-border rounded-xl px-5 flex items-center justify-between group/loc cursor-pointer hover:bg-secondary/40 transition-colors">
-                                    <span className="text-sm font-bold text-foreground">New York, USA</span>
-                                    <Globe className="w-4 h-4 text-muted-foreground group-hover/loc:text-primary transition-colors" />
-                                 </div>
-                              </div>
-                           </div>
-
-                           <div className="mt-10 flex justify-end">
-                              <Button variant="hero" className="h-14 px-12 rounded-xl text-xs font-black uppercase tracking-[0.2em] text-white shadow-gold" onClick={() => handleSave("Profile")}>
-                                Save Profile
-                              </Button>
-                           </div>
-                        </div>
-
-                        {/* KYC Verification Mini-Card */}
-                        <div className={`p-1 border rounded-[2rem] overflow-hidden group shadow-sm transition-all ${
-                            user?.kyc === 'Verified' ? 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20' :
-                            user?.kyc === 'Pending' ? 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20' :
-                            user?.kyc === 'Rejected' ? 'bg-gradient-to-br from-red-500/10 to-red-500/5 border-red-500/20' :
-                            'bg-gradient-to-br from-secondary to-card border-border'
-                        }`}>
-                           <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-8">
-                              <div className="flex gap-6 items-center">
-                                 <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-sm transition-all ${
-                                    user?.kyc === 'Verified' ? 'bg-green-500/20 border-green-500/30 text-green-600' :
-                                    user?.kyc === 'Pending' ? 'bg-amber-500/20 border-amber-500/30 text-amber-600' :
-                                    user?.kyc === 'Rejected' ? 'bg-red-500/20 border-red-500/30 text-red-600' :
-                                    'bg-secondary border-border text-muted-foreground'
-                                 }`}>
-                                    {user?.kyc === 'Verified' ? <ShieldCheck className="w-7 h-7" /> : <Shield className="w-7 h-7" />}
-                                 </div>
-                                 <div className="space-y-1">
-                                    <h3 className="text-lg font-black text-foreground uppercase tracking-widest">
-                                       KYC Status: {user?.kyc || 'Unverified'}
-                                    </h3>
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic opacity-60">
-                                       {user?.kyc === 'Verified' ? 'Full Access Unlocked' : 
-                                        user?.kyc === 'Pending' ? 'Review in Progress' : 
-                                        user?.kyc === 'Rejected' ? 'Resubmission Required' :
-                                        'Restrictions Applied'}
-                                    </p>
-                                 </div>
-                              </div>
-                              <Button 
-                                 onClick={() => navigate('/dashboard/kyc')}
-                                 className="h-12 px-8 bg-card border border-border text-foreground font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary hover:text-primary transition-all"
-                              >
-                                 {user?.kyc === 'Verified' ? 'View Details' : 'Verify Identity'}
-                              </Button>
-                           </div>
-                        </div>
-                    </motion.div>
-                 )}
-
-                 {activeTab === "security" && (
-                    <motion.div 
-                        key="security"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-8"
-                    >
-                        <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
-                           <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500 shadow-inner">
-                                 <Lock className="w-8 h-8" />
-                              </div>
-                              <div>
-                                 <h2 className="text-2xl font-black text-foreground">Security Settings</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Multi-factor & Passwords</p>
-                              </div>
-                           </div>
-
-                           <div className="space-y-4">
-                              {[
-                                 { icon: Fingerprint, label: "Two-Factor Auth (2FA)", desc: "Require OTP code for every login and withdrawal.", enabled: true, color: "text-primary" },
-                                 { icon: Smartphone, label: "Biometric Passkey", desc: "Unlock account via FaceID or local device secure enclave.", enabled: false, color: "text-blue-600" },
-                                 { icon: History, label: "Session Monitoring", desc: "Keep history of all IP addresses and devices.", enabled: true, color: "text-purple-600" },
-                              ].map((sec) => (
-                                 <div key={sec.label} className="p-6 rounded-2xl bg-secondary border border-border hover:border-primary/20 transition-all group flex items-center justify-between">
-                                    <div className="flex items-center gap-5">
-                                       <div className="w-12 h-12 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
-                                          <sec.icon className={`w-6 h-6 ${sec.color}`} />
-                                       </div>
-                                       <div className="space-y-1">
-                                          <div className="text-sm font-black text-foreground">{sec.label}</div>
-                                          <p className="text-xs text-muted-foreground font-medium italic">{sec.desc}</p>
-                                       </div>
-                                    </div>
-                                    <Switch defaultChecked={sec.enabled} />
-                                 </div>
-                              ))}
-                           </div>
-
-                           <div className="mt-12 pt-10 border-t border-border space-y-8">
-                              <h3 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground pl-1">Modify Vault Access</h3>
-                              <div className="grid md:grid-cols-2 gap-8">
-                                 <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">Current Password</Label>
-                                    <div className="relative">
-                                       <Input type={showPassword ? "text" : "password"} className="h-14 bg-secondary border-border rounded-xl font-mono text-xs" />
-                                       <button onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                       </button>
-                                    </div>
-                                 </div>
-                                 <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">New Password</Label>
-                                    <Input type={showPassword ? "text" : "password"} className="h-14 bg-secondary border-border rounded-xl font-mono text-xs" />
-                                 </div>
-                              </div>
-                              <Button variant="outline" className="h-14 px-12 rounded-xl bg-card border-border font-black text-[10px] uppercase tracking-widest hover:text-primary transition-all shadow-sm">
-                                 Rotate Access Credentials
-                              </Button>
-                           </div>
-                        </div>
-                    </motion.div>
-                 )}
-
-                 {activeTab === "notifications" && (
-                    <motion.div 
-                        key="notifications"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-8"
-                    >
-                        <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
-                           <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-600 shadow-inner">
-                                 <Bell className="w-8 h-8" />
-                              </div>
-                              <div>
-                                 <h2 className="text-2xl font-black text-foreground">Notifications</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Configure your alerts</p>
-                              </div>
-                           </div>
-
-                           <div className="grid gap-6">
-                              {[
-                                 { label: "Financial Executions", desc: "Push & Email alerts for completed trades and orders.", active: true },
-                                 { label: "Large Trade Alerts", desc: "Notify when significant market volatility occurs.", active: false },
-                                 { label: "Portfolio Drift", desc: "Get notified when your assets drop below your target split.", active: true },
-                                 { label: "Security & Login", desc: "Critical alerts for new login sessions and IP changes.", active: true },
-                              ].map((item) => (
-                                 <div key={item.label} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between hover:border-primary/20 transition-all">
-                                    <div className="space-y-1">
-                                       <div className="text-sm font-black text-foreground uppercase tracking-widest">{item.label}</div>
-                                       <p className="text-xs text-muted-foreground font-bold italic">{item.desc}</p>
-                                    </div>
-                                    <Switch defaultChecked={item.active} />
-                                 </div>
-                              ))}
-                           </div>
-
-                           <div className="mt-10 p-6 rounded-2xl bg-secondary/50 border border-dashed border-border flex items-center justify-between">
-                              <div className="flex gap-4 items-center">
-                                 <Mail className="w-5 h-5 text-primary" />
-                                 <div>
-                                    <div className="text-xs font-black text-foreground uppercase tracking-widest">Digest Frequency</div>
-                                    <p className="text-[10px] font-bold text-muted-foreground mt-0.5">Summary of daily activity</p>
-                                 </div>
-                              </div>
-                              <select className="bg-card border-border rounded-lg text-xs font-bold px-4 py-2 outline-none">
-                                 <option>Instant</option>
-                                 <option>Daily Digest</option>
-                                 <option>Weekly Report</option>
-                              </select>
-                           </div>
-                        </div>
-                    </motion.div>
-                 )}
-
-                 {activeTab === "preferences" && (
-                    <motion.div 
-                        key="preferences"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-8"
-                    >
-                        <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
-                           <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-600 shadow-inner">
-                                 <Globe className="w-8 h-8" />
-                              </div>
-                              <div>
-                                 <h2 className="text-2xl font-black text-foreground">Preferences</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Regional formats & Interface settings</p>
-                              </div>
-                           </div>
-
-                           <div className="space-y-10">
-                              <div className="space-y-4">
-                                 <div className="flex items-center justify-between px-1">
-                                    <div>
-                                       <Label className="text-[10px] font-black uppercase text-foreground tracking-[0.2em]">Preferred Display Currency</Label>
-                                       <p className="text-[10px] font-bold text-muted-foreground mt-1 italic">Overrides auto-detected regional currency defaults.</p>
-                                    </div>
-                                 </div>
-                                 <div className="p-2 rounded-2xl bg-secondary border border-border inline-block min-w-[320px]">
-                                    <CurrencySelector />
-                                 </div>
-                              </div>
-
-                                 <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Timezone</Label>
-                                    <select className="w-full h-14 bg-secondary border border-border rounded-xl px-4 text-sm font-bold outline-none appearance-none">
-                                       <option>UTC -05:00 (Eastern Time)</option>
-                                       <option>UTC +00:00 (London/GMT)</option>
-                                       <option>UTC +01:00 (Paris/CET)</option>
-                                    </select>
-                                 </div>
-                           </div>
-                        </div>
-                    </motion.div>
-                 )}
-
-                 {activeTab === "activity" && (
-                    <motion.div 
-                        key="activity"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-8"
-                    >
-                        <div className="bg-card p-10 rounded-[2.5rem] border border-border shadow-sm">
-                           <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border">
-                              <div className="w-16 h-16 rounded-2xl bg-secondary border border-border flex items-center justify-center text-primary shadow-inner">
-                                 <History className="w-8 h-8" />
-                              </div>
-                              <div>
-                                 <h2 className="text-2xl font-black text-foreground">Recent Activity</h2>
-                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Log of your recent actions</p>
-                              </div>
-                           </div>
-
-                           <div className="space-y-4">
-                                {combinedLogs.length === 0 ? (
-                                    <div className="py-20 text-center border-2 border-dashed border-border rounded-3xl">
-                                        <History className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-muted-foreground">No recent activity detected.</p>
-                                    </div>
-                                ) : combinedLogs.slice(0, 10).map((log, i) => (
-                                    <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-secondary/50 border border-border hover:border-primary/20 transition-all group">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-10 h-10 rounded-[0.9rem] bg-card border border-border flex items-center justify-center font-black text-[10px] text-muted-foreground group-hover:bg-primary/5 transition-colors">
-                                                {String(i + 1).padStart(2, '0')}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-black text-foreground">{log.action}</div>
-                                                <div className="text-[10px] text-muted-foreground font-bold font-mono mt-0.5">{log.device} • {log.time}</div>
-                                            </div>
-                                        </div>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                                            log.status === 'Alerted' ? 'bg-red-500/10 text-red-600 border-red-500/20' : 'bg-card text-muted-foreground border-border'
-                                        }`}>
-                                            {log.status}
-                                        </span>
-                                    </div>
-                                ))}
-                           </div>
-
-                           <div className="mt-10 flex justify-center">
-                              <Button variant="ghost" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] hover:text-primary transition-colors flex items-center gap-3">
-                                 Download Detailed Archive <ExternalLink className="w-3 h-3" />
-                              </Button>
-                           </div>
-                        </div>
-                    </motion.div>
-                 )}
-               </AnimatePresence>
-            </main>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .settings-label {
+          font-size: 11px;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: hsl(var(--muted-foreground));
+          letter-spacing: 0.12em;
+          padding-left: 0.25rem;
+          opacity: 0.7;
+        }
+        .settings-input {
+          height: 3.5rem;
+          background-color: hsl(var(--secondary) / 0.15);
+          border: 1.5px solid hsl(var(--border) / 0.4);
+          border-radius: 1.25rem;
+          font-weight: 800;
+          font-size: 0.9rem;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .settings-input:focus {
+          border-color: hsl(var(--primary));
+          background-color: hsl(var(--card));
+          box-shadow: 0 0 0 5px hsl(var(--primary) / 0.08);
+          transform: translateY(-1px);
+        }
+        .settings-select {
+          width: 100%;
+          height: 3.5rem;
+          background-color: hsl(var(--secondary) / 0.2);
+          border: 1.5px solid hsl(var(--border) / 0.4);
+          border-radius: 1.25rem;
+          padding: 0 1.5rem;
+          font-size: 0.9rem;
+          font-weight: 800;
+          outline: none;
+          appearance: none;
+          cursor: pointer;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 1.5rem center;
+          transition: all 0.3s;
+        }
+        .settings-select:focus {
+           border-color: hsl(var(--primary));
+           box-shadow: 0 0 0 5px hsl(var(--primary) / 0.08);
+        }
+        .shadow-main {
+          box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+        .shadow-huge {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+      `}} />
     </DashboardLayout>
   );
 };

@@ -18,9 +18,9 @@ import { SoundToggle } from "@/components/SoundToggle";
 import { playAppOpenSound } from "@/lib/sound";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/dashboard", description: "Portfolio Summary" },
+  { icon: LayoutDashboard, label: "Overview", path: "/dashboard", description: "Account Summary" },
   { icon: Wallet, label: "Wallet", path: "/dashboard/wallet", description: "Funds & Assets" },
-  { icon: TrendingUp, label: "Investment", path: "/dashboard/investments", description: "Auto-Pilot Profits" },
+  { icon: TrendingUp, label: "Investment", path: "/dashboard/investments", description: "Growth Plans" },
   { icon: Users, label: "Copy Trading", path: "/dashboard/copy-trading", description: "Follow Experts" },
   { icon: BarChart3, label: "Trading", path: "/dashboard/trading", description: "Markets & Orders" },
   { icon: LineChart, label: "Analysis", path: "/dashboard/analysis", description: "Performance" },
@@ -58,8 +58,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       document.documentElement.classList.remove("dashboard-scale");
     };
   }, [navigate]);
-
-// SNIP up to header section
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col h-full bg-sidebar border-r border-border relative overflow-hidden">
@@ -141,12 +139,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 h-screen sticky top-0 border-r border-border bg-card overflow-hidden">
         <SidebarContent />
       </aside>
 
-      {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
@@ -177,7 +173,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         )}
       </AnimatePresence>
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-6 flex-1">

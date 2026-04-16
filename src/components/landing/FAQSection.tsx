@@ -33,14 +33,14 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-24 bg-[#0a0a0a] border-t border-[#333]/50" id="faq">
+    <section className="py-24 bg-background border-t border-border/50" id="faq">
       <div className="container mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">Got Questions?</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
             Frequently Asked Questions
           </h2>
-          <p className="text-gray-400">
+          <p className="text-muted-foreground">
             Find answers to common questions about our platform, investment plans, and security measures.
           </p>
         </div>
@@ -54,13 +54,13 @@ const FAQSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-[#1A1A1A] border border-[#333] rounded-xl overflow-hidden"
+                className="bg-card border border-border rounded-xl overflow-hidden"
               >
                 <button
                   onClick={() => toggleFAQ(index)}
                   className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
                 >
-                  <span className="font-semibold text-white/90 text-lg pr-8">{faq.question}</span>
+                  <span className="font-semibold text-foreground/90 text-lg pr-8">{faq.question}</span>
                   <ChevronDown 
                     className={`w-5 h-5 text-[#D4AF37] transition-transform duration-300 flex-shrink-0 ${openIndex === index ? 'rotate-180' : ''}`} 
                   />
@@ -73,7 +73,7 @@ const FAQSection = () => {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                      <div className="p-6 pt-0 border-t border-[#333]/50 text-gray-400 leading-relaxed">
+                      <div className="p-6 pt-0 border-t border-border/50 text-muted-foreground leading-relaxed">
                         {faq.answer}
                       </div>
                     </motion.div>

@@ -11,7 +11,7 @@ const stats = [
 
 const StatisticsSection = () => {
   return (
-    <section className="py-16 bg-[#0B0F14] border-t border-[#333]/50 relative z-10 -mt-8 pt-20">
+    <section className="py-16 bg-background border-t border-border/50 relative z-10 -mt-8 pt-20">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {stats.map((stat, i) => (
@@ -21,7 +21,7 @@ const StatisticsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 flex flex-col items-center text-center hover:border-[#D4AF37]/50 transition-colors"
+              className="bg-card border border-border rounded-xl p-6 flex flex-col items-center text-center hover:border-[#D4AF37]/50 transition-colors"
             >
               <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-4">
                 <stat.icon className="w-6 h-6 text-[#D4AF37]" />

@@ -35,15 +35,15 @@ const assets = [
 
 const MarketPreviewSection = () => {
   return (
-    <section className="py-24 bg-[#0a0a0a] border-t border-[#333]/50" id="markets">
+    <section className="py-24 bg-background border-t border-border/50" id="markets">
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 px-4">
           <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">Investment Instruments</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
             Supported Assets
           </h2>
-          <p className="text-gray-400">
+          <p className="text-muted-foreground">
             Build a diversified portfolio across multiple asset classes with our professional-grade trading infrastructure.
           </p>
         </div>
@@ -57,26 +57,26 @@ const MarketPreviewSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-[#1A1A1A] border border-[#333] rounded-xl p-6 hover:border-[#D4AF37]/50 transition-colors group flex flex-col h-full"
+              className="bg-card border border-border rounded-xl p-6 hover:border-[#D4AF37]/50 transition-colors group flex flex-col h-full"
             >
-              <div className="w-12 h-12 rounded-full bg-[#111] border border-[#333] flex items-center justify-center mb-6 group-hover:border-[#D4AF37] transition-all">
+              <div className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center mb-6 group-hover:border-[#D4AF37] transition-all">
                 <asset.icon className="w-6 h-6 text-[#D4AF37]" />
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
+              <h3 className="text-xl font-bold text-foreground mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
                 {asset.category}
               </h3>
               
-              <p className="text-gray-400 text-sm mb-6 flex-grow">
+              <p className="text-muted-foreground text-sm mb-6 flex-grow">
                 {asset.description}
               </p>
 
-              <div className="flex items-center justify-between mt-auto pt-6 border-t border-[#333]/50">
+              <div className="flex items-center justify-between mt-auto pt-6 border-t border-border/50">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-gray-400 uppercase font-semibold">Target ROI</span>
+                  <span className="text-[10px] text-muted-foreground uppercase font-semibold">Target ROI</span>
                   <span className="text-sm font-bold text-[#D4AF37]">{asset.roi}</span>
                 </div>
-                <Link to={asset.link} className="w-8 h-8 rounded-full bg-[#333] text-white flex items-center justify-center group-hover:bg-[#D4AF37] transition-colors">
+                <Link to={asset.link} className="w-8 h-8 rounded-full bg-secondary text-foreground flex items-center justify-center group-hover:bg-[#D4AF37] transition-colors">
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>

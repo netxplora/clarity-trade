@@ -17,15 +17,15 @@ export default function CopyTrading() {
     <PublicLayout title="Copy Trading">
       <PublicPageHeader
         label="COPY TRADING"
-        title="Copy the Masters"
-        description="Don't just watch the masters. Trade exactly like them, automatically. Our network of vetted professionals is ready to grow your portfolio."
+        title="Copy Expert Traders"
+        description="Follow the strategies of professional traders automatically. Our network of vetted professionals is ready to help grow your portfolio."
         icon={Users}
         image="/images/copy-trading-hero.png"
       />
       
       <div className="container px-4 md:px-6 max-w-6xl mx-auto py-24 text-gray-900">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-4xl font-display font-black text-gray-900 mb-6 uppercase tracking-tight">Automate Your Alpha</h2>
+          <h2 className="text-4xl font-display font-black text-gray-900 mb-6 uppercase tracking-tight">Automated Trading</h2>
           <p className="text-lg text-gray-500 leading-relaxed font-semibold">
             Our Copy Trading infrastructure allows you to mirror the strategies of vetted, audited professional traders in real-time, completely passively.
           </p>
@@ -56,11 +56,11 @@ export default function CopyTrading() {
             <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
                 <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="space-y-8">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest">
-                        <Star className="w-3.5 h-3.5" /> Premium Infrastructure
+                        <Star className="w-3.5 h-3.5" /> High-Performance Systems
                     </div>
                     <h2 className="text-4xl lg:text-5xl font-playfair font-black text-foreground italic leading-tight uppercase">Why Lead Traders <span className="text-primary">Choose Us?</span></h2>
                     <p className="text-lg text-muted-foreground leading-relaxed">
-                        We don't just provide a platform; we provide the most advanced copy trading technology in the financial industry. For lead traders, this means seamless scaling and fair attribution.
+                        We provide reliable and advanced copy trading technology for all investors. For lead traders, this means seamless scaling and fair attribution.
                     </p>
                     <div className="grid gap-6 pt-4">
                         {[
@@ -104,7 +104,7 @@ export default function CopyTrading() {
             <h2 className="text-3xl font-playfair font-black text-foreground mb-12 uppercase italic tracking-tight"><span className="text-primary">Vetted</span> Global Performance</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {[
-                    { val: "1,240+", label: "Verified Masters" },
+                    { val: "1,240+", label: "Expert Traders" },
                     { val: "$420M+", label: "Allocated Equity" },
                     { val: "2M+", label: "Copied Trades" },
                     { val: "$88M+", label: "Paid Profits" }
@@ -124,7 +124,7 @@ export default function CopyTrading() {
             <h2 className="text-3xl font-playfair font-black text-foreground text-center mb-12 uppercase italic tracking-tight">Copy Trading <span className="text-primary">Essentials</span></h2>
             <div className="grid gap-4">
                 {[
-                    { q: "Is there a minimum investment for copy trading?", a: "Each master trader sets their own minimum, typically ranging from $100 to $1,000 to ensure proper margin coverage." },
+                    { q: "Is there a minimum investment for copy trading?", a: "Each expert trader sets their own minimum, typically ranging from $100 to $1,000 to ensure proper margin coverage." },
                     { q: "How are performance fees calculated?", a: "Fees are only charged on new profits made on your account, using a High-Water Mark (HWM) methodology." },
                     { q: "Can I stop copying at any time?", a: "Yes, you have full control. You can stop copying or change allocation limits instantly with one click." }
                 ].map((faq) => (
@@ -138,7 +138,7 @@ export default function CopyTrading() {
 
         <div className="text-center mt-24">
             <Button variant="hero" className="h-14 px-12 text-lg rounded-xl shadow-gold text-white font-black uppercase tracking-widest">
-                Browse Masters Market <ArrowRight className="w-5 h-5 ml-2" />
+                Browse Expert Traders <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
         </div>
       </div>

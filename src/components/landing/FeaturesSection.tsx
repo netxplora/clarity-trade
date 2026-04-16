@@ -36,15 +36,15 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section className="py-24 bg-[#0a0a0a] border-t border-[#333]/50" id="features">
+    <section className="py-24 bg-background border-t border-border/50" id="features">
       <div className="container mx-auto px-6">
         <div className="flex flex-col items-center mb-16 lg:mb-24">
           <div className="text-center max-w-3xl mx-auto px-6">
             <span className="text-[#D4AF37] font-semibold tracking-wider text-sm uppercase">Platform Capabilities</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-2 mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
               Why Choose Clarity Trade
             </h2>
-            <p className="text-gray-400 text-lg">
+            <p className="text-muted-foreground text-lg">
               We provide the institutional tools and support you need to succeed in the fast-paced 
               world of digital asset and forex trading.
             </p>
@@ -60,13 +60,13 @@ const FeaturesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-[#1A1A1A] border border-[#333] rounded-xl p-8 hover:border-[#D4AF37]/50 transition-colors group h-full flex flex-col items-start text-left"
+              className="bg-card border border-border rounded-xl p-8 hover:border-[#D4AF37]/50 transition-colors group h-full flex flex-col items-start text-left"
             >
-              <div className="w-12 h-12 rounded-full bg-[#111] border border-[#333] flex items-center justify-center mb-6 group-hover:border-[#D4AF37] transition-all">
+              <div className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center mb-6 group-hover:border-[#D4AF37] transition-all">
                 <feature.icon className="w-6 h-6 text-[#D4AF37]" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-4" style={{ fontFamily: "Inter, sans-serif" }}>{feature.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-bold text-foreground mb-4" style={{ fontFamily: "Inter, sans-serif" }}>{feature.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {feature.description}
               </p>
             </motion.div>

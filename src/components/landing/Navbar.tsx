@@ -32,7 +32,7 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled 
-        ? "py-3 bg-[#0a0a0a]/90 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-[#333]/50" 
+        ? "py-3 bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50" 
         : `py-6 bg-transparent border-b border-transparent`
       }`}
     >
@@ -40,7 +40,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105" onClick={() => window.scrollTo(0,0)}>
           <img src="/logo.png" alt="Clarity Trade Logo" className="w-10 h-10 object-contain drop-shadow-md" />
-          <span className="text-xl font-extrabold tracking-tighter text-white" style={{ fontFamily: "Inter, sans-serif" }}>
+          <span className="text-xl font-extrabold tracking-tighter text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
             CLARITY<span className="text-[#D4AF37]">TRADE</span>
           </span>
         </Link>
@@ -51,7 +51,7 @@ const Navbar = () => {
             <a 
               key={link.name} 
               href={link.href} 
-              className="text-xs font-bold uppercase tracking-widest text-gray-300 hover:text-[#D4AF37] transition-colors"
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-[#D4AF37] transition-colors"
             >
               {link.name}
             </a>
@@ -75,7 +75,7 @@ const Navbar = () => {
                </Link>
              ) : (
                <>
-                 <Link to="/auth/login" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 text-white hover:text-[#D4AF37] transition-all">
+                 <Link to="/auth/login" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 text-foreground hover:text-[#D4AF37] transition-all">
                     <LogIn className="w-4 h-4" /> Sign In
                  </Link>
                  <Link to="/auth/register" className="bg-[#D4AF37] text-[#0a0a0a] hover:bg-[#b0902a] px-6 py-2.5 rounded font-bold text-xs uppercase tracking-widest shadow-lg transition-colors">
@@ -87,7 +87,7 @@ const Navbar = () => {
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="lg:hidden p-2 rounded transition-colors text-white"
+            className="lg:hidden p-2 rounded transition-colors text-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -102,18 +102,18 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-[#0A0A0A] border-t border-[#333] overflow-hidden shadow-xl"
+            className="lg:hidden bg-background border-t border-border overflow-hidden shadow-xl"
           >
             <div className="p-6 flex flex-col gap-4">
               {navLinks.map((link) => (
                 <a 
                   key={link.name} 
                   href={link.href} 
-                  className="text-sm font-bold text-gray-200 uppercase tracking-widest py-3 border-b border-[#333] flex items-center justify-between group"
+                  className="text-sm font-bold text-foreground uppercase tracking-widest py-3 border-b border-border flex items-center justify-between group"
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.name}
-                  <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-[#D4AF37] transition-colors" />
+                  <ArrowUpRight className="w-4 h-4 text-muted-foreground group-hover:text-[#D4AF37] transition-colors" />
                 </a>
               ))}
               
@@ -128,7 +128,7 @@ const Navbar = () => {
                     </Link>
                  ) : (
                     <div className="grid grid-cols-2 gap-4">
-                       <Link to="/auth/login" className="flex items-center justify-center gap-2 border border-[#333] text-gray-300 font-bold uppercase tracking-widest text-xs py-4 rounded" onClick={() => setMobileOpen(false)}>
+                       <Link to="/auth/login" className="flex items-center justify-center gap-2 border border-border text-muted-foreground font-bold uppercase tracking-widest text-xs py-4 rounded" onClick={() => setMobileOpen(false)}>
                           Sign In
                        </Link>
                        <Link to="/auth/register" className="bg-[#D4AF37] text-[#0a0a0a] flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs py-4 rounded shadow-lg" onClick={() => setMobileOpen(false)}>

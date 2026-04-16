@@ -33,13 +33,6 @@
     --input: 220 15% 90%;
     --ring: 43 74% 49%;
 
-    /* HYIP Colors */
-    --hyip-gold: #D4AF37;
-    --hyip-white: #FFFFFF;
-    --hyip-light-gray: #F5F5F5;
-    --hyip-deep-dark: #0B0F14;
-    --hyip-secondary-dark: #12161C;
-
     /* Gold palette tokens */
     --gold-50: 44 100% 97%;
     --gold-100: 44 96% 89%;
@@ -163,55 +156,6 @@
 }
 
 @layer components {
-
-  /* HYIP Global Layout Utilities */
-  .section-bg-white {
-    @apply py-24 lg:py-32 bg-white relative overflow-hidden;
-  }
-
-  .section-bg-light {
-    @apply py-24 lg:py-32 bg-[#F5F5F5] relative overflow-hidden;
-  }
-
-  .section-bg-dark {
-    @apply py-24 lg:py-32 bg-[#0B0F14] relative overflow-hidden;
-  }
-
-  /* HYIP Typography */
-  .heading-gold {
-    @apply block text-[12px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-4 text-center;
-  }
-
-  .title-hyip {
-    @apply text-3xl md:text-5xl lg:text-6xl font-black text-center mb-8 tracking-tight leading-tight;
-  }
-
-  .p-hyip {
-    @apply text-gray-500 font-bold text-center max-w-2xl mx-auto leading-relaxed text-base;
-  }
-
-  .p-hyip-dark {
-    @apply text-gray-400 font-bold text-center max-w-2xl mx-auto leading-relaxed text-base;
-  }
-
-  /* HYIP Cards */
-  .hyip-card {
-    @apply p-10 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-xl hover:border-[#D4AF37]/30 transition-all duration-500 relative overflow-hidden;
-  }
-
-  .hyip-card-dark {
-    @apply p-10 bg-[#12161C] border border-white/5 rounded-3xl shadow-2xl hover:border-[#D4AF37]/30 transition-all duration-500 relative overflow-hidden;
-  }
-
-  /* HYIP Buttons */
-  .btn-gold {
-    @apply py-4 px-10 bg-[#D4AF37] text-gray-900 font-black uppercase text-xs tracking-widest rounded-full hover:bg-[#FFD700] hover:scale-105 active:scale-95 transition-all;
-    box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.4);
-  }
-
-  .btn-gold-outline {
-    @apply py-4 px-10 border-2 border-[#D4AF37] text-[#D4AF37] font-black uppercase text-xs tracking-widest rounded-full hover:bg-[#D4AF37] hover:text-gray-900 transition-all;
-  }
 
   /* Custom Effects */
   .text-gradient-gold {

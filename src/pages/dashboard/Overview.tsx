@@ -139,8 +139,8 @@ const Overview = () => {
             
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-6 relative z-10">
               <div>
-                <h2 className="text-2xl font-black text-foreground tracking-tight mb-1">Recent Activity</h2>
-                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">Transaction History</span>
+                <h2 className="text-2xl font-black text-foreground tracking-tight mb-1">Activity History</h2>
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">Recent transactions</span>
               </div>
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 sm:w-64">
@@ -175,7 +175,7 @@ const Overview = () => {
                           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-6 opacity-40">
                              <Activity className="w-8 h-8" />
                           </div>
-                          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40">No activity logged in the current cycle.</p>
+                          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40">No recent activity in your history.</p>
                           <Button variant="link" className="mt-4 text-primary font-bold text-[10px] uppercase tracking-widest" onClick={() => navigate("/dashboard/trading")}>Start Trading Now <ArrowRight className="w-3 h-3 ml-2" /></Button>
                         </div>
                       </td>
@@ -252,8 +252,8 @@ const Overview = () => {
                
               <div className="flex items-center justify-between mb-10 relative z-10">
                 <div>
-                  <h2 className="text-xl font-black text-foreground tracking-tight mb-1">Copied Portfolios</h2>
-                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">Automated Strategies</span>
+                  <h2 className="text-xl font-black text-foreground tracking-tight mb-1">Copy Trading</h2>
+                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest leading-none">Active Traders</span>
                 </div>
                 <Link to="/dashboard/copy-trading" className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center hover:border-primary/50 transition-all group/arrow">
                    <ArrowUpRight className="w-4 h-4 text-muted-foreground group-hover/arrow:text-primary transition-colors" />
@@ -262,9 +262,9 @@ const Overview = () => {
 
               <div className="flex-1 space-y-5 relative z-10">
                 {activeSessions.length === 0 ? (
-                  <div className="py-24 text-center border-2 border-dashed border-border/10 rounded-[2rem] group/empty hover:border-primary/20 transition-all cursor-pointer bg-secondary/5">
+                   <div className="py-24 text-center border-2 border-dashed border-border/10 rounded-[2rem] group/empty hover:border-primary/20 transition-all cursor-pointer bg-secondary/5">
                     <Users className="w-16 h-16 mx-auto mb-6 text-muted-foreground/10 group-hover/empty:text-primary/20 transition-colors duration-500" />
-                    <p className="text-xs font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-loose px-4">No active trading sessions.<br />Follow experts to automate growth.</p>
+                    <p className="text-xs font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-loose px-4">No active copy trading sessions.<br />Follow traders to copy their positions.</p>
                   </div>
                 ) : activeSessions.map((trader) => {
                   const pnlNum = trader.pnl || 0;
@@ -302,7 +302,7 @@ const Overview = () => {
               <div className="mt-8 pt-6 border-t border-border/50 relative z-10">
                 <Button variant="hero" className="w-full h-14 rounded-2xl text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-gold-huge hov-scale" asChild>
                   <Link to="/dashboard/copy-trading">
-                    Browse Strategies
+                    View All Traders
                   </Link>
                 </Button>
               </div>

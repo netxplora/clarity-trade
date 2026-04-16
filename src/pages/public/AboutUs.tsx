@@ -34,7 +34,7 @@ export default function AboutUs() {
     <PublicLayout title="About Us">
       <PublicPageHeader 
         label="ABOUT US"
-        title="Building the Future of Trading"
+        title="Professional Trading Infrastructure"
         description="We started Clarity Trade with a simple belief: the world's best trading technology shouldn't be locked behind institutional doors. It should be available to everyone."
         icon={Building2}
         image="/images/3d-hq.png"
@@ -171,7 +171,7 @@ export default function AboutUs() {
                 {[
                   { label: "Execution Speed", value: "< 2ms", desc: "Ultra-fast order matching." },
                   { label: "Daily Peak Volume", value: "$4.2B", desc: "Proven stability under load." },
-                  { label: "Data Encryption", value: "AES-256", desc: "Military-grade data protection." },
+                  { label: "Data Encryption", value: "AES-256", desc: "Institutional-standard protection." },
                   { label: "Global Data Centers", value: "14", desc: "Localized low-latency access." }
                 ].map((stat) => (
                   <div key={stat.label} className="p-5 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
@@ -199,7 +199,7 @@ export default function AboutUs() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Beyond the Markets</span>
-            <h2 className="title-hyip text-gray-900">Trading for a Better Future</h2>
+            <h2 className="title-hyip text-gray-900">Trading for a Sustainable Tomorrow</h2>
             <p className="p-hyip">Sustainability and financial literacy are core to our identity as a global financial leader.</p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
