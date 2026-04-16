@@ -37,7 +37,7 @@ const CopyTradingSection = () => {
               </li>
             </ul>
 
-            <Link to="/auth/register" className="btn-gold inline-flex items-center gap-2 group px-8 py-4">
+            <Link to="/auth/register" className="bg-[#D4AF37] text-[#0a0a0a] hover:bg-[#b0902a] rounded font-bold text-sm uppercase tracking-widest shadow-lg inline-flex items-center gap-2 group px-8 py-4 transition-colors">
               Explore Copy Trading <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -75,7 +75,7 @@ const CopyTradingSection = () => {
                     </div>
                   </div>
 
-                  <Link to="/auth/register" className="w-full btn-gold-outline !h-10 flex items-center justify-center gap-2 group border border-[#333] text-gray-300 hover:text-[#D4AF37] hover:border-[#D4AF37] bg-transparent rounded transition-all">
+                  <Link to="/auth/register" className="w-full h-10 flex items-center justify-center gap-2 group border border-[#333] text-gray-300 hover:text-[#D4AF37] hover:border-[#D4AF37] bg-transparent rounded font-semibold text-sm transition-all">
                      <Copy className="w-4 h-4" /> Copy Trader
                   </Link>
                 </motion.div>

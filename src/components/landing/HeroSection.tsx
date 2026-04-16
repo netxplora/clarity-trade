@@ -41,15 +41,15 @@ const HeroSection = () => {
 
               <div className="flex flex-wrap gap-4">
                 {user ? (
-                  <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn-gold flex items-center gap-2 group px-8 py-4">
+                  <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="bg-[#D4AF37] text-[#0a0a0a] hover:bg-[#b0902a] rounded font-bold text-sm uppercase tracking-widest shadow-lg flex items-center gap-2 group px-8 py-4 transition-colors">
                     <LayoutDashboard className="w-5 h-5 group-hover:scale-110 transition-transform" /> Go to Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 ) : (
                   <>
-                    <Link to="/auth/register" className="btn-gold flex items-center gap-2 group px-8 py-4">
+                    <Link to="/auth/register" className="bg-[#D4AF37] text-[#0a0a0a] hover:bg-[#b0902a] rounded font-bold text-sm uppercase tracking-widest shadow-lg flex items-center gap-2 group px-8 py-4 transition-colors">
                       Start Investing <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
-                    <Link to="/copy-trading" className="btn-gold-outline flex items-center gap-2 px-8 py-4 bg-transparent text-white border border-[#333] hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors rounded">
+                    <Link to="/copy-trading" className="flex items-center gap-2 px-8 py-4 bg-transparent text-white border border-[#333] hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors rounded font-bold text-sm uppercase tracking-widest">
                       Explore Copy Trading
                     </Link>
                   </>

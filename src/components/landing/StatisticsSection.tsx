@@ -3,7 +3,7 @@ import { Users, Briefcase, Activity, BarChart3, TrendingUp } from "lucide-react"
 
 const stats = [
   { label: "Total Users", value: "250K+", icon: Users },
-  { label: "Assets Managaged", value: "$1.5B+", icon: Briefcase },
+  { label: "Assets Managed", value: "$1.5B+", icon: Briefcase },
   { label: "Total Trades", value: "15M+", icon: Activity },
   { label: "Active Traders", value: "85K+", icon: TrendingUp },
   { label: "Daily Volume", value: "$450M+", icon: BarChart3 },
