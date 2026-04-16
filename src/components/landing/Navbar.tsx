@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight, ChevronDown, User, LogIn, LayoutDashboard } from "lucide-react";
 
 import { useStore } from "@/store/useStore";
-import { SoundToggle } from "@/components/SoundToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -61,7 +61,7 @@ const Navbar = () => {
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
           <div className="transition-colors hidden sm:flex items-center gap-2">
-             <SoundToggle variant="navbar" className="hidden lg:flex text-gray-300" />
+             <ThemeToggle />
           </div>
 
           <div className="hidden md:flex items-center gap-4">
