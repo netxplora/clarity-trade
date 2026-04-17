@@ -488,36 +488,46 @@ export const useStore = create<AppState>((set, get) => ({
 
             // 3. Fetch Relational Data in background
             const isAdmin = profile.role === 'admin';
-            const [
-                { data: trades },
-                { data: sessions },
-                { data: notifs },
-                { data: referrals },
-                { data: transactions },
-                { data: users },
-                { data: proTraders },
-                { data: wallets },
-                { data: logs }
-            ] = await Promise.all([
+            const queryPromises = [
                 supabase.from('trades').select('*').eq('user_id', targetId).order('created_at', { ascending: false }),
                 supabase.from('active_sessions').select('*').eq('user_id', targetId).in('status', ['active', 'paused']),
                 supabase.from('notifications').select('*').or(isAdmin ? `user_id.eq.${targetId},user_id.is.null` : `user_id.eq.${targetId},type.eq.GLOBAL`).order('created_at', { ascending: false }).limit(50),
                 supabase.from('referrals').select('*, referee:referee_id(name, email)').eq('referrer_id', targetId),
                 supabase.from('transactions').select('*').eq('user_id', targetId).order('created_at', { ascending: false }),
-                
                 isAdmin ? supabase.from('profiles').select('*, balances(*)').order('created_at', { ascending: false }) : Promise.resolve({ data: [] }),
                 supabase.from('copy_traders').select('*').order('created_at', { ascending: false }),
                 isAdmin ? supabase.from('deposit_wallets').select('*') : Promise.resolve({ data: [] }),
                 isAdmin ? supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100) : Promise.resolve({ data: [] })
-            ]);
+            ];
+
+            const results = await Promise.allSettled(queryPromises);
+            
+            // Map results to variables, providing fallbacks for failed queries
+            const trades = results[0].status === 'fulfilled' ? (results[0].value as any).data : [];
+            const sessions = results[1].status === 'fulfilled' ? (results[1].value as any).data : [];
+            const notifs = results[2].status === 'fulfilled' ? (results[2].value as any).data : [];
+            const referrals = results[3].status === 'fulfilled' ? (results[3].value as any).data : [];
+            const transactions = results[4].status === 'fulfilled' ? (results[4].value as any).data : [];
+            const users = results[5].status === 'fulfilled' ? (results[5].value as any).data : [];
+            const proTraders = results[6].status === 'fulfilled' ? (results[6].value as any).data : [];
+            const wallets = results[7].status === 'fulfilled' ? (results[7].value as any).data : [];
+            const logs = results[8].status === 'fulfilled' ? (results[8].value as any).data : [];
+
+            // Log individual query failures for debugging without breaking the app
+            results.forEach((res, idx) => {
+                if (res.status === 'rejected' || (res.status === 'fulfilled' && (res.value as any).error)) {
+                    const error = res.status === 'rejected' ? res.reason : (res.value as any).error;
+                    console.warn(`Query ${idx} failed during fetchAppData:`, error);
+                }
+            });
 
             // 3. Process & Update Store
             setTradeHistory(trades || []);
-            setActiveTrades(trades?.filter(t => t.status === 'Open') || []);
+            setActiveTrades(trades?.filter((t: any) => t.status === 'Open') || []);
             setNotifications(notifs?.filter((n: any) => !n.dismissed_by?.includes(targetId)) || []);
             set({ 
                 referrals: referrals || [],
-                transactions: transactions?.map(t => ({ ...t, date: t.created_at || t.date })) || [],
+                transactions: transactions?.map((t: any) => ({ ...t, date: t.created_at || t.date })) || [],
                 users: users || [],
                 proTraders: proTraders || [],
                 depositWallets: wallets || [],
