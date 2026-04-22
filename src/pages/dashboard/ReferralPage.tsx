@@ -140,7 +140,44 @@ const ReferralPage = () => {
                   <Users className="w-5 h-5 text-muted-foreground/30" />
                </div>
                <div className="overflow-x-auto">
-                 <table className="w-full text-sm">
+                 {/* Mobile Stacked Cards */}
+                 <div className="md:hidden space-y-4 p-4">
+                   {referrals.length === 0 ? (
+                     <div className="py-12 text-center text-muted-foreground text-sm">No referrals yet. Start sharing to earn!</div>
+                   ) : referrals.map((ref) => (
+                     <div key={ref.id} className="bg-secondary/40 border border-border/50 rounded-2xl p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex flex-col">
+                             <span className="font-bold text-foreground text-sm">{ref.refereeName}</span>
+                             <span className="text-[10px] text-muted-foreground">{ref.refereeEmail}</span>
+                          </div>
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border ${
+                            ref.status === 'Completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                            ref.status === 'Trading' ? 'bg-primary/10 text-primary border-primary/20' :
+                            'bg-secondary text-muted-foreground border-border'
+                          }`}>
+                            {ref.status === 'Completed' ? <CheckCircle2 className="w-3 h-3" /> :
+                             ref.status === 'Trading' ? <Zap className="w-3 h-3" /> :
+                             <Clock className="w-3 h-3" />}
+                            {ref.status}
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center text-xs border-t border-border/50 pt-3">
+                          <span className="text-muted-foreground font-black uppercase">Date</span>
+                          <span className="font-medium text-muted-foreground">{new Date(ref.date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-muted-foreground font-black uppercase">Bonus</span>
+                          <span className={`font-bold ${ref.bonusEarned > 0 ? "text-green-600" : "text-muted-foreground"}`}>
+                             {ref.bonusEarned > 0 ? `+$${ref.bonusEarned}` : "$0.00"}
+                          </span>
+                        </div>
+                     </div>
+                   ))}
+                 </div>
+
+                 {/* Desktop Table View */}
+                 <table className="hidden md:table w-full text-sm">
                    <thead>
                      <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
                        <th className="text-left py-4 px-6">User</th>

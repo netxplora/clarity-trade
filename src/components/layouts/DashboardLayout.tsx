@@ -223,7 +223,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-4 w-80 sm:w-96 z-50 bg-card border border-border shadow-huge rounded-2xl overflow-hidden"
+                      className="absolute right-0 mt-4 w-[calc(100vw-2rem)] sm:w-96 max-w-[24rem] z-50 bg-card border border-border shadow-huge rounded-2xl overflow-hidden"
                     >
                       <div className="p-6 border-b border-border bg-secondary/30 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-foreground font-sans">Notifications</h3>
@@ -314,7 +314,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-4 w-64 z-50 bg-card border border-border shadow-huge rounded-2xl overflow-hidden p-2"
+                      className="absolute right-0 mt-4 w-[calc(100vw-2rem)] sm:w-64 max-w-[16rem] z-50 bg-card border border-border shadow-huge rounded-2xl overflow-hidden p-2"
                     >
                       <div className="p-4 border-b border-border bg-secondary/10 mb-2 rounded-xl">
                         <div className="text-xs font-bold text-foreground truncate">{user?.email || "trader@example.com"}</div>

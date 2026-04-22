@@ -169,7 +169,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
           ? { ...m, is_read: true }
           : m
       ),
-      unreadCount: role === 'user' ? 0 : state.unreadCount
+      unreadCount: role === 'user' ? 0 : state.unreadCount,
+      // Clear the unread badge in the admin conversation list
+      conversations: state.conversations.map(c => 
+        c.id === conversationId ? { ...c, unread_count: 0 } : c
+      )
     }));
   },
 
@@ -320,12 +324,37 @@ export const useChatStore = create<ChatState>((set, get) => ({
         event: 'INSERT',
         schema: 'public',
         table: 'support_messages',
-      }, () => {
-        // Refresh conversations to update last message & unread counts
-        get().fetchAllConversations();
-        // If a conversation is active, refresh its messages too
-        const active = get().activeConversation;
-        if (active) get().fetchMessages(active.id);
+      }, (payload) => {
+        const newMsg = payload.new as ChatMessage;
+        
+        // Optimistically update the conversations list with the new message
+        set(state => {
+          const updatedConversations = state.conversations.map(c => {
+            if (c.id === newMsg.conversation_id) {
+              const isUnread = newMsg.sender_role === 'user';
+              // If this is the active conversation, the message is immediately read by the admin
+              const isActive = state.activeConversation?.id === c.id;
+              
+              return {
+                ...c,
+                last_message: newMsg.message,
+                last_message_at: newMsg.created_at,
+                unread_count: isUnread && !isActive ? (c.unread_count || 0) + 1 : c.unread_count
+              };
+            }
+            return c;
+          });
+          
+          // Move the updated conversation to the top
+          updatedConversations.sort((a, b) => 
+            new Date(b.last_message_at || b.updated_at).getTime() - new Date(a.last_message_at || a.updated_at).getTime()
+          );
+
+          return { conversations: updatedConversations };
+        });
+        
+        // We do NOT call fetchMessages(active.id) here to prevent race conditions 
+        // that overwrite the messages array. subscribeToMessages handles the active chat.
       })
       .subscribe();
 

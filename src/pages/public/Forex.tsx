@@ -42,8 +42,40 @@ export default function Forex() {
           </div>
 
           <div className="max-w-5xl mx-auto overflow-x-auto no-scrollbar">
-             <div className="min-w-[800px] hyip-card !p-0 overflow-hidden shadow-lg border border-gray-100">
-                <table className="w-full text-left">
+             <div className="hyip-card !p-0 overflow-hidden shadow-lg border border-gray-100">
+                {/* Mobile Stacked Cards */}
+                <div className="md:hidden space-y-4 p-4">
+                  {forexPairs.map((p, i) => (
+                    <div key={p.pair} className="bg-white border text-left border-gray-100 rounded-xl p-4 space-y-3 shadow-sm">
+                      <div className="flex justify-between items-start">
+                         <div className="font-black text-gray-900 text-lg">{p.pair}</div>
+                         <div className={`font-bold flex items-center gap-1 ${p.up ? 'text-green-500' : 'text-red-500'}`}>
+                           {p.up ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />} {p.change}
+                         </div>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-gray-50 pt-3 text-sm">
+                         <div>
+                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Bid</span>
+                            <span className="tabular-nums font-bold text-gray-800">{p.bid}</span>
+                         </div>
+                         <div className="text-right">
+                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Ask</span>
+                            <span className="tabular-nums font-bold text-gray-800">{p.ask}</span>
+                         </div>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                         <div>
+                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Spread</span>
+                            <span className="tabular-nums font-black text-[#D4AF37]">{p.spread}</span>
+                         </div>
+                         <Link to="/auth/register" className="btn-gold !py-1.5 !px-4 text-[10px] uppercase font-bold tracking-widest">Trade</Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <table className="hidden md:table w-full text-left">
                    <thead className="bg-gray-50 border-b border-gray-100 uppercase text-[10px] font-black tracking-widest text-[#D4AF37]">
                       <tr>
                         <th className="px-8 py-5">Pair</th>
@@ -104,7 +136,7 @@ export default function Forex() {
       {/* Deep Liquidity - Split Section */}
       <section className="bg-[#0B0F14] overflow-hidden">
         <div className="flex flex-col lg:flex-row items-stretch">
-          <div className="lg:w-1/2 min-h-[500px] relative">
+          <div className="lg:w-1/2 min-h-[300px] md:min-h-[500px] relative">
              <img 
                src="/images/forex-globe.png" 
                alt="Forex Markets" 
@@ -112,7 +144,7 @@ export default function Forex() {
              />
              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0B0F14]" />
           </div>
-          <div className="lg:w-1/2 p-20 lg:p-32 flex flex-col justify-center">
+          <div className="lg:w-1/2 p-6 sm:p-12 lg:p-32 flex flex-col justify-center">
              <span className="heading-gold !text-left">Deep Liquidity</span>
              <h2 className="title-hyip text-white !text-left leading-tight">Global Interbank <span className="text-[#D4AF37]">Access</span></h2>
              <p className="p-hyip-dark mb-10 !text-left">

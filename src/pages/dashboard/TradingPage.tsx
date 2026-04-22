@@ -467,7 +467,63 @@ const TradingPage = () => {
                <div className="p-0">
                   {activeLedgerTab === "Open Positions" && (
                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        {/* Mobile Stacked Cards */}
+                        <div className="md:hidden space-y-4 p-4">
+                           {activeTrades.length === 0 ? (
+                              <div className="py-12 text-center">
+                                 <Activity className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
+                                 <p className="text-sm font-bold text-muted-foreground">No open positions.</p>
+                              </div>
+                           ) : activeTrades.map((trade) => (
+                              <div key={trade.id} className="bg-secondary/40 border border-border/50 rounded-2xl p-4 space-y-3">
+                                 <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center font-black text-[10px]">
+                                          {trade.pair.substring(0, 3)}
+                                       </div>
+                                       <div>
+                                          <div className="text-sm font-bold text-foreground">{trade.pair}</div>
+                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">ID: {trade.id}</div>
+                                       </div>
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
+                                       trade.type === 'Buy' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-red-500/10 text-red-600 border-red-500/20'
+                                    }`}>
+                                       {trade.type}
+                                    </span>
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-3">
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">Size</span>
+                                       <span className="font-bold text-foreground">{formatCurrency(trade.amount)}</span>
+                                    </div>
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">Entry</span>
+                                       <span className="font-bold text-foreground">{trade.entryPrice.toLocaleString()}</span>
+                                    </div>
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">PnL</span>
+                                       <span className={`font-black ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                          {trade.pnl >= 0 ? '+' : ''}{formatCurrency(trade.pnl)}
+                                       </span>
+                                    </div>
+                                 </div>
+                                 <div className="pt-2">
+                                    <Button 
+                                       variant="outline" 
+                                       size="sm" 
+                                       onClick={() => handleCloseTrade(trade.id)}
+                                       className="w-full h-10 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/20 transition-all"
+                                    >
+                                        Close Trade
+                                     </Button>
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+
+                        {/* Desktop Table */}
+                        <table className="hidden md:table w-full text-left">
                            <thead className="bg-secondary/30 border-b border-border">
                               <tr className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                                  <th className="px-6 py-4">Instrument</th>
@@ -536,7 +592,49 @@ const TradingPage = () => {
 
                   {activeLedgerTab === "Order History" && (
                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        {/* Mobile Stacked Cards */}
+                        <div className="md:hidden space-y-4 p-4">
+                           {tradeHistory.length === 0 ? (
+                              <div className="py-12 text-center">
+                                 <History className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
+                                 <p className="text-sm font-bold text-muted-foreground">No trade history.</p>
+                              </div>
+                           ) : tradeHistory.map((trade) => (
+                              <div key={trade.id} className="bg-secondary/40 border border-border/50 rounded-2xl p-4 space-y-3">
+                                 <div className="flex justify-between items-start">
+                                    <div className="font-bold text-foreground text-sm">{trade.pair}</div>
+                                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                                       trade.type === 'Buy' ? 'text-green-600 border-green-500/20 bg-green-500/10' : 'text-red-600 border-red-500/20 bg-red-500/10'
+                                    }`}>
+                                       {trade.type}
+                                    </span>
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-3">
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">Size</span>
+                                       <span className="font-bold text-foreground">{formatCurrency(trade.amount)}</span>
+                                    </div>
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">Entry</span>
+                                       <span className="font-bold text-foreground">{trade.entryPrice.toLocaleString()}</span>
+                                    </div>
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">PnL</span>
+                                       <span className={`font-black ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                          {trade.pnl >= 0 ? '+' : ''}{formatCurrency(trade.pnl)}
+                                       </span>
+                                    </div>
+                                    <div>
+                                       <span className="text-muted-foreground font-black uppercase block">Date</span>
+                                       <span className="text-muted-foreground font-bold">{new Date(trade.time).toLocaleDateString()}</span>
+                                    </div>
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <table className="hidden md:table w-full text-left">
                            <thead className="bg-secondary/30 border-b border-border">
                               <tr className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                                  <th className="px-6 py-4">Instrument</th>
@@ -582,7 +680,48 @@ const TradingPage = () => {
 
                   {activeLedgerTab === "Pending Orders" && (
                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        {/* Mobile Stacked Cards */}
+                        <div className="md:hidden space-y-4 p-4">
+                           {pendingOrders.length === 0 ? (
+                              <div className="py-12 text-center">
+                                 <Target className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
+                                 <p className="text-sm font-bold text-muted-foreground">No pending orders.</p>
+                              </div>
+                           ) : pendingOrders.map((order) => (
+                              <div key={order.id} className="bg-secondary/40 border border-border/50 rounded-2xl p-4 space-y-3">
+                                 <div className="flex justify-between items-start">
+                                    <div>
+                                       <div className="text-sm font-bold text-foreground">{order.pair}</div>
+                                       <div className="text-[10px] text-muted-foreground">{new Date(order.time).toLocaleString()}</div>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-secondary">
+                                       {order.orderType} {order.type}
+                                    </span>
+                                 </div>
+                                 <div className="flex justify-between items-center text-xs border-t border-border/50 pt-3">
+                                    <span className="text-muted-foreground font-black uppercase">Price</span>
+                                    <span className="font-bold text-foreground">{order.price.toLocaleString()}</span>
+                                 </div>
+                                 <div className="flex justify-between items-center text-xs">
+                                    <span className="text-muted-foreground font-black uppercase">Size</span>
+                                    <span className="font-bold text-foreground">{formatCurrency(order.amount)}</span>
+                                 </div>
+                                 <div className="pt-2">
+                                    <Button 
+                                       variant="ghost" 
+                                       size="sm" 
+                                       onClick={() => handleCancelOrder(order.id)}
+                                       className="w-full text-red-600 hover:text-white bg-red-500/10 hover:bg-red-600 text-[10px] font-bold uppercase tracking-widest transition-all rounded-xl h-10"
+                                    >
+                                       Cancel
+                                    </Button>
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <table className="hidden md:table w-full text-left">
                            <thead className="bg-secondary/30 border-b border-border">
                               <tr className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                                  <th className="px-6 py-4">Instrument</th>

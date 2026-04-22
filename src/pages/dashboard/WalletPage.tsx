@@ -723,8 +723,42 @@ const WalletPage = () => {
                                 <div className="h-px w-full bg-border/50" />
                              </div>
                              <div className="bg-card/30 border border-border/30 rounded-3xl overflow-hidden backdrop-blur-sm shadow-sm hover:shadow-md transition-all">
-                                <div className="overflow-x-auto">
-                                   <table className="w-full text-sm">
+                                 <div className="overflow-x-auto">
+                                   {/* Mobile Stacked Cards for History */}
+                                   <div className="md:hidden space-y-3 p-4">
+                                     {group.map((tx: any) => (
+                                       <div key={tx.id} className="bg-secondary/20 p-4 rounded-xl border border-border/50 flex flex-col gap-3 shadow-sm">
+                                         <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center border border-border ${
+                                                tx.type === "Deposit" || tx.type === "Bank Transfer" ? "bg-green-500/10 text-green-600" : tx.type === "Withdrawal" ? "bg-red-500/10 text-red-600" : "bg-primary/10 text-primary"
+                                              }`}>
+                                                {tx.type === "Deposit" ? <Download className="w-4 h-4" /> : tx.type === "Bank Transfer" ? <Landmark className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                                              </div>
+                                              <div>
+                                                <div className="font-bold text-sm tracking-tight">{tx.type}</div>
+                                                <div className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-widest">{tx.asset} · {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                              </div>
+                                            </div>
+                                            <div className={`text-sm font-black whitespace-nowrap ${tx.type === "Withdrawal" ? "text-red-500" : "text-green-500"}`}>
+                                               {tx.type === "Withdrawal" ? "-" : "+"}{formatCurrency(tx.amount)}
+                                            </div>
+                                         </div>
+                                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
+                                            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${
+                                            tx.status === "Completed" ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                            }`}>
+                                               {tx.status === "Completed" ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                               {tx.status}
+                                            </div>
+                                            <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">Ref: {tx.id.substring(0,6)}</span>
+                                         </div>
+                                       </div>
+                                     ))}
+                                   </div>
+
+                                   {/* Desktop Table View */}
+                                   <table className="hidden md:table w-full text-sm">
                                       <tbody className="divide-y divide-border/30">
                                          {group.map((tx: any) => (
                                          <tr key={tx.id} className="group hover:bg-secondary/40 transition-colors">

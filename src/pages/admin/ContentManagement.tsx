@@ -225,173 +225,44 @@ const ContentManagement = () => {
   };
 
   const tabs = [
-    { id: "announcements", label: "Broadcasts & Alerts", icon: Megaphone },
-    { id: "pages", label: "Pages & Sections", icon: LayoutTemplate },
-    { id: "blog", label: "Blog & Articles", icon: FileText },
-    { id: "banners", label: "Banners & Highlights", icon: Flag },
+    { id: "announcements", label: "Communications", icon: Megaphone },
+    { id: "pages", label: "Interface Content", icon: LayoutTemplate },
+    { id: "blog", label: "Educational Resources", icon: FileText },
+    { id: "banners", label: "Featured Banners", icon: Flag },
   ];
+
 
   return (
     <AdminLayout>
-      {/* Editor Dialog */}
-      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-        <DialogContent className="bg-card border-border sm:max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-secondary/50">
-             <div>
-                <DialogTitle className="text-foreground text-xl">Content Editor</DialogTitle>
-                <DialogDescription>Modify platform content using rich structuring.</DialogDescription>
-             </div>
-             <div className="flex items-center gap-3">
-                <div className="flex bg-secondary rounded-lg p-1 mr-4 border border-border">
-                   <button onClick={() => setPreviewMode(false)} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-colors ${!previewMode ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'}`}>Editor</button>
-                   <button onClick={() => setPreviewMode(true)} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-colors ${previewMode ? 'bg-card text-primary shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'}`}>Preview</button>
-                </div>
-                <Button variant="outline" onClick={() => setEditorOpen(false)} disabled={isSaving} className="border-border">Cancel</Button>
-                <Button variant="hero" onClick={saveContent} disabled={isSaving} className="shadow-gold text-white px-6">
-                   {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Save Changes
-                </Button>
-             </div>
+      <div className="space-y-8">
+        {/* Institutional Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Platform Content Hub</h1>
+            <p className="text-muted-foreground text-sm font-medium">Manage site-wide documentation, user interface copy, and system communications.</p>
           </div>
-          
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-             <div className="grid grid-cols-3 gap-6">
-                <div className="col-span-2 space-y-2">
-                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Document Title</Label>
-                   <Input value={activeItem.title} onChange={e => setActiveItem({...activeItem, title: e.target.value})} placeholder="e.g. Hero Section Heading" className="bg-secondary/50 border-border text-lg font-bold h-12" />
-                </div>
-                <div className="space-y-2">
-                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Visibility Status</Label>
-                   <select 
-                      value={activeItem.status} 
-                      onChange={e => setActiveItem({...activeItem, status: e.target.value as any})}
-                      className="w-full h-12 rounded-xl bg-secondary/50 border border-border text-foreground px-4 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-primary"
-                   >
-                     <option value="PUBLISHED">Published (Live)</option>
-                     <option value="DRAFT">Draft (Hidden)</option>
-                     <option value="DISABLED">Disabled</option>
-                   </select>
-                </div>
-             </div>
-
-             <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Content Type</Label>
-                   <select 
-                      value={activeItem.type} 
-                      onChange={e => setActiveItem({...activeItem, type: e.target.value as any})}
-                      className="w-full h-12 rounded-xl bg-secondary/50 border border-border text-foreground px-4 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-primary"
-                   >
-                     <option value="page_section">Page Section</option>
-                     <option value="blog">Blog Article</option>
-                     <option value="banner">Banner Highlight</option>
-                     <option value="faq">FAQ Entry</option>
-                   </select>
-                </div>
-                <div className="space-y-2">
-                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Target Section</Label>
-                   <select 
-                      value={activeItem.section} 
-                      onChange={e => setActiveItem({...activeItem, section: e.target.value})}
-                      className="w-full h-12 rounded-xl bg-secondary/50 border border-border text-foreground px-4 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-primary"
-                   >
-                     <option value="homepage">Homepage</option>
-                     <option value="user_dashboard">User Dashboard</option>
-                     <option value="admin_dashboard">Admin Dashboard</option>
-                     <option value="copy_trading">Copy Trading Page</option>
-                     <option value="support">Support Hub</option>
-                     <option value="wallet">Wallet & Deposits</option>
-                   </select>
-                </div>
-             </div>
-
-             <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Content Body (Markdown Supported)</Label>
-                   {!previewMode && (
-                      <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border p-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => addEditorElement('h2')}><Type className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground font-serif font-black" onClick={() => addEditorElement('b')}>B</Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => addEditorElement('link')}><LinkIcon className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => addEditorElement('img')}><ImageIcon className="w-3.5 h-3.5" /></Button>
-                      </div>
-                   )}
-                </div>
-
-                {previewMode ? (
-                   <div className="min-h-[400px] w-full rounded-2xl border border-border bg-card p-6 prose prose-sm prose-invert max-w-none shadow-sm h-full overflow-y-auto">
-                     {activeItem.content_html ? (
-                       <div className="whitespace-pre-wrap">{activeItem.content_html}</div>
-                     ) : (
-                       <div className="text-muted-foreground/30 italic text-center py-20 font-bold">Preview is empty...</div>
-                     )}
-                   </div>
-                ) : (
-                   <Textarea 
-                     value={activeItem.content_html} 
-                     onChange={e => setActiveItem({...activeItem, content_html: e.target.value})} 
-                     className="min-h-[400px] bg-secondary/30 border-border text-foreground p-6 text-sm font-mono leading-relaxed focus:bg-card transition-colors resize-y shadow-inner" 
-                     placeholder="Write your content here..." 
-                   />
-                )}
-             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Broadcast Dialog */}
-      <Dialog open={broadcastOpen} onOpenChange={setBroadcastOpen}>
-        <DialogContent className="bg-card border-border sm:max-w-[425px]">
-          <DialogHeader>
-             <DialogTitle className="text-foreground">New Broadcast</DialogTitle>
-             <DialogDescription>Send a global notification to all users.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-             <div className="space-y-2">
-                <Label className="text-foreground text-xs font-bold">Broadcast Subject</Label>
-                <Input value={broadcastForm.title} onChange={e => setBroadcastForm({...broadcastForm, title: e.target.value})} placeholder="e.g. Scheduled Maintenance" className="bg-secondary/50 border-border text-foreground" />
-             </div>
-             <div className="space-y-2">
-                <Label className="text-foreground text-xs font-bold">Message Content</Label>
-                <Textarea value={broadcastForm.message} onChange={e => setBroadcastForm({...broadcastForm, message: e.target.value})} placeholder="Enter details..." className="h-32 bg-secondary/50 border-border text-foreground resize-none" />
-             </div>
-          </div>
-          <div className="flex justify-end gap-3">
-             <Button variant="outline" onClick={() => setBroadcastOpen(false)} disabled={isSaving} className="border-border">Cancel</Button>
-             <Button variant="hero" onClick={handleBroadcast} disabled={isSaving} className="shadow-gold text-white font-bold w-full uppercase tracking-wider text-xs">
-                {isSaving ? 'Broadcasting...' : 'Push to Users'}
+          <div className="flex flex-wrap items-center gap-3">
+             <Button variant="outline" onClick={() => fetchData()} className="h-11 border-border text-[10px] font-black uppercase tracking-[0.2em] px-6 hover:bg-secondary rounded-xl transition-all group">
+                <RefreshCw className={`w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500 ${isLoading ? 'animate-spin' : ''}`} /> Sync Content
              </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </header>
 
-      <div className="space-y-10 max-w-7xl">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Content Management</h1>
-            <p className="text-muted-foreground text-sm mt-2">Create pages, edit copy, manage articles, and broadcast to users.</p>
-          </div>
-          <div className="flex gap-3">
-             <Button variant="outline" onClick={() => fetchData()} className="h-11 border-border bg-card text-sm font-medium px-6 shadow-sm hover:bg-secondary">
-               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin text-primary' : ''}`} /> Refresh Data
-             </Button>
-          </div>
-        </div>
 
         <div className="grid lg:grid-cols-[280px_1fr] gap-12">
-          {/* Sidebar Tabs */}
-          <aside className="space-y-2">
+          {/* Navigation Tabs */}
+          <aside className="lg:space-y-2 overflow-x-auto lg:overflow-visible flex lg:flex-col items-center lg:items-stretch gap-3 pb-4 lg:pb-0 scrollbar-hide shrink-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all border ${
+                className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 lg:shrink ${
                   activeTab === tab.id
                     ? "bg-primary text-white border-primary shadow-gold"
                     : "bg-card text-muted-foreground border-border hover:bg-secondary hover:border-primary/20"
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'shadow-glow' : ''}`} />
                 {tab.label}
               </button>
             ))}
@@ -447,68 +318,113 @@ const ContentManagement = () => {
                 </motion.div>
               )}
 
-              {/* Pages & Sections Tab */}
-              {activeTab === "pages" && (
+               {/* Pages & Sections Tab */}
+               {activeTab === "pages" && (
                 <motion.div key="pages" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
-                  <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
-                     <div className="flex items-center justify-between border-b border-border pb-6">
-                       <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
-                           <LayoutTemplate className="w-6 h-6" />
+                  <div className="bg-card p-8 rounded-[2rem] border border-border shadow-huge space-y-10 relative overflow-hidden group">
+                     <div className="absolute inset-0 bg-primary/[0.01] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-border pb-8 relative z-10">
+                       <div className="flex items-center gap-5">
+                         <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm">
+                           <LayoutTemplate className="w-7 h-7" />
                          </div>
                          <div>
-                           <h2 className="text-xl font-bold text-foreground">Platform Pages</h2>
-                           <p className="text-xs text-muted-foreground mt-0.5">Edit copy and texts for core application pathways.</p>
+                           <h2 className="text-2xl font-black text-foreground tracking-tight">Interface Modules</h2>
+                           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 opacity-60">Manage primary platform copy and informational templates.</p>
                          </div>
                        </div>
-                       <Button variant="hero" onClick={() => openEditor({ type: 'page_section', section: 'homepage', title: '', content_html: '', status: 'DRAFT', metadata: {} })} className="h-10 text-[10px] font-black uppercase tracking-widest px-6 shadow-gold text-white">
-                          <Plus className="w-4 h-4 mr-2" /> Inject Module
+                       <Button variant="hero" onClick={() => openEditor({ type: 'page_section', section: 'homepage', title: '', content_html: '', status: 'DRAFT', metadata: {} })} className="h-12 text-[10px] font-black uppercase tracking-widest px-8 shadow-gold text-white rounded-xl">
+                          <Plus className="w-4 h-4 mr-2" /> Add Resource
                        </Button>
                      </div>
 
-                     <div className="overflow-x-auto">
-                        <table className="w-full">
-                           <thead>
-                              <tr className="border-b border-border text-left">
-                                 <th className="pb-3 px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">Section / Title</th>
-                                 <th className="pb-3 px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">Type</th>
-                                 <th className="pb-3 px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">Status</th>
-                                 <th className="pb-3 px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest text-right">Controls</th>
-                              </tr>
-                           </thead>
-                           <tbody className="divide-y divide-border">
-                              {platformContent.filter(c => c.type === 'page_section' || c.type === 'faq').map(item => (
-                                 <tr key={item.id} className="hover:bg-secondary/40 transition-colors group">
-                                    <td className="p-4">
-                                       <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors cursor-pointer" onClick={() => openEditor(item)}>{item.title}</div>
-                                       <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">{item.section.replace('_', ' ')}</div>
-                                    </td>
-                                    <td className="p-4">
-                                       <span className="bg-secondary border border-border px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">{item.type}</span>
-                                    </td>
-                                    <td className="p-4 text-center">
-                                       {item.status === 'PUBLISHED' ? (
-                                         <span className="text-[10px] font-black uppercase text-green-500 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full"><CheckCircle className="w-3 h-3 inline mr-1" /> Published</span>
-                                       ) : item.status === 'DRAFT' ? (
-                                         <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full"><Edit className="w-3 h-3 inline mr-1" /> Draft</span>
-                                       ) : (
-                                         <span className="text-[10px] font-black uppercase text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full"><XCircle className="w-3 h-3 inline mr-1" /> Disabled</span>
-                                       )}
-                                    </td>
-                                    <td className="p-4 text-right">
-                                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                          <Button variant="ghost" size="icon" onClick={() => toggleContentStatus(item)} className="h-8 w-8 text-muted-foreground hover:text-foreground border border-border bg-card shadow-sm"><RefreshCw className="w-3.5 h-3.5" /></Button>
-                                          <Button variant="ghost" size="icon" onClick={() => openEditor(item)} className="h-8 w-8 text-primary hover:bg-primary/10 border border-border bg-card shadow-sm"><Edit className="w-3.5 h-3.5" /></Button>
-                                          <Button variant="ghost" size="icon" onClick={() => deleteContent(item.id!)} className="h-8 w-8 text-red-500 hover:bg-red-500/10 border border-border bg-card shadow-sm"><Trash2 className="w-3.5 h-3.5" /></Button>
+
+                     <div className="relative z-10">
+                        {/* Mobile List View */}
+                        <div className="lg:hidden space-y-4">
+                           {platformContent.filter(c => c.type === 'page_section' || c.type === 'faq').map(item => (
+                              <div key={item.id} className="p-6 rounded-2xl bg-secondary/20 border border-border group/card hover:border-primary/30 transition-all">
+                                 <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-10 h-10 rounded-lg bg-card border border-border flex items-center justify-center">
+                                          <FileText className="w-4.5 h-4.5 text-muted-foreground" />
                                        </div>
-                                    </td>
+                                       <div>
+                                          <div className="text-sm font-black text-foreground uppercase tracking-tight" onClick={() => openEditor(item)}>{item.title}</div>
+                                          <div className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">{item.section.replace('_', ' ')}</div>
+                                       </div>
+                                    </div>
+                                    {item.status === 'PUBLISHED' ? (
+                                       <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-glow" />
+                                    ) : (
+                                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                                    )}
+                                 </div>
+                                 <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                                    <span className="text-[9px] font-black uppercase text-muted-foreground/30 tracking-widest">{item.type}</span>
+                                    <div className="flex gap-2">
+                                       <Button variant="outline" size="icon" onClick={() => toggleContentStatus(item)} className="h-9 w-9 rounded-xl border-border bg-card">
+                                          <RefreshCw className="w-3.5 h-3.5" />
+                                       </Button>
+                                       <Button variant="outline" size="icon" onClick={() => openEditor(item)} className="h-9 w-9 rounded-xl border-border bg-card text-primary">
+                                          <Edit className="w-3.5 h-3.5" />
+                                       </Button>
+                                       <Button variant="outline" size="icon" onClick={() => deleteContent(item.id!)} className="h-9 w-9 rounded-xl border-border bg-card text-red-500">
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                       </Button>
+                                    </div>
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+
+                        {/* Desktop Table View */}
+                         <div className="hidden lg:block overflow-x-auto">
+                           <table className="w-full text-sm">
+                              <thead>
+                                 <tr className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.25em] bg-secondary/20 border-b border-border">
+                                    <th className="py-5 pl-8 text-left">Item / Location</th>
+                                    <th className="py-5 px-4 text-left">Category</th>
+                                    <th className="py-5 px-4 text-center">Status</th>
+                                    <th className="py-5 pr-8 text-right">Actions</th>
                                  </tr>
-                              ))}
-                              {platformContent.filter(c => c.type === 'page_section' || c.type === 'faq').length === 0 && (
-                                 <tr><td colSpan={4} className="py-12 text-center text-muted-foreground italic text-xs">No active page content modules injected yet.</td></tr>
-                              )}
-                           </tbody>
-                        </table>
+                              </thead>
+
+                              <tbody className="divide-y divide-border/30">
+                                 {platformContent.filter(c => c.type === 'page_section' || c.type === 'faq').map(item => (
+                                    <tr key={item.id} className="hover:bg-secondary/20 transition-all group/row">
+                                       <td className="py-6 pl-6">
+                                          <div className="flex flex-col">
+                                             <span className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] mt-1">{item.section.replace('_', ' ')}</span>
+                                          </div>
+                                       </td>
+                                       <td className="py-6 px-4">
+                                          <span className="text-[9px] font-black uppercase text-muted-foreground/50 border border-border/50 px-2.5 py-1.5 rounded-lg bg-secondary/10 tracking-[0.1em]">{item.type}</span>
+                                       </td>
+                                       <td className="py-6 px-4 text-center">
+                                          {item.status === 'PUBLISHED' ? (
+                                            <span className="inline-flex items-center gap-2 text-[9px] font-black uppercase text-green-500 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-xl"><CheckCircle className="w-3 h-3" /> ACTIVE</span>
+                                          ) : item.status === 'DRAFT' ? (
+                                            <span className="inline-flex items-center gap-2 text-[9px] font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl"><Edit className="w-3 h-3" /> DRAFT_REV</span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-2 text-[9px] font-black uppercase text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl"><XCircle className="w-3 h-3" /> OFFLINE</span>
+                                          )}
+                                       </td>
+                                       <td className="py-6 pr-6 text-right">
+                                          <div className="flex items-center justify-end gap-3 translate-x-4 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-0 transition-all duration-300">
+                                             <Button variant="outline" size="icon" onClick={() => toggleContentStatus(item)} className="h-10 w-10 rounded-xl border-border bg-card hover:bg-secondary shadow-sm"><RefreshCw className="w-4 h-4" /></Button>
+                                             <Button variant="outline" size="icon" onClick={() => openEditor(item)} className="h-10 w-10 rounded-xl border-border bg-card text-primary hover:bg-primary/10 shadow-sm"><Edit className="w-4 h-4" /></Button>
+                                             <Button variant="outline" size="icon" onClick={() => deleteContent(item.id!)} className="h-10 w-10 rounded-xl border-border bg-card text-red-500 hover:bg-red-500/10 shadow-sm"><Trash2 className="w-4 h-4" /></Button>
+                                          </div>
+                                       </td>
+                                    </tr>
+                                 ))}
+                                 {platformContent.filter(c => c.type === 'page_section' || c.type === 'faq').length === 0 && (
+                                    <tr><td colSpan={4} className="py-20 text-center text-muted-foreground/30 font-black uppercase text-[10px] tracking-[0.3em]">No operational data detected.</td></tr>
+                                 )}
+                              </tbody>
+                           </table>
+                        </div>
                      </div>
                   </div>
                 </motion.div>
@@ -563,19 +479,19 @@ const ContentManagement = () => {
                 </motion.div>
               )}
 
-              {/* Banners */}
               {activeTab === "banners" && (
                 <motion.div key="banners" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
-                  <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8 text-center py-20">
-                      <Flag className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                      <h2 className="text-xl font-bold text-foreground">Promotional Banners</h2>
-                      <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                         Create aggressive marketing injects that force-render priority banners at the top of the user dashboards or copy trading matrices.
+                  <div className="bg-card p-8 rounded-3xl border border-border shadow-sm text-center py-24">
+                      <Flag className="w-16 h-16 text-muted-foreground/30 mx-auto mb-6" />
+                      <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Campaign Banners</h2>
+                      <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed mt-2 font-medium">
+                         Create highlighting banners to feature specific updates, promotions, or announcements prominently.
                       </p>
-                      <Button variant="hero" onClick={() => openEditor({ type: 'banner', section: 'user_dashboard', title: '', content_html: '', status: 'PUBLISHED', metadata: {} })} className="mt-4 shadow-gold text-white font-black uppercase tracking-widest">
-                         Deploy Banner Campaign
+                      <Button variant="hero" onClick={() => openEditor({ type: 'banner', section: 'user_dashboard', title: '', content_html: '', status: 'PUBLISHED', metadata: {} })} className="mt-8 shadow-gold text-white font-black uppercase tracking-[0.2em] h-12 px-10 rounded-xl">
+                         Create Banner
                       </Button>
                   </div>
+
                   
                   {platformContent.filter(c => c.type === 'banner').map(item => (
                      <div key={item.id} className="bg-primary/10 border border-primary/30 p-6 rounded-2xl flex items-center justify-between">

@@ -320,68 +320,70 @@ const UserManagement = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <div className="flex items-center gap-2 text-primary mb-1">
-               <ShieldCheck className="w-4 h-4" />
-               <span className="text-[10px] font-black tracking-[0.2em] uppercase">Administration</span>
-            </div>
-            <h1 className="text-4xl font-black text-foreground tracking-tight">Users</h1>
-            <p className="text-muted-foreground mt-1 text-[10px] font-black uppercase tracking-widest opacity-40">Manage accounts and balances</p>
+        {/* Institutional Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">User Directory</h1>
+            <p className="text-muted-foreground text-sm font-medium">Central repository for member accounts, verification status, and portfolio oversight.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-             <Button variant="outline" className="h-12 border-border text-[10px] font-black uppercase tracking-widest px-6 flex-1 sm:flex-none hover:bg-secondary rounded-xl" onClick={() => toast.info("Filters reset")}>
-                <Filter className="w-4 h-4 mr-2" /> Filters
+             <Button variant="outline" className="h-11 border-border text-[10px] font-black uppercase tracking-[0.2em] px-6 hover:bg-secondary rounded-xl transition-all group">
+                <Filter className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" /> Set Filters
              </Button>
-             <Button variant="hero" className="h-12 text-[10px] font-black uppercase tracking-widest px-6 shadow-gold text-white flex-1 sm:flex-none rounded-xl" onClick={() => toast.success("Creation wizard launched")}>
-                <UserPlus className="w-4 h-4 mr-2" /> Add User
+             <Button variant="hero" className="h-11 shadow-gold text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 rounded-xl transition-all">
+                Create Account
              </Button>
           </div>
-        </div>
+        </header>
 
-        {/* Search & Summary Overview */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
-            <div className="relative w-full lg:max-w-md group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+
+
+        {/* Search & Statistics Overview */}
+        <div className="flex flex-col xl:flex-row gap-10 items-start xl:items-center">
+            <div className="relative w-full xl:w-[500px] group/search">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within/search:text-primary transition-all" />
                 <input 
-                    placeholder="Search users..." 
-                    className="w-full h-12 bg-card border border-border rounded-xl pl-11 pr-4 text-[13px] font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                    placeholder="Search by name or email address..." 
+                    className="w-full h-12 bg-secondary/20 border border-border rounded-xl pl-12 pr-6 text-[11px] font-black uppercase tracking-[0.1em] outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
-            <div className="flex flex-wrap gap-8 lg:ml-auto w-full lg:w-auto">
-                <div className="text-right">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1 opacity-60">Total Users</span>
-                    <span className="text-2xl font-black font-sans text-foreground tabular-nums tracking-tight">{users?.length || 0}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-10 xl:ml-auto w-full xl:w-auto">
+                <div className="space-y-1 text-center sm:text-left">
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] block opacity-40">Registered Members</span>
+                    <span className="text-2xl font-black text-foreground tabular-nums">{users?.length || 0}</span>
                 </div>
-                <div className="text-right border-l border-border pl-8">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1 opacity-60">Total Portfolio</span>
-                    <span className="text-2xl font-black text-foreground tabular-nums tracking-tight">{formatCurrency(users?.reduce((acc, u) => acc + (u?.cryptoBalanceNum || 0), 0) || 0)}</span>
+                <div className="space-y-1 text-center sm:text-left">
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] block opacity-40">Aggregate AUM</span>
+                    <span className="text-2xl font-black text-foreground tabular-nums tracking-tighter">{formatCurrency(users?.reduce((acc, u) => acc + (u?.cryptoBalanceNum || 0), 0) || 0)}</span>
                 </div>
-                <div className="text-right border-l border-border pl-8">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest block mb-1">Total Balance</span>
-                    <span className="text-2xl font-black text-primary tabular-nums tracking-tight">{formatCurrency(users?.reduce((acc, u) => acc + (u?.fiatBalanceNum || 0) + (u?.tradingBalance || 0), 0) || 0)}</span>
+                <div className="space-y-1 text-center sm:text-left col-span-2 sm:col-span-1">
+                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] block">Available Liquidity</span>
+                    <span className="text-2xl font-black text-primary tabular-nums tracking-tighter">{formatCurrency(users?.reduce((acc, u) => acc + (u?.fiatBalanceNum || 0) + (u?.tradingBalance || 0), 0) || 0)}</span>
                 </div>
             </div>
         </div>
 
-        {/* Users Control Center */}
+
+
+        {/* User Management View */}
         <div className="rounded-[2.5rem] bg-card border border-border overflow-hidden shadow-sm relative">
-          <div className="overflow-x-auto relative z-10">
+          <div className="overflow-x-auto relative z-10 hidden lg:block">
             <table className="w-full">
               <thead>
-                <tr className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border bg-secondary/30">
-                    <th className="text-left py-5 px-8">User Info</th>
-                    <th className="text-left py-5 px-6 hidden md:table-cell">Total Balance</th>
-                    <th className="text-left py-5 px-6">Portfolio</th>
-                    <th className="text-left py-5 px-6">Cash Balance</th>
-                    <th className="text-left py-5 px-6">Trading Balance</th>
-                    <th className="text-left py-5 px-6">Status</th>
-                    <th className="text-right py-5 px-8">Actions</th>
+                <tr className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border bg-secondary/10">
+                    <th className="text-left py-6 px-8">Member Identity</th>
+                    <th className="text-left py-6 px-6">Total AUM</th>
+                    <th className="text-left py-6 px-6">Crypto Portfolio</th>
+                    <th className="text-left py-6 px-6">Available</th>
+                    <th className="text-left py-6 px-6">Trading Capital</th>
+                    <th className="text-center py-6 px-6">Status</th>
+                    <th className="text-left py-6 px-6 hidden xl:table-cell">Reg. Date</th>
+                    <th className="text-right py-6 px-8">Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-border">
                 {filtered.map((u) => (
                   <tr key={u.id} className="group hover:bg-secondary/20 transition-colors">
@@ -405,7 +407,7 @@ const UserManagement = () => {
                          </div>
                       </div>
                     </td>
-                    <td className="py-5 px-6 hidden md:table-cell">
+                    <td className="py-5 px-6">
                        <div className="font-black text-foreground text-sm tabular-nums tracking-tight">
                           {formatCurrency(u.balanceNum)}
                        </div>
@@ -439,7 +441,7 @@ const UserManagement = () => {
                           </TooltipContent>
                        </Tooltip>
                     </td>
-                     <td className="py-5 px-6">
+                    <td className="py-5 px-6">
                         <div className="font-black text-primary text-sm tabular-nums tracking-tight">
                            {formatCurrency(u?.fiatBalanceNum || 0)}
                         </div>
@@ -453,93 +455,155 @@ const UserManagement = () => {
                      </td>
                      <td className="py-5 px-6">
                         {(activeSessions || []).some(ct => ct && ct.user_id === String(u?.id) && ct.status === 'active') ? (
-                          <div className="flex flex-col gap-1.5">
+                          <div className="flex flex-col items-center gap-1.5">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary shadow-gold text-white text-[9px] font-black uppercase tracking-widest">
                               <Target className="w-3 h-3" /> Online
                             </span>
-                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.1em] text-center opacity-40 text-nowrap">Session Active</span>
                           </div>
                         ) : (
-                          <div className="flex flex-col gap-1">
-                             <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-20">Offline</span>
-                          </div>
+                           <div className="text-center">
+                              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-20">Offline</span>
+                           </div>
                         )}
                      </td>
-                    <td className="py-5 px-6 text-muted-foreground text-[10px] font-black uppercase tracking-widest opacity-60 hidden lg:table-cell">
+                    <td className="py-5 px-6 text-muted-foreground text-[10px] font-black uppercase tracking-widest opacity-60 hidden xl:table-cell">
                        {u.joined}
                     </td>
                     <td className="py-5 px-8 text-right">
                       <div className="flex items-center justify-end gap-2">
-                         <Tooltip>
-                           <TooltipTrigger asChild>
-                             <Button variant="outline" size="icon" onClick={() => handleViewUser(u)} className="h-10 w-10 rounded-xl border-border hover:bg-primary/10 hover:text-primary transition-all shadow-sm">
-                               <Eye className="w-4 h-4" />
-                             </Button>
-                           </TooltipTrigger>
-                           <TooltipContent>View Profile</TooltipContent>
-                         </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => handleViewUser(u)} className="h-10 w-10 rounded-xl border-border hover:bg-primary/10 hover:text-primary transition-all shadow-sm">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>View Profile</TooltipContent>
+                        </Tooltip>
                         
-                         <Tooltip>
-                           <TooltipTrigger asChild>
-                             <Button variant="outline" size="icon" onClick={() => setBalanceDialog(u)} className="h-10 w-10 rounded-xl border-border hover:bg-green-500/10 hover:text-green-500 transition-all shadow-sm">
-                               <Wallet className="w-4 h-4" />
-                             </Button>
-                           </TooltipTrigger>
-                           <TooltipContent>Edit Balance</TooltipContent>
-                         </Tooltip>
-                         
-                         <DropdownMenu>
-                           <DropdownMenuTrigger asChild>
-                             <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-border bg-secondary/10 hover:bg-secondary transition-all">
-                               <MoreHorizontal className="w-4 h-4" />
-                             </Button>
-                           </DropdownMenuTrigger>
-                           <DropdownMenuContent align="end" className="w-64 p-2 bg-card border-border rounded-2xl shadow-huge">
-                             <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 py-2 opacity-60">Actions</DropdownMenuLabel>
-                             
-                             <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleUpdateRole(u.id, u.role)}>
-                               <ShieldIcon className="w-4 h-4 mr-3 text-primary transition-transform group-hover:scale-110" />
-                               <div className="flex flex-col">
-                                  <span className="text-xs font-black uppercase tracking-tight">{u.role === 'admin' ? "Remove Admin" : "Make Admin"}</span>
-                                  <span className="text-[9px] text-muted-foreground font-bold">Manage system access</span>
-                               </div>
-                             </DropdownMenuItem>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => setBalanceDialog(u)} className="h-10 w-10 rounded-xl border-border hover:bg-green-500/10 hover:text-green-500 transition-all shadow-sm">
+                              <Wallet className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit Balance</TooltipContent>
+                        </Tooltip>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-border bg-secondary/10 hover:bg-secondary transition-all">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-64 p-2 bg-card border-border rounded-2xl shadow-huge">
+                            <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 py-2 opacity-60">Actions</DropdownMenuLabel>
+                            
+                            <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleUpdateRole(u.id, u.role)}>
+                              <ShieldIcon className="w-4 h-4 mr-3 text-primary transition-transform group-hover:scale-110" />
+                              <div className="flex flex-col">
+                                 <span className="text-xs font-black uppercase tracking-tight">{u.role === 'admin' ? "Remove Admin" : "Make Admin"}</span>
+                                 <span className="text-[9px] text-muted-foreground font-bold">Manage system access</span>
+                              </div>
+                            </DropdownMenuItem>
 
-                             {u.kyc === "Pending" && (
-                               <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer text-green-500 focus:text-green-500 focus:bg-green-500/5 group" onClick={() => handleKycApprove(u.id, u.name)}>
-                                 <CheckCircle className="w-4 h-4 mr-3 transition-transform group-hover:scale-110" />
-                                 <div className="flex flex-col">
-                                    <span className="text-xs font-black uppercase tracking-tight">Approve User</span>
-                                    <span className="text-[9px] text-green-500/60 font-bold">Verify documentation</span>
-                                 </div>
-                               </DropdownMenuItem>
-                             )}
+                            {u.kyc === "Pending" && (
+                              <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer text-green-500 focus:text-green-500 focus:bg-green-500/5 group" onClick={() => handleKycApprove(u.id, u.name)}>
+                                <CheckCircle className="w-4 h-4 mr-3 transition-transform group-hover:scale-110" />
+                                <div className="flex flex-col">
+                                   <span className="text-xs font-black uppercase tracking-tight">Approve User</span>
+                                   <span className="text-[9px] text-green-500/60 font-bold">Verify documentation</span>
+                                </div>
+                              </DropdownMenuItem>
+                            )}
 
-                             <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleFreeze(u.id, u.name)}>
-                               {u.frozen ? <Flame className="w-4 h-4 mr-3 text-green-500 transition-transform group-hover:scale-110" /> : <Snowflake className="w-4 h-4 mr-3 text-blue-500 transition-transform group-hover:scale-110" />}
-                               <div className="flex flex-col">
-                                  <span className="text-xs font-black uppercase tracking-tight">{u.frozen ? "Unfreeze Account" : "Freeze Account"}</span>
-                                  <span className="text-[9px] text-muted-foreground font-bold">Change account status</span>
-                               </div>
-                             </DropdownMenuItem>
+                            <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleFreeze(u.id, u.name)}>
+                              {u.frozen ? <Flame className="w-4 h-4 mr-3 text-green-500 transition-transform group-hover:scale-110" /> : <Snowflake className="w-4 h-4 mr-3 text-blue-500 transition-transform group-hover:scale-110" />}
+                              <div className="flex flex-col">
+                                 <span className="text-xs font-black uppercase tracking-tight">{u.frozen ? "Unfreeze Account" : "Freeze Account"}</span>
+                                 <span className="text-[9px] text-muted-foreground font-bold">Change account status</span>
+                              </div>
+                            </DropdownMenuItem>
 
-                             <DropdownMenuSeparator className="bg-border my-2 mx-2" />
-                             <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10 group" onClick={() => handleDeleteUser(u.id, u.name)}>
-                               <Trash2 className="w-4 h-4 mr-3 transition-transform group-hover:rotate-12" />
-                               <div className="flex flex-col">
-                                  <span className="text-xs font-black uppercase tracking-tight">Delete User</span>
-                                  <span className="text-[9px] text-red-500/60 font-bold">Permanently delete this user</span>
-                               </div>
-                             </DropdownMenuItem>
-                           </DropdownMenuContent>
-                         </DropdownMenu>
-                       </div>
+                            <DropdownMenuSeparator className="bg-border my-2 mx-2" />
+                            <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10 group" onClick={() => handleDeleteUser(u.id, u.name)}>
+                              <Trash2 className="w-4 h-4 mr-3 transition-transform group-hover:rotate-12" />
+                              <div className="flex flex-col">
+                                 <span className="text-xs font-black uppercase tracking-tight">Delete User</span>
+                                 <span className="text-[9px] text-red-500/60 font-bold">Permanently delete this user</span>
+                              </div>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden divide-y divide-border/50">
+              {filtered.map((u) => (
+                  <div key={u.id} className="p-8 space-y-8 group/card hover:bg-secondary/10 transition-all">
+                      <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-5">
+                              <div className="relative w-14 h-14 rounded-2xl bg-gradient-gold flex items-center justify-center font-black text-base text-white shadow-huge overflow-hidden border border-white/20 group-hover/card:scale-110 transition-transform duration-500">
+                                  {u?.avatar_url ? (
+                                      <img src={u.avatar_url} className="w-full h-full object-cover" />
+                                  ) : (
+                                      u?.name?.substring(0, 1) || "?"
+                                  )}
+                              </div>
+                              <div className="space-y-1">
+                                  <div className="font-black text-foreground text-sm flex items-center gap-2 uppercase tracking-tight">
+                                      {u?.name || "Unknown Identity"}
+                                      {(activeSessions || []).some(ct => ct && ct.user_id === String(u?.id) && ct.status === 'active') && (
+                                         <div className="w-2 h-2 rounded-full bg-green-500 shadow-glow animate-pulse" />
+                                      )}
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground/40 font-black uppercase truncate max-w-[180px] tracking-widest">{u?.email}</div>
+                              </div>
+                          </div>
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-border bg-card shadow-sm hover:border-primary/20">
+                                <MoreHorizontal className="w-5 h-5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[85vw] max-w-sm p-3 bg-card border-border rounded-[2rem] shadow-huge relative overflow-hidden">
+                                <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" />
+                                <DropdownMenuItem className="rounded-xl px-5 py-4 font-black uppercase text-[10px] tracking-widest relative z-10" onClick={() => handleViewUser(u)}><Eye className="w-4 h-4 mr-4 text-primary" /> View Details</DropdownMenuItem>
+                                <DropdownMenuItem className="rounded-xl px-5 py-4 font-black uppercase text-[10px] tracking-widest relative z-10" onClick={() => setBalanceDialog(u)}><Wallet className="w-4 h-4 mr-4 text-green-500" /> Adjust Balance</DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-border/50 my-2 mx-2" />
+                                <DropdownMenuItem className="rounded-xl px-5 py-4 font-black uppercase text-[10px] tracking-widest text-red-500 focus:text-red-600 focus:bg-red-500/5 relative z-10" onClick={() => handleDeleteUser(u.id, u.name)}><Trash2 className="w-4 h-4 mr-4" /> Delete User</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="p-5 rounded-[1.5rem] bg-secondary/50 border border-border/80 group-hover/card:border-primary/20 transition-colors">
+                              <div className="text-[8px] font-black text-muted-foreground uppercase mb-2 tracking-[0.2em] opacity-40">Total Value</div>
+                              <div className="text-sm font-black text-foreground tabular-nums tracking-tighter">{formatCurrency(u.balanceNum)}</div>
+                          </div>
+                          <div className="p-5 rounded-[1.5rem] bg-secondary/50 border border-border/80 group-hover/card:border-primary/20 transition-colors">
+                              <div className="text-[8px] font-black text-muted-foreground uppercase mb-2 tracking-[0.2em] opacity-40">Available Funds</div>
+                              <div className="text-sm font-black text-primary tabular-nums tracking-tighter">{formatCurrency(u?.fiatBalanceNum || 0)}</div>
+                          </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pb-2">
+                          <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] border ${u.kyc === 'Verified' || u.kyc === 'Approved' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
+                              Verification: {u.kyc || 'UNVERIFIED'}
+                          </div>
+                          <span className="text-[10px] font-black uppercase text-muted-foreground/30 tabular-nums tracking-widest">Joined: {u.joined?.split('T')[0]}</span>
+                      </div>
+
+                  </div>
+              ))}
+          </div>
+        </div>
           
           <div className="p-8 border-t border-border bg-secondary/10 flex flex-col sm:flex-row items-center justify-between gap-6">
              <div className="flex items-center gap-6">
@@ -553,104 +617,102 @@ const UserManagement = () => {
                 <Button variant="outline" className="h-11 px-6 rounded-xl border-border text-[10px] font-black uppercase tracking-widest hover:bg-secondary">Next</Button>
              </div>
           </div>
-        </div>
       </div>
 
       {/* Balance Edit Dialog */}
       <Dialog open={!!balanceDialog} onOpenChange={() => setBalanceDialog(null)}>
-        <DialogContent className="bg-card border-border shadow-huge p-8 max-w-md rounded-2xl">
+        <DialogContent className="bg-card border-border shadow-huge p-0 max-w-lg rounded-[2rem] overflow-hidden">
           {balanceDialog && (
-            <>
-              <DialogHeader className="mb-6">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-                    <Target className="w-6 h-6" />
-                </div>
-                <DialogTitle className="text-xl font-bold text-foreground">Adjust Balance</DialogTitle>
-                <div className="mt-4 p-4 rounded-2xl bg-secondary/50 border border-border space-y-3">
-                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                        <span>Current Asset</span>
-                        <span className="text-primary">{selectedCurrency}</span>
+            <div className="flex flex-col max-h-[90vh]">
+              <DialogHeader className="p-8 pb-0 shrink-0">
+                <div className="flex items-center gap-4 mb-6">
+                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                        <Wallet className="w-6 h-6" />
                     </div>
-                    <div className="flex justify-between items-baseline">
-                        <span className="text-2xl font-black text-foreground tabular-nums">
+                    <div>
+                        <DialogTitle className="text-xl font-black text-foreground uppercase tracking-tight">Manual Balance Update</DialogTitle>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">Direct administrative balance modification</p>
+                    </div>
+                </div>
+                
+                <div className="p-6 rounded-[1.5rem] bg-secondary/40 border border-border/80 space-y-4">
+                    <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Asset Class</span>
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black h-6">{selectedCurrency}</Badge>
+                    </div>
+
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-foreground tabular-nums tracking-tighter">
                             {selectedCurrency === "USD" 
                               ? `${balanceDialog?.fiatBalanceNum?.toLocaleString() || "0.00"}` 
                               : selectedCurrency === "TRADING"
                               ? `${(balanceDialog as any)?.tradingBalance?.toLocaleString() || "0.00"}`
                               : `${(balanceDialog.balances as any)?.[selectedCurrency.toLowerCase()] || 0}`}
                         </span>
-                        <span className="text-xs font-bold text-muted-foreground ml-2 uppercase">{selectedCurrency}</span>
+                        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">{selectedCurrency}</span>
                     </div>
-                    {["USD", "TRADING"].indexOf(selectedCurrency) === -1 && (
-                        <div className="pt-2 border-t border-border flex justify-between items-center">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Fiat Equivalent (USD)</span>
-                            <span className="text-sm font-bold text-primary tabular-nums">
-                                {formatCurrency(((balanceDialog.balances as any)?.[selectedCurrency.toLowerCase()] || 0) * (
-                                    { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580 }[selectedCurrency.toLowerCase()] || 0
-                                ))}
-                            </span>
-                        </div>
-                    )}
                 </div>
               </DialogHeader>
               
-               <div className="space-y-6">
-                 <div className="space-y-2">
-                     <Label className="text-sm font-medium text-foreground">Select Currency</Label>
-                     <div className="grid grid-cols-3 md:grid-cols-4 gap-2 p-1 bg-secondary rounded-xl border border-border">
+               <ScrollArea className="flex-1 p-8 space-y-8">
+                 <div className="space-y-4">
+                     <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Select Currency Token</Label>
+                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                         {["BTC", "ETH", "USDT", "SOL", "USD", "TRADING", "COPY_TRADING"].map((coin) => (
                             <button 
                                 key={coin}
                                 onClick={() => setSelectedCurrency(coin)}
-                                className={`flex flex-col items-center justify-center gap-1 py-3 rounded-lg text-[10px] font-bold tracking-tighter transition-all ${selectedCurrency === coin ? 'bg-gradient-gold text-white shadow-gold' : 'text-muted-foreground hover:text-foreground'}`}
+                                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl text-[10px] font-black tracking-widest transition-all border ${selectedCurrency === coin ? 'bg-primary border-primary text-white shadow-gold' : 'bg-secondary/50 text-muted-foreground border-border hover:border-primary/30'}`}
                             >
-                                {coin === "USD" ? <Globe className="w-3.5 h-3.5" /> : <Coins className="w-3.5 h-3.5" />}
-                                {coin}
+                                {coin === "USD" ? <Globe className="w-4 h-4" /> : <Coins className="w-4 h-4" />}
+                                <span className="truncate w-full text-center">{coin}</span>
                             </button>
                         ))}
                      </div>
                  </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-foreground">Action</Label>
-                  <div className="flex gap-3 p-1 bg-secondary rounded-xl border border-border">
+                <div className="space-y-4 pt-4">
+                  <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Action Type</Label>
+                  <div className="grid grid-cols-2 gap-4 p-1.5 bg-secondary rounded-2xl border border-border">
                     <button
                       onClick={() => setBalanceAction("credit")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
-                        balanceAction === "credit" ? "bg-green-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      className={`flex items-center justify-center gap-2 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                        balanceAction === "credit" ? "bg-card text-green-600 shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       <ArrowUpRight className="w-4 h-4" /> Credit
                     </button>
                     <button
                       onClick={() => setBalanceAction("debit")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
-                        balanceAction === "debit" ? "bg-red-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      className={`flex items-center justify-center gap-2 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                        balanceAction === "debit" ? "bg-card text-red-600 shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       <X className="w-4 h-4" /> Debit
                     </button>
                   </div>
                 </div>
+
                 
-                 <div className="space-y-2">
-                   <Label className="text-sm font-medium text-foreground">Adjustment Amount ({selectedCurrency})</Label>
-                    <div className="relative">
+                 <div className="space-y-4 pt-4">
+                   <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Update Amount</Label>
+
+                    <div className="relative group">
                       <Input
                         type="number"
                         placeholder="0.00"
-                        className="h-12 bg-secondary/50 border-border rounded-xl text-lg font-bold tabular-nums pr-12 focus:border-primary/50 transition-all"
+                        className="h-16 bg-secondary/30 border-border rounded-2xl text-2xl font-black tabular-nums pr-20 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all text-center"
                         value={balanceAmount}
                         onChange={(e) => setBalanceAmount(e.target.value)}
                       />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground uppercase">{selectedCurrency}</div>
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">{selectedCurrency}</div>
                     </div>
                     {["USD", "TRADING"].indexOf(selectedCurrency) === -1 && balanceAmount && parseFloat(balanceAmount) > 0 && (
-                        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
-                            <TrendingUp className="w-4 h-4 text-primary" />
+                        <div className="flex items-center gap-4 p-5 rounded-2xl bg-primary/5 border border-primary/10 animate-in slide-in-from-top-2 duration-300">
+                            <Activity className="w-4 h-4 text-primary" />
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Adjustment Value (Estimated)</span>
-                                <span className="text-sm font-black text-primary">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40">Valuation Approximation</span>
+                                <span className="text-sm font-black text-primary tabular-nums">
                                     {formatCurrency(parseFloat(balanceAmount) * (
                                         { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580 }[selectedCurrency.toLowerCase()] || 0
                                     ))}
@@ -659,29 +721,31 @@ const UserManagement = () => {
                         </div>
                     )}
                 </div>
-              </div>
+              </ScrollArea>
               
-              <DialogFooter className="mt-8 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-12 rounded-xl" onClick={() => setBalanceDialog(null)}>Cancel</Button>
-                <Button variant="hero" className="h-12 rounded-xl shadow-gold text-white" onClick={handleBalanceUpdate}>
-                  Confirm <Zap className="w-4 h-4 ml-2" />
+              <DialogFooter className="p-8 border-t border-border bg-secondary/10 grid grid-cols-2 gap-4">
+                <Button variant="outline" className="h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest" onClick={() => setBalanceDialog(null)}>Cancel</Button>
+                <Button variant="hero" className="h-14 rounded-2xl bg-primary shadow-gold text-white text-[10px] font-black uppercase tracking-widest" onClick={handleBalanceUpdate}>
+                  Update Balance <Zap className="w-4 h-4 ml-2" />
                 </Button>
               </DialogFooter>
-            </>
+
+            </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* View User Dialog */}
+      {/* View User Dialog (Dossier) */}
       <Dialog open={!!viewUser} onOpenChange={() => setViewUser(null)}>
-        <DialogContent className="max-w-3xl h-[80vh] p-0 flex flex-col bg-card border-border shadow-huge rounded-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <DialogContent className="max-w-[100vw] sm:max-w-4xl h-[100dvh] sm:h-[85vh] p-0 flex flex-col bg-card border-border shadow-huge sm:rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-300">
           {viewUser && (
             <>
-              {/* Sticky Header Section */}
-              <div className="p-6 border-b border-border bg-secondary/10 shrink-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-center gap-5">
-                    <div className="relative w-16 h-16 rounded-2xl bg-gradient-gold flex items-center justify-center text-2xl font-black text-white shadow-lg ring-4 ring-background overflow-hidden">
+              {/* Institutional Header */}
+              <div className="p-8 pb-6 border-b border-border bg-secondary/10 shrink-0 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/[0.03] rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
+                  <div className="flex items-center gap-6">
+                    <div className="relative w-20 h-20 rounded-3xl bg-gradient-gold flex items-center justify-center text-3xl font-black text-white shadow-huge ring-4 ring-background overflow-hidden border border-white/20">
                       {viewUser?.avatar_url ? (
                          <img src={viewUser.avatar_url} className="w-full h-full object-cover" />
                       ) : (
@@ -689,184 +753,163 @@ const UserManagement = () => {
                       )}
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground leading-tight">{viewUser.name}</h2>
-                      <p className="text-muted-foreground font-medium flex items-center gap-2 mt-1">
-                        {viewUser.email}
-                        <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                        <span className="text-xs uppercase tracking-widest font-bold">UID: {viewUser.id}</span>
-                      </p>
+                      <h2 className="text-3xl font-black text-foreground tracking-tight leading-none uppercase">{viewUser.name}</h2>
+                      <div className="flex flex-wrap items-center gap-3 mt-3">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">{viewUser.email}</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-border" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">ID: {viewUser.id?.toString().slice(0, 12)}...</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={viewUser.role === 'admin' ? "default" : "secondary"} className="h-7 px-3 uppercase text-[10px] tracking-widest font-black">
-                      {viewUser.role} Account
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge variant="outline" className="h-9 px-5 uppercase text-[9px] tracking-[0.2em] font-black border-border bg-card text-muted-foreground">
+                      {viewUser.role} ACCESS
                     </Badge>
-                    <Badge variant={viewUser.frozen ? "destructive" : "outline"} className={`h-7 px-3 uppercase text-[10px] tracking-widest font-black ${!viewUser.frozen ? 'bg-green-500/10 text-green-500 border-green-500/20 shadow-none' : ''}`}>
-                      {viewUser.frozen ? "Frozen" : "Active"}
+                    <Badge variant={viewUser.frozen ? "destructive" : "outline"} className={`h-9 px-5 uppercase text-[9px] tracking-[0.2em] font-black ${!viewUser.frozen ? 'bg-green-500/10 text-green-600 border-green-500/20 shadow-none' : 'shadow-none'}`}>
+                      {viewUser.frozen ? "ACCOUNT FROZEN" : "ACCOUNT ACTIVE"}
                     </Badge>
                   </div>
                 </div>
               </div>
 
-              {/* Scrollable Content Area */}
-              <ScrollArea className="flex-1 w-full relative">
-                <div className="p-6">
-                  <Tabs defaultValue="overview" className="space-y-8">
-                    <TabsList className="bg-secondary/50 p-1 h-12 rounded-xl border border-border w-full justify-start gap-1">
-                      <TabsTrigger value="overview" className="rounded-lg px-6 h-10 data-[state=active]:bg-card data-[state=active]:shadow-sm">Profile Overview</TabsTrigger>
-                      <TabsTrigger value="finances" className="rounded-lg px-6 h-10 data-[state=active]:bg-card data-[state=active]:shadow-sm">Wallet & Balances</TabsTrigger>
-                      <TabsTrigger value="activity" className="rounded-lg px-6 h-10 data-[state=active]:bg-card data-[state=active]:shadow-sm">Activity History</TabsTrigger>
-                      <TabsTrigger value="kyc" className="rounded-lg px-6 h-10 data-[state=active]:bg-card data-[state=active]:shadow-sm">Identity Verification</TabsTrigger>
-                    </TabsList>
 
+              {/* Navigation Interface */}
+              <div className="bg-secondary/5 px-8 pt-4 border-b border-border shrink-0">
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="bg-transparent p-0 h-14 w-full justify-start gap-10 overflow-x-auto scrollbar-hide no-scrollbar">
+                    {['overview', 'finances', 'activity', 'kyc'].map((tab) => (
+                      <TabsTrigger 
+                        key={tab} 
+                        value={tab} 
+                        className="rounded-none px-0 h-14 border-b-2 border-transparent data-[state=active]:border-primary bg-transparent text-[10px] font-black uppercase tracking-[0.25em] data-[state=active]:text-primary transition-all whitespace-nowrap"
+                      >
+                        {tab === 'kyc' ? 'Verification' : tab}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {/* Data Grid Body */}
+              <ScrollArea className="flex-1 w-full bg-secondary/[0.02]">
+                <Tabs defaultValue="overview" className="w-full contents">
+                  <div className="p-8">
                     {/* Overview Tab */}
-                    <TabsContent value="overview" className="space-y-8 mt-0 animate-in fade-in-50 duration-500">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <section className="space-y-4">
-                          <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                            <UserCog className="w-4 h-4 text-primary" /> Personal Information
+                    <TabsContent value="overview" className="space-y-10 mt-0 animate-in fade-in-50 duration-500">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div className="space-y-6">
+                          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-3 opacity-40">
+                             PROFILE INFORMATION <div className="h-px flex-1 bg-border/50" />
                           </h3>
-                          <div className="space-y-3 p-6 rounded-2xl bg-secondary/30 border border-border">
-                            <div className="flex justify-between items-center py-2 border-b border-border/50">
-                              <span className="text-sm text-muted-foreground">Full Name</span>
-                              <span className="text-sm font-semibold text-foreground">{viewUser.name}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-border/50">
-                              <span className="text-sm text-muted-foreground">Contact Email</span>
-                              <span className="text-sm font-semibold text-primary">{viewUser.email}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-border/50">
-                              <span className="text-sm text-muted-foreground">Phone Number</span>
-                              <span className="text-sm font-semibold text-foreground">{viewUser.phone || "Not provided"}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2">
-                              <span className="text-sm text-muted-foreground">Account Status</span>
-                              <span className={`text-xs font-bold ${viewUser.frozen ? 'text-red-500' : 'text-green-500'}`}>
-                                {viewUser.frozen ? "Access Restricted" : "Active / Verified"}
-                              </span>
-                            </div>
-                          </div>
-                        </section>
 
-                        <section className="space-y-4">
-                          <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                            <Globe className="w-4 h-4 text-primary" /> Preferences & Referrals
-                          </h3>
-                          <div className="space-y-3 p-6 rounded-2xl bg-secondary/30 border border-border">
-                            <div className="flex justify-between items-center py-2 border-b border-border/50">
-                              <span className="text-sm text-muted-foreground">Base Currency</span>
-                              <Badge variant="outline" className="font-bold">{viewUser.default_currency || "USD"}</Badge>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-border/50">
-                              <span className="text-sm text-muted-foreground">Referral Code</span>
-                              <span className="text-sm font-bold text-foreground font-mono">{viewUser.referralCode || "NONE"}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2">
-                              <span className="text-sm text-muted-foreground">Registration Date</span>
-                              <span className="text-sm font-semibold text-foreground">
-                                {viewUser.joined ? new Date(viewUser.joined).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'N/A'}
-                              </span>
-                            </div>
+                          <div className="grid grid-cols-1 gap-4">
+                             {[
+                               { label: 'Primary Alias', value: viewUser.name },
+                               { label: 'Network Address', value: viewUser.email, isPrimary: true },
+                               { label: 'Terminal Uplink', value: viewUser.phone || "UNLINKED" },
+                               { label: 'Clearance Status', value: viewUser.frozen ? "RESTRICTED" : "VERIFIED", isStatus: true }
+                             ].map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center p-5 rounded-2xl bg-card border border-border shadow-sm group hover:border-primary/20 transition-all">
+                                   <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">{item.label}</span>
+                                   <span className={`text-xs font-black uppercase tracking-tight ${item.isPrimary ? 'text-primary' : item.isStatus ? (viewUser.frozen ? 'text-red-500' : 'text-green-500') : 'text-foreground'}`}>{item.value}</span>
+                                </div>
+                             ))}
                           </div>
-                        </section>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                         <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                            <Activity className="w-5 h-5" />
-                            </div>
-                            <div>
-                            <h4 className="font-bold text-foreground">Quick Account Summary</h4>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                                This user has joined {viewUser.joined ? new Date(viewUser.joined).toLocaleDateString() : 'recently'} and has 
-                                completed their KYC steps. Total balance across all wallets is currently {formatCurrency(viewUser.balanceNum)}.
-                            </p>
-                            </div>
                         </div>
 
-                        <div className="p-6 rounded-2xl bg-card border border-border flex flex-col gap-4">
-                            <div>
-                                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                                    <ShieldCheck className="w-4 h-4 text-primary" /> KYC Tier Level
-                                </h4>
-                                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">Current Tier: <span className="text-primary font-black italic">{viewUser.current_plan || 'Starter'}</span></p>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {['Starter', 'Silver', 'Gold', 'Elite'].map(plan => (
-                                    <button
-                                        key={plan}
-                                        onClick={() => handleUpdatePlan(viewUser.id, plan)}
-                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                            (viewUser.current_plan || 'Starter') === plan
-                                            ? "bg-gradient-gold text-white border-transparent shadow-gold"
-                                            : "bg-secondary text-muted-foreground border-border hover:border-primary/50"
-                                        }`}
-                                    >
-                                        {plan}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="space-y-6">
+                           <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-3 opacity-40">
+                              OPERATIONAL PREFERENCE <div className="h-px flex-1 bg-border/50" />
+                           </h3>
+                           <div className="grid grid-cols-1 gap-4">
+                              {[
+                                { label: 'Base Numéraire', value: viewUser.default_currency || "USD" },
+                                { label: 'Affiliation Hash', value: viewUser.referralCode || "NONE" },
+                                { label: 'Commission Tier', value: viewUser.current_plan || "STARTER" },
+                                { label: 'Temporal Entry', value: viewUser.joined ? new Date(viewUser.joined).toLocaleDateString() : 'N/A' }
+                              ].map((item, idx) => (
+                                 <div key={idx} className="flex justify-between items-center p-5 rounded-2xl bg-card border border-border shadow-sm group hover:border-primary/20 transition-all">
+                                    <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">{item.label}</span>
+                                    <span className="text-xs font-black uppercase tracking-tight text-foreground">{item.value}</span>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                      </div>
+
+                      <div className="p-8 rounded-[2rem] bg-card border border-border relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-primary/[0.01] pointer-events-none" />
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                           <div className="space-y-2 text-center md:text-left">
+                              <h4 className="text-sm font-black uppercase tracking-tight text-foreground">Authorization Tier Scaling</h4>
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">Modify personnel clearance and transaction limits</p>
+                           </div>
+                           <div className="flex flex-wrap justify-center gap-3">
+                              {['Starter', 'Silver', 'Gold', 'Elite'].map(plan => (
+                                 <button
+                                    key={plan}
+                                    onClick={() => handleUpdatePlan(viewUser.id, plan)}
+                                    className={`px-8 py-3 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all border ${
+                                       (viewUser.current_plan || 'Starter') === plan
+                                       ? "bg-primary border-primary text-white shadow-gold scale-105"
+                                       : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/30"
+                                    }`}
+                                 >
+                                    {plan}
+                                 </button>
+                              ))}
+                           </div>
                         </div>
                       </div>
                     </TabsContent>
 
                     {/* Finances Tab */}
-                    <TabsContent value="finances" className="space-y-8 mt-0 animate-in fade-in-50 duration-500">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-6 rounded-2xl bg-secondary/30 border border-border space-y-2">
-                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Total Portfolio</span>
-                          <div className="text-3xl font-black text-foreground tabular-nums">{formatCurrency(viewUser.balanceNum)}</div>
-                          <p className="text-[10px] text-muted-foreground">Combined value of all asset types</p>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-secondary/30 border border-border space-y-2">
-                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Main Balance</span>
-                          <div className="text-3xl font-black text-primary tabular-nums">{formatCurrency(viewUser.fiatBalanceNum)}</div>
-                          <p className="text-[10px] text-muted-foreground">Available for immediate withdrawal</p>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-secondary/30 border border-border space-y-2">
-                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Trading Balance</span>
-                          <div className="text-3xl font-black text-foreground tabular-nums">{formatCurrency((viewUser as any).tradingBalance)}</div>
-                          <p className="text-[10px] text-muted-foreground">Actively allocated to markets</p>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-secondary/30 border border-border space-y-2">
-                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Copy Trading</span>
-                          <div className="text-3xl font-black text-foreground tabular-nums">{formatCurrency((viewUser as any).copyTradingBalance)}</div>
-                          <p className="text-[10px] text-muted-foreground">Mirror trading allocation</p>
-                        </div>
+                    <TabsContent value="finances" className="space-y-10 mt-0 animate-in fade-in-50 duration-500">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                          { label: 'Cross-Asset Portfolio', value: viewUser.balanceNum, color: 'text-foreground' },
+                          { label: 'Operational Liquidity', value: viewUser.fiatBalanceNum, color: 'text-primary' },
+                          { label: 'Active Trade Exposure', value: (viewUser as any).tradingBalance, color: 'text-foreground' },
+                          { label: 'Copy-Network Allocation', value: (viewUser as any).copyTradingBalance, color: 'text-foreground' }
+                        ].map((stat, idx) => (
+                          <div key={idx} className="p-8 rounded-[2rem] bg-card border border-border shadow-sm space-y-4 group hover:border-primary/20 transition-all">
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-40 block">{stat.label}</span>
+                            <div className={`text-2xl font-black tabular-nums tracking-tighter ${stat.color}`}>{formatCurrency(stat.value)}</div>
+                          </div>
+                        ))}
                       </div>
 
-                      <section className="space-y-4">
-                        <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                          <Coins className="w-4 h-4 text-primary" /> Asset Breakdown
+                      <section className="space-y-8">
+                        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-3 opacity-40">
+                           ASSET DISTRIBUTION LEDGER <div className="h-px flex-1 bg-border/50" />
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           {[
                             { coin: 'Bitcoin', symbol: 'BTC', balance: viewUser?.balances?.btc || 0, price: 65000, color: 'text-orange-500', bg: 'bg-orange-500/10' },
                             { coin: 'Ethereum', symbol: 'ETH', balance: viewUser?.balances?.eth || 0, price: 3500, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                             { coin: 'Tether', symbol: 'USDT', balance: viewUser?.balances?.usdt || 0, price: 1, color: 'text-green-500', bg: 'bg-green-500/10' },
                             { coin: 'Solana', symbol: 'SOL', balance: viewUser?.balances?.sol || 0, price: 145, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                            { coin: 'Cash Balance', symbol: 'USD', balance: viewUser?.fiatBalanceNum || 0, price: 1, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-                            { coin: 'Trading Balance', symbol: 'TRD', balance: (viewUser as any)?.tradingBalance || 0, price: 1, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-                            { coin: 'Copy Trading', symbol: 'CPY', balance: (viewUser as any)?.copyTradingBalance || 0, price: 1, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+                            { coin: 'Cash Reserves', symbol: 'USD', balance: viewUser?.fiatBalanceNum || 0, price: 1, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+                            { coin: 'Market Liquidity', symbol: 'TRD', balance: (viewUser as any)?.tradingBalance || 0, price: 1, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
                           ].map((asset) => (
-                            <div key={asset.symbol} className="p-5 rounded-2xl border border-border bg-card hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all group">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-10 h-10 rounded-xl ${asset.bg} flex items-center justify-center font-black text-xs ${asset.color}`}>
+                            <div key={asset.symbol} className="p-6 rounded-[2rem] border border-border bg-card hover:border-primary/40 hover:shadow-huge transition-all group overflow-hidden relative">
+                              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/[0.02] rounded-full translate-x-1/2 -translate-y-1/2" />
+                              <div className="flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                  <div className={`w-12 h-12 rounded-2xl ${asset.bg} flex items-center justify-center font-black text-xs ${asset.color} border border-border/50`}>
                                     {asset.symbol}
                                   </div>
                                   <div>
-                                    <div className="text-sm font-bold text-foreground">{asset.coin}</div>
-                                    <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{asset.symbol} Asset</div>
+                                    <div className="text-sm font-black uppercase tracking-tight text-foreground">{asset.coin}</div>
+                                    <div className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest mt-1">{asset.symbol} SUB-LEDGER</div>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-lg font-black text-foreground tabular-nums">
-                                    {asset.balance === 0 ? '0.00' : asset.balance.toLocaleString(undefined, { maximumFractionDigits: 8 })}
+                                  <div className="text-lg font-black text-foreground tabular-nums tracking-tighter">
+                                    {asset.balance === 0 ? '0.00' : asset.balance.toLocaleString(undefined, { maximumFractionDigits: 4 })}
                                   </div>
-                                  <div className="text-[10px] font-bold text-muted-foreground">
-                                    ≈ ${(asset.balance * asset.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  <div className="text-[10px] font-black text-primary/60 mt-1 tabular-nums">
+                                    ≈ {formatCurrency(asset.balance * asset.price)}
                                   </div>
                                 </div>
                               </div>
@@ -877,199 +920,207 @@ const UserManagement = () => {
                     </TabsContent>
 
                     {/* Activity Tab */}
-                    <TabsContent value="activity" className="space-y-8 mt-0 animate-in fade-in-50 duration-500">
-                      <section className="space-y-4">
-                        <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-primary" /> Activity History
+                    <TabsContent value="activity" className="space-y-10 mt-0 animate-in fade-in-50 duration-500">
+                      <section className="space-y-8">
+                        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-3 opacity-40">
+                           REAL-TIME TRANSACTION LOG <div className="h-px flex-1 bg-border/50" />
                         </h3>
-                        <div className="space-y-3">
-                          {/* Active Copy Trades */}
+                        <div className="space-y-4">
+                          {/* Active Trades */}
                           {(activeSessions || []).filter(ct => ct?.userId === String(viewUser?.id)).map((ct) => (
-                            <div key={ct?.id} className="p-4 rounded-xl border border-border bg-primary/5 flex items-center justify-between group hover:bg-primary/10 transition-colors">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                  <Target className="w-5 h-5" />
+                            <div key={ct?.id} className="p-6 rounded-[2rem] border border-primary/20 bg-primary/[0.03] flex flex-col sm:flex-row sm:items-center justify-between gap-6 group hover:bg-primary/[0.05] transition-all">
+                              <div className="flex items-center gap-6">
+                                <div className="w-14 h-14 rounded-[1.5rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-500">
+                                  <Target className="w-6 h-6" />
                                 </div>
-                                <div>
-                                  <div className="text-sm font-bold text-foreground">Active Trade: {ct.traderName}</div>
-                                  <div className="text-xs text-muted-foreground mt-0.5">Allocated: ${ct.allocated_amount} • Profits/Loss: <span className={ct.pnl >= 0 ? 'text-green-600' : 'text-red-500'}>${ct.pnl.toFixed(2)}</span></div>
+                                <div className="space-y-1">
+                                  <div className="text-sm font-black uppercase tracking-tight text-foreground">Market Position: {ct.traderName}</div>
+                                  <div className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-3">
+                                     Allocated: {formatCurrency(ct.allocated_amount)}
+                                     <div className="w-1 h-1 rounded-full bg-border" />
+                                     PnL: <span className={ct.pnl >= 0 ? 'text-green-500' : 'text-red-500'}>{formatCurrency(ct.pnl)}</span>
+                                  </div>
                                 </div>
                               </div>
-                              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 uppercase text-[9px] font-black">ACTIVE</Badge>
+                              <Badge className="bg-primary shadow-gold text-white uppercase text-[8px] font-black tracking-[0.2em] px-4 py-1.5 h-auto rounded-full w-fit">ACTIVE EXPOSURE</Badge>
                             </div>
                           ))}
 
-                          {/* Transactions */}
+                          {/* Regular Transactions */}
                           {(allTransactions || []).filter(tx => tx?.userId === String(viewUser?.id)).map((tx) => (
-                            <div key={tx?.id} className="p-4 rounded-xl border border-border bg-secondary/30 flex items-center justify-between group hover:bg-secondary/50 transition-colors">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center">
-                                  {tx.type.includes('Deposit') ? <ArrowUpRight className="w-5 h-5 text-green-500" /> : <Eye className="w-5 h-5 text-blue-500" />}
+                            <div key={tx?.id} className="p-6 rounded-[1.5rem] border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-6 group hover:border-primary/20 transition-all">
+                              <div className="flex items-center gap-6">
+                                <div className="w-12 h-12 rounded-2xl bg-secondary/50 border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                                  {tx.type.includes('Deposit') ? <ArrowUpRight className="w-5 h-5 text-green-500" /> : <TrendingUp className="w-5 h-5 text-blue-500" />}
                                 </div>
-                                <div>
-                                  <div className="text-sm font-semibold text-foreground">{tx.type}</div>
-                                  <div className="text-xs text-muted-foreground mt-0.5">{new Date(tx.created_at || tx.date).toLocaleDateString()} at {new Date(tx.created_at || tx.date).toLocaleTimeString()}</div>
+                                <div className="space-y-1">
+                                  <div className="text-sm font-black uppercase tracking-tight text-foreground">{tx.type}</div>
+                                  <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest tabular-nums">{new Date(tx.created_at || tx.date).toISOString().replace('T', ' ').slice(0, 16)}</div>
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <div className="text-sm font-bold text-foreground">{tx.amount} {tx.asset || tx.crypto_type}</div>
-                                <div className={`text-[10px] font-black uppercase tracking-widest ${tx.status === 'Completed' ? 'text-green-600' : 'text-amber-600'}`}>{tx.status}</div>
+                              <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-4 border-t sm:border-t-0 border-border/30 pt-4 sm:pt-0">
+                                <div className="text-lg font-black text-foreground tabular-nums tracking-tighter">{tx.amount} {tx.asset || tx.crypto_type}</div>
+                                <div className={`text-[9px] font-black uppercase tracking-[0.2em] ${tx.status === 'Completed' || tx.status === 'Verified' ? 'text-green-500' : 'text-amber-500'}`}>{tx.status}</div>
                               </div>
                             </div>
                           ))}
 
+                          {/* Empty State */}
                           {(activeSessions || []).filter(ct => ct?.userId === String(viewUser?.id)).length === 0 && 
                            (allTransactions || []).filter(tx => tx?.userId === String(viewUser?.id)).length === 0 && (
-                            <div className="text-center py-12 border border-dashed border-border rounded-2xl bg-secondary/10">
-                              <p className="text-sm text-muted-foreground">No history found for this user.</p>
+                            <div className="text-center py-24 border border-dashed border-border rounded-[2.5rem] bg-secondary/10">
+                              <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em]">No Temporal Artifacts Located</p>
                             </div>
                           )}
                         </div>
                       </section>
                     </TabsContent>
 
-                    {/* KYC Tab — Multi-Level */}
-                    <TabsContent value="kyc" className="space-y-8 mt-0 animate-in fade-in-50 duration-500">
-                      <section className="space-y-6">
+                    {/* Verification Tab */}
+                    <TabsContent value="kyc" className="space-y-10 mt-0 animate-in fade-in-50 duration-500">
+                      <section className="space-y-8">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                            <ShieldCheck className="w-4 h-4 text-primary" /> Identity Status
+                          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-3 opacity-40">
+                             IDENTITY AUTHENTICATION STATUS <div className="h-px flex-1 bg-border/50" />
                           </h3>
-                          <Badge className={`uppercase text-[10px] font-black tracking-widest px-4 h-8 ${viewUser.kyc === 'Verified' ? 'bg-green-500 text-white' : viewUser.kyc === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
-                            {viewUser.kyc || 'Unverified'}
+                          <Badge className={`uppercase text-[9px] font-black tracking-[0.2em] px-6 h-9 rounded-full ${viewUser.kyc === 'Verified' ? 'bg-green-500 text-white shadow-glow' : viewUser.kyc === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+                            {viewUser.kyc || 'UNVERIFIED'}
                           </Badge>
                         </div>
 
                         {allKycSubmissions.length > 0 ? (
-                          <div className="space-y-6">
+                          <div className="space-y-8">
                             {[1, 2, 3].map(level => {
                               const sub = allKycSubmissions.find(s => s.kyc_level === level);
                               if (!sub) {
                                 return (
-                                  <div key={level} className="p-6 rounded-2xl bg-secondary/10 border border-dashed border-border">
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">{level}</div>
+                                  <div key={level} className="p-8 rounded-[2rem] bg-secondary/10 border border-dashed border-border opacity-50 grayscale">
+                                    <div className="flex items-center gap-5">
+                                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-[10px] font-black text-muted-foreground">0{level}</div>
                                       <div>
-                                        <span className="text-xs font-bold text-muted-foreground">Level {level}: {level === 1 ? 'Basic Information' : level === 2 ? 'Identity Verification' : 'Address Verification'}</span>
-                                        <p className="text-[10px] text-muted-foreground/60">Not submitted yet</p>
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">PHASE {level}: {level === 1 ? 'Core Identification' : level === 2 ? 'Biometric & Document' : 'Residency Verification'}</span>
+                                        <p className="text-[9px] text-muted-foreground/40 font-black uppercase mt-1 tracking-widest">AWAITING SUBMISSION</p>
                                       </div>
                                     </div>
                                   </div>
                                 );
                               }
                               return (
-                                <div key={level} className={`p-6 rounded-2xl border ${sub.status === 'Verified' ? 'bg-green-500/5 border-green-500/20' : sub.status === 'Pending' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                                  <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${sub.status === 'Verified' ? 'bg-green-500' : sub.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'}`}>{level}</div>
+                                <div key={level} className={`p-8 rounded-[2rem] border transition-all ${sub.status === 'Verified' ? 'bg-green-500/[0.02] border-green-500/20' : sub.status === 'Pending' ? 'bg-amber-500/[0.02] border-amber-500/20' : 'bg-red-500/[0.02] border-red-500/20'}`}>
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-6 border-b border-border/50">
+                                    <div className="flex items-center gap-5">
+                                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xs font-black text-white shadow-sm ${sub.status === 'Verified' ? 'bg-green-500' : sub.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'}`}>0{level}</div>
                                       <div>
-                                        <span className="text-xs font-bold text-foreground">Level {level}: {level === 1 ? 'Basic Information' : level === 2 ? 'Identity Verification' : 'Address Verification'}</span>
-                                        <p className="text-[10px] text-muted-foreground">Submitted {new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}</p>
+                                        <span className="text-sm font-black text-foreground uppercase tracking-tight">Phase {level}: {level === 1 ? 'Core Identification' : level === 2 ? 'Biometric & Document' : 'Residency Verification'}</span>
+                                        <p className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest mt-1">Ingested {new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}</p>
                                       </div>
                                     </div>
-                                    <Badge className={`text-[9px] font-black uppercase tracking-widest ${sub.status === 'Verified' ? 'bg-green-500 text-white' : sub.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>{sub.status}</Badge>
+                                    <Badge className={`text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 h-auto rounded-full ${sub.status === 'Verified' ? 'bg-green-500 text-white' : sub.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>{sub.status}</Badge>
                                   </div>
 
-                                  {/* Level 1 details */}
-                                  {level === 1 && (
-                                    <div className="grid grid-cols-2 gap-3 mb-4">
-                                      {[{l:'Full Name', v: sub.full_name}, {l: 'Date of Birth', v: sub.date_of_birth}, {l: 'Country', v: sub.country}, {l: 'Phone', v: sub.phone}, {l: 'Address', v: sub.address}].map(({l,v}) => v ? (
-                                        <div key={l} className="p-3 rounded-xl bg-card border border-border">
-                                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{l}</div>
-                                          <div className="text-xs font-bold text-foreground mt-0.5">{v}</div>
+                                  {/* Data details per level */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                                     {level === 1 && (
+                                       <>
+                                         {[{l:'Full Identity', v: sub.full_name}, {l: 'Birth Sequence', v: sub.date_of_birth}, {l: 'Jurisdiction', v: sub.country}, {l: 'Comms Uplink', v: sub.phone}, {l: 'Registered Domicile', v: sub.address}].map(({l,v}) => v ? (
+                                           <div key={l} className="p-5 rounded-2xl bg-card border border-border group hover:border-primary/20 transition-all">
+                                             <div className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 mb-2">{l}</div>
+                                             <div className="text-xs font-black text-foreground uppercase tracking-tight mt-0.5">{v}</div>
+                                           </div>
+                                         ) : null)}
+                                       </>
+                                     )}
+                                     
+                                     {level === 2 && (
+                                       <>
+                                          <div className="p-5 rounded-2xl bg-card border border-border group hover:border-primary/20 transition-all">
+                                            <div className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 mb-2">Protocol Format</div>
+                                            <div className="text-xs font-black text-foreground uppercase tracking-tight mt-0.5">{sub.id_type || 'STANDARD'}</div>
+                                          </div>
+                                          <div className="p-5 rounded-2xl bg-card border border-border group hover:border-primary/20 transition-all">
+                                            <div className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 mb-2">Credential Hash</div>
+                                            <div className="text-xs font-black text-foreground uppercase tracking-tight mt-0.5 tabular-nums">{sub.id_number || 'N/A'}</div>
+                                          </div>
+                                       </>
+                                     )}
+                                     
+                                     {level === 3 && (
+                                        <div className="p-5 rounded-2xl bg-card border border-border group hover:border-primary/20 transition-all">
+                                          <div className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 mb-2">Evidence Format</div>
+                                          <div className="text-xs font-black text-foreground uppercase tracking-tight mt-0.5">{sub.address_doc_type || 'UTILITY_BILL'}</div>
                                         </div>
-                                      ) : null)}
-                                    </div>
-                                  )}
+                                     )}
+                                  </div>
 
-                                  {/* Level 2 details */}
-                                  {level === 2 && (
-                                    <div className="space-y-4 mb-4">
-                                      <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 rounded-xl bg-card border border-border">
-                                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Document Type</div>
-                                          <div className="text-xs font-bold text-foreground mt-0.5">{sub.id_type || 'N/A'}</div>
+                                  {/* Media Previews */}
+                                  {(level === 2 || level === 3) && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                                      {sub.document_front && (
+                                        <div onClick={() => setPreviewImage(sub.document_front)} className="group relative rounded-[2rem] border border-border bg-black/5 overflow-hidden h-48 hover:border-primary transition-all cursor-zoom-in">
+                                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 backdrop-blur-[2px]">
+                                            <span className="text-white text-[9px] font-black uppercase tracking-[0.25em] bg-black shadow-2xl px-6 py-3 rounded-full flex items-center gap-2"><Eye className="w-3 h-3" /> INSPECT</span>
+                                          </div>
+                                          <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[8px] font-black text-white uppercase tracking-widest z-10">ANTERIOR</div>
+                                          <img src={sub.document_front} className="w-full h-full object-cover" alt="ID Front" />
                                         </div>
-                                        <div className="p-3 rounded-xl bg-card border border-border">
-                                          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Document Number</div>
-                                          <div className="text-xs font-bold text-foreground mt-0.5 font-mono">{sub.id_number || 'N/A'}</div>
+                                      )}
+                                      {sub.document_back && (
+                                        <div onClick={() => setPreviewImage(sub.document_back)} className="group relative rounded-[2rem] border border-border bg-black/5 overflow-hidden h-48 hover:border-primary transition-all cursor-zoom-in">
+                                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 backdrop-blur-[2px]">
+                                            <span className="text-white text-[9px] font-black uppercase tracking-[0.25em] bg-black shadow-2xl px-6 py-3 rounded-full flex items-center gap-2"><Eye className="w-3 h-3" /> INSPECT</span>
+                                          </div>
+                                          <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[8px] font-black text-white uppercase tracking-widest z-10">POSTERIOR</div>
+                                          <img src={sub.document_back} className="w-full h-full object-cover" alt="ID Back" />
                                         </div>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-4">
-                                        {sub.document_front && (
-                                          <div onClick={() => setPreviewImage(sub.document_front)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                              <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
-                                            </div>
-                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Front</div>
-                                            <img src={sub.document_front} className="w-full h-full object-cover" alt="ID Front" />
+                                      )}
+                                      {sub.selfie_url && (
+                                        <div onClick={() => setPreviewImage(sub.selfie_url)} className="group relative rounded-[2rem] border border-border bg-black/5 overflow-hidden h-48 hover:border-primary transition-all cursor-zoom-in">
+                                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 backdrop-blur-[2px]">
+                                            <span className="text-white text-[9px] font-black uppercase tracking-[0.25em] bg-black shadow-2xl px-6 py-3 rounded-full flex items-center gap-2"><Eye className="w-3 h-3" /> INSPECT</span>
                                           </div>
-                                        )}
-                                        {sub.document_back && (
-                                          <div onClick={() => setPreviewImage(sub.document_back)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                              <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
-                                            </div>
-                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Back</div>
-                                            <img src={sub.document_back} className="w-full h-full object-cover" alt="ID Back" />
+                                          <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[8px] font-black text-white uppercase tracking-widest z-10">BIOMETRIC</div>
+                                          <img src={sub.selfie_url} className="w-full h-full object-cover" alt="Selfie" />
+                                        </div>
+                                      )}
+                                       {sub.address_doc_url && (
+                                        <div onClick={() => setPreviewImage(sub.address_doc_url)} className="group relative rounded-[2rem] border border-border bg-black/5 overflow-hidden h-48 hover:border-primary transition-all cursor-zoom-in">
+                                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 backdrop-blur-[2px]">
+                                            <span className="text-white text-[9px] font-black uppercase tracking-[0.25em] bg-black shadow-2xl px-6 py-3 rounded-full flex items-center gap-2"><Eye className="w-3 h-3" /> INSPECT</span>
                                           </div>
-                                        )}
-                                        {sub.selfie_url && (
-                                          <div onClick={() => setPreviewImage(sub.selfie_url)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                              <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
-                                            </div>
-                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Selfie</div>
-                                            <img src={sub.selfie_url} className="w-full h-full object-cover" alt="Selfie" />
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Level 3 details */}
-                                  {level === 3 && (
-                                    <div className="space-y-3 mb-4">
-                                      <div className="p-3 rounded-xl bg-card border border-border">
-                                        <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Document Type</div>
-                                        <div className="text-xs font-bold text-foreground mt-0.5">{sub.address_doc_type || 'N/A'}</div>
-                                      </div>
-                                      {sub.address_doc_url && (
-                                        <div onClick={() => setPreviewImage(sub.address_doc_url)} className="group relative rounded-2xl border border-border bg-card overflow-hidden h-40 hover:border-primary transition-all cursor-zoom-in">
-                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                                            <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full"><Eye className="w-3 h-3 inline mr-1" />Preview</span>
-                                          </div>
-                                          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase z-10">Address Proof</div>
+                                          <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[8px] font-black text-white uppercase tracking-widest z-10">RESIDENCY EVI.</div>
                                           <img src={sub.address_doc_url} className="w-full h-full object-cover" alt="Address Proof" />
                                         </div>
                                       )}
                                     </div>
                                   )}
 
-                                  {/* Rejection reason display */}
+                                  {/* Error states */}
                                   {sub.status === 'Rejected' && sub.rejection_reason && (
-                                    <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/10 mb-4">
-                                      <span className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Rejection Reason</span>
-                                      <p className="text-xs text-foreground mt-0.5">{sub.rejection_reason}</p>
+                                    <div className="p-6 rounded-[1.5rem] bg-red-500/5 border border-red-500/10 mb-8 flex gap-4 items-start">
+                                      <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500 shrink-0 mt-1"><X className="w-4 h-4" /></div>
+                                      <div>
+                                        <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Invalidation Rationale</span>
+                                        <p className="text-xs text-foreground uppercase tracking-tight mt-1 leading-relaxed">{sub.rejection_reason}</p>
+                                      </div>
                                     </div>
                                   )}
 
-                                  {/* Action buttons per level */}
+                                  {/* Decisional Controls */}
                                   {sub.status === 'Pending' && (
-                                    <div className="flex gap-3 pt-2">
+                                    <div className="flex flex-col sm:flex-row gap-4">
                                       <Button
                                         variant="outline"
-                                        className="flex-1 h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest border-red-500/20 text-red-600 hover:bg-red-500/10 hover:border-red-500/30"
+                                        className="flex-1 h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-red-500/20 text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all"
                                         onClick={() => setRejectionDialog({ userId: String(viewUser.id), userName: viewUser.name, level })}
                                       >
-                                        <X className="w-3.5 h-3.5 mr-1.5" /> Reject Level {level}
+                                        REJECT PHASE 0{level}
                                       </Button>
                                       <Button
                                         variant="hero"
-                                        className="flex-1 h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-white shadow-gold"
+                                        className="flex-1 h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-gold bg-primary transition-all"
                                         onClick={() => handleKycApprove(viewUser.id, viewUser.name, level)}
                                       >
-                                        Approve Level {level} <CheckCircle className="w-3.5 h-3.5 ml-1.5" />
+                                        AUTHORIZE PHASE 0{level} <CheckCircle className="w-4 h-4 ml-3" />
                                       </Button>
                                     </div>
                                   )}
@@ -1078,21 +1129,21 @@ const UserManagement = () => {
                             })}
                           </div>
                         ) : (
-                          <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-secondary/10">
-                            <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-                            <p className="text-sm text-muted-foreground font-medium">No documents submitted yet.</p>
+                          <div className="text-center py-32 border border-dashed border-border rounded-[3rem] bg-secondary/5">
+                            <Shield className="w-16 h-16 text-muted-foreground/10 mx-auto mb-6" />
+                            <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.4em]">Awaiting Identity Transmission</p>
                           </div>
                         )}
                       </section>
                     </TabsContent>
-                  </Tabs>
-                </div>
+                  </div>
+                </Tabs>
               </ScrollArea>
 
-              {/* Sticky Footer Area */}
-              <div className="p-6 border-t border-border bg-secondary/5 shrink-0 flex justify-end">
-                <Button variant="outline" className="px-10 h-11 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary transition-colors" onClick={() => setViewUser(null)}>
-                  Close
+              {/* Interface Exit */}
+              <div className="p-8 border-t border-border bg-secondary/10 shrink-0 flex justify-end">
+                <Button variant="outline" className="px-14 h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] hover:bg-secondary transition-all" onClick={() => setViewUser(null)}>
+                  CLOSE DOSSIER
                 </Button>
               </div>
             </>
@@ -1128,7 +1179,7 @@ const UserManagement = () => {
                   ))}
                 </div>
               </div>
-              <DialogFooter className="mt-6 grid grid-cols-2 gap-3">
+              <DialogFooter className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Button variant="outline" className="h-11 rounded-xl" onClick={() => { setRejectionDialog(null); setRejectionReason(''); }}>Cancel</Button>
                 <Button
                   variant="destructive"

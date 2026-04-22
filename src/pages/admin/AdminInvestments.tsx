@@ -164,55 +164,62 @@ export default function AdminInvestments() {
 
   return (
     <AdminLayout>
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-6 rounded-2xl border border-border shadow-sm">
-        <div>
-          <h1 className="text-2xl font-black text-foreground">Investment Management</h1>
-          <p className="text-muted-foreground text-sm font-medium mt-1">Manage plans, monitor active capital, and oversee the ROI engine.</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={fetchData} className="font-bold rounded-xl">
-            <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-          </Button>
-          <Button 
-            onClick={() => {
-              setEditingPlan(null);
-              setPlanForm({ category: 'Forex', name: '', roi_percentage: '', duration_days: '', min_amount: '', max_amount: '', is_active: true });
-              setShowPlanModal(true);
-            }}
-            className="font-bold rounded-xl shadow-sm text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" /> Add Plan
-          </Button>
-        </div>
-      </div>
+      <div className="space-y-8">
+        {/* Institutional Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Portfolio Asset Management</h1>
+            <p className="text-muted-foreground text-sm font-medium">Manage investment strategies and oversee user capital performance.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+             <Button variant="outline" onClick={fetchData} className="h-11 border-border text-[10px] font-black uppercase tracking-[0.2em] px-6 hover:bg-secondary rounded-xl transition-all">
+                <RefreshCw className="w-4 h-4 mr-2" /> Refresh Data
+             </Button>
+             <Button 
+               onClick={() => {
+                 setEditingPlan(null);
+                 setPlanForm({ category: 'Forex', name: '', roi_percentage: '', duration_days: '', min_amount: '', max_amount: '', is_active: true });
+                 setShowPlanModal(true);
+               }}
+               className="h-11 bg-primary shadow-gold text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 rounded-xl transition-all"
+             >
+               <Plus className="w-4 h-4 mr-2" /> Create Strategy
+             </Button>
+          </div>
+        </header>
 
-      {/* ─── Summary Cards ─── */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Active Investments</p>
-          <p className="text-2xl font-black text-foreground">{activeInvestments.length}</p>
+        {/* Performance Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[
+            { label: "Active Portfolios", value: activeInvestments.length, suffix: "ACCOUNTS", icon: Activity, bg: "bg-blue-500/5", color: "text-blue-600" },
+            { label: "Assets Under Management", value: `$${totalActiveCapital.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, suffix: "USD", icon: DollarSign, bg: "bg-emerald-500/5", color: "text-emerald-600" },
+            { label: "Total Accrued Earnings", value: `$${totalAccruedProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, suffix: "USD", icon: TrendingUp, bg: "bg-primary/5", color: "text-primary" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-card border border-border p-8 rounded-[2rem] shadow-sm relative overflow-hidden group hover:border-primary/20 transition-all">
+               <div className={`absolute top-0 right-0 w-32 h-32 ${stat.bg} rounded-full blur-3xl`} />
+               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground mb-6 relative z-10 opacity-60">{stat.label}</p>
+               <div className="flex items-end gap-3 relative z-10">
+                  <p className={`text-3xl font-black ${stat.color} tabular-nums tracking-tighter`}>{stat.value}</p>
+                  <span className="text-[10px] font-black text-muted-foreground/40 mb-1.5 uppercase tracking-widest">{stat.suffix}</span>
+               </div>
+            </div>
+          ))}
         </div>
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Total Active Capital</p>
-          <p className="text-2xl font-black text-foreground">${totalActiveCapital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-        </div>
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-[10px] font-black uppercase tracking-widest text-green-500 mb-2">Total Accrued Profit</p>
-          <p className="text-2xl font-black text-green-500">+${totalAccruedProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-        </div>
-      </div>
+
 
       {/* ─── Plans ─── */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground pl-2">Investment Plans</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="flex items-center gap-2 pl-2">
+           <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground">Investment Strategies</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {plans.map(plan => (
-            <div key={plan.id} className="bg-card border border-border rounded-2xl p-6 shadow-sm relative overflow-hidden group">
-               <div className="flex justify-between items-start mb-4">
+            <div key={plan.id} className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm relative overflow-hidden group hover:border-primary/30 transition-all">
+                <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+               <div className="flex justify-between items-start mb-5 relative z-10">
                  <div>
-                   <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary mb-2 inline-block shadow-sm">{plan.category}</span>
-                   <h3 className="font-black text-lg text-foreground">{plan.name}</h3>
+                   <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-primary/10 text-primary mb-3 inline-block border border-primary/20">{plan.category}</span>
+                   <h3 className="font-black text-lg text-foreground tracking-tight">{plan.name}</h3>
                  </div>
                  <div className="flex gap-2">
                    <button onClick={() => { 
@@ -227,107 +234,186 @@ export default function AdminInvestments() {
                        is_active: plan.is_active !== false 
                      }); 
                      setShowPlanModal(true); 
-                   }} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary/20 transition-all text-muted-foreground hover:text-primary"><Edit className="w-4 h-4" /></button>
-                   <button onClick={() => handleDeletePlan(plan.id)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-red-500/20 transition-all text-muted-foreground hover:text-red-500"><Trash className="w-4 h-4" /></button>
+                   }} className="w-10 h-10 rounded-xl bg-secondary/50 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-muted-foreground shadow-sm"><Edit className="w-4 h-4" /></button>
+                   <button onClick={() => handleDeletePlan(plan.id)} className="w-10 h-10 rounded-xl bg-secondary/50 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all text-muted-foreground shadow-sm"><Trash className="w-4 h-4" /></button>
                  </div>
                </div>
 
-               <div className="space-y-2 text-sm">
-                 <div className="flex justify-between pb-2 border-b border-border/50">
-                   <span className="text-muted-foreground">ROI</span>
-                   <span className="font-black text-green-500">{plan.roi_percentage}%</span>
+               <div className="space-y-4 relative z-10">
+                 <div className="flex justify-between items-center pb-3 border-b border-border/30">
+                   <span className="text-[10px] font-bold text-muted-foreground uppercase">Rate of Return</span>
+                   <span className="font-black text-green-500 text-sm">{plan.roi_percentage}%</span>
                  </div>
-                 <div className="flex justify-between pb-2 border-b border-border/50">
-                   <span className="text-muted-foreground">Duration</span>
-                   <span className="font-bold">{plan.duration_days} Days</span>
+                 <div className="flex justify-between items-center pb-3 border-b border-border/30">
+                   <span className="text-[10px] font-bold text-muted-foreground uppercase">Tenure</span>
+                   <span className="font-black text-foreground text-sm">{plan.duration_days} Days</span>
                  </div>
-                 <div className="flex justify-between pb-2 border-b border-border/50">
-                   <span className="text-muted-foreground">Limits</span>
-                   <span className="font-bold">${plan.min_amount} - ${plan.max_amount}</span>
+                 <div className="flex justify-between items-center pb-3 border-b border-border/30">
+                   <span className="text-[10px] font-bold text-muted-foreground uppercase">Capital Limits</span>
+                   <span className="font-black text-foreground text-xs">${plan.min_amount} - ${plan.max_amount}</span>
                  </div>
-                 <div className="flex justify-between pt-1">
-                   <span className="text-muted-foreground">Status</span>
-                   <span className={`font-black uppercase text-[10px] tracking-widest ${plan.is_active ? 'text-green-500' : 'text-red-500'}`}>{plan.is_active ? 'Active' : 'Disabled'}</span>
-                 </div>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Status</span>
+                    <div className="flex items-center gap-2">
+                       <span className={`font-black uppercase text-[10px] tracking-widest ${plan.is_active ? 'text-green-500' : 'text-red-500'}`}>{plan.is_active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                  </div>
+
                </div>
             </div>
           ))}
         </div>
-      </div>
 
       {/* ─── Active User Investments ─── */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-foreground pl-2 mt-8">Investments Ledger</h2>
-        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center pr-2 mt-12 pb-2">
+           <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2">
+              <Activity className="w-4 h-4 text-primary" /> Active Capital Ledger
+           </h2>
+           <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">{investments.length} Records</span>
+        </div>
+        
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-card border border-border/50 rounded-[2rem] overflow-hidden shadow-huge">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-[10px] font-black uppercase text-muted-foreground bg-secondary/30">
+              <thead className="text-[10px] font-black uppercase text-muted-foreground bg-secondary/20 tracking-widest border-b border-border">
                 <tr>
-                  <th className="px-6 py-4">User</th>
-                  <th className="px-6 py-4">Plan</th>
-                  <th className="px-6 py-4 text-right">Amount</th>
-                  <th className="px-6 py-4 text-right">Profit</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 pr-8 text-right">Actions</th>
+                  <th className="px-8 py-5">Investor Account</th>
+                  <th className="px-8 py-5">Selected Strategy</th>
+                  <th className="px-8 py-5 text-right">Principal Amount</th>
+                  <th className="px-8 py-5 text-right">Accrued Return</th>
+                  <th className="px-8 py-5">Status</th>
+                  <th className="px-8 py-5 text-right">Administrative Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-border">
                 {investments.map(inv => {
                   const userObj = users.find(u => u.id === inv.user_id);
                   const planData = inv.investment_plans;
                   const planName = planData?.name || plans.find(p => p.id === inv.plan_id)?.name || 'Unknown';
-                  const planCategory = planData?.category || '';
                   return (
-                    <tr key={inv.id} className="hover:bg-muted/5 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-foreground">{userObj?.name || 'Unknown User'}</div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">{userObj?.email || inv.user_id}</div>
+                    <tr key={inv.id} className="hover:bg-primary/[0.02] transition-colors group">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center text-white text-xs font-black shadow-sm group-hover:scale-105 transition-transform">
+                              {userObj?.name?.charAt(0) || 'U'}
+                           </div>
+                           <div>
+                              <div className="font-black text-foreground tracking-tight text-sm">{userObj?.name || 'Unknown User'}</div>
+                              <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter mt-1 truncate max-w-[150px]">{userObj?.email || inv.user_id}</div>
+                           </div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-primary">{planName}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{inv.roi_percentage}% ROI · {inv.duration_days} Days</div>
+                      <td className="px-8 py-6">
+                        <div className="font-black text-primary text-sm tracking-tight">{planName}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-1.5">{inv.roi_percentage}% APY · {inv.duration_days} Day Cycle</div>
                       </td>
-                      <td className="px-6 py-4 font-mono font-black text-right">
+                      <td className="px-8 py-6 font-mono font-black text-right text-foreground">
                         ${parseFloat(inv.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-6 py-4 font-mono font-black text-green-500 text-right">
+                      <td className="px-8 py-6 font-mono font-black text-green-500 text-right">
                         +${(parseFloat(inv.profit_generated) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                          inv.status?.toLowerCase() === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                          inv.status?.toLowerCase() === 'completed' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
-                          'bg-secondary text-muted-foreground'
+                      <td className="px-8 py-6">
+                        <span className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                          inv.status?.toLowerCase() === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                          inv.status?.toLowerCase() === 'completed' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                          'bg-secondary text-muted-foreground border-border'
                         }`}>
                           {inv.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 pr-8 text-right">
+                      <td className="px-8 py-6 text-right">
                         {inv.status?.toLowerCase() === 'active' && (
                           <Button 
-                            variant="outline" 
+                            variant="hero" 
                             size="sm" 
-                            className="text-xs font-bold shadow-sm"
+                            className="text-[10px] font-black uppercase tracking-[0.2em] shadow-gold h-9 px-6 text-white"
                             onClick={() => handleCompleteInvestment(inv)}
                           >
-                            Complete & Payout
+                            Finalize Transaction
                           </Button>
+
                         )}
                       </td>
                     </tr>
                   )
                 })}
-                {investments.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground text-sm font-medium">
-                      No investments found.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         </div>
+
+        {/* Mobile Grid/Card View */}
+        <div className="lg:hidden space-y-4">
+           {investments.map(inv => {
+             const userObj = users.find(u => u.id === inv.user_id);
+             const planData = inv.investment_plans;
+             const planName = planData?.name || plans.find(p => p.id === inv.plan_id)?.name || 'Unknown';
+             return (
+               <div key={inv.id} className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm space-y-6">
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center text-white text-xs font-black">
+                           {userObj?.name?.charAt(0) || 'U'}
+                        </div>
+                        <div>
+                           <div className="font-black text-foreground text-sm">{userObj?.name || 'Unknown User'}</div>
+                           <div className="text-[10px] font-bold text-muted-foreground uppercase truncate max-w-[120px]">{userObj?.email}</div>
+                        </div>
+                     </div>
+                     <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                        inv.status?.toLowerCase() === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                        'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                     }`}>
+                        {inv.status}
+                     </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/30">
+                     <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 mb-1">Plan</div>
+                        <div className="font-black text-primary text-xs">{planName}</div>
+                     </div>
+                     <div className="text-right">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 mb-1">ROI</div>
+                        <div className="font-black text-foreground text-xs">{inv.roi_percentage}% APY</div>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                     <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 mb-1">Allocated</div>
+                        <div className="font-black text-foreground text-sm tabular-nums">${parseFloat(inv.amount).toLocaleString()}</div>
+                     </div>
+                     <div className="text-right">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 mb-1">Accrued</div>
+                        <div className="font-black text-green-500 text-sm tabular-nums">+${parseFloat(inv.profit_generated || '0').toFixed(2)}</div>
+                     </div>
+                  </div>
+
+                  {inv.status?.toLowerCase() === 'active' && (
+                     <Button 
+                       variant="hero" 
+                       className="w-full text-[10px] font-black uppercase tracking-widest shadow-gold h-12 text-white"
+                       onClick={() => handleCompleteInvestment(inv)}
+                     >
+                       Finalize & Payout
+                     </Button>
+                  )}
+               </div>
+             )
+           })}
+        </div>
+
+        {investments.length === 0 && (
+           <div className="py-20 text-center bg-card border border-dashed border-border rounded-3xl">
+              <Activity className="w-12 h-12 text-muted-foreground opacity-20 mx-auto mb-4" />
+              <p className="text-xs font-black uppercase text-muted-foreground tracking-widest">No active deployments found</p>
+           </div>
+        )}
       </div>
 
       {/* Plan Modal */}

@@ -237,7 +237,7 @@ const KYCPage = () => {
         </header>
 
         {/* Progress Steps */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {LEVELS.map(({ level, title, description, icon: Icon, features }) => {
             const status = getLevelStatus(level);
             const unlocked = isLevelUnlocked(level);

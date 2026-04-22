@@ -97,7 +97,7 @@ export default function Crypto() {
       {/* Educational Section - Half-Dark Split */}
       <section className="bg-white overflow-hidden py-0">
         <div className="flex flex-col lg:flex-row items-stretch">
-          <div className="lg:w-1/2 p-20 lg:p-32 flex flex-col justify-center bg-[#F5F5F5]">
+          <div className="lg:w-1/2 p-6 sm:p-12 lg:p-32 flex flex-col justify-center bg-[#F5F5F5]">
              <span className="heading-gold">Learn & Earn</span>
              <h2 className="title-hyip text-gray-900 !text-left">New to Crypto Trading?</h2>
              <p className="p-hyip mb-10 !text-left">We provide all the tools for beginners to start their journey safely.</p>
@@ -118,7 +118,7 @@ export default function Crypto() {
                 <Link to="/auth/register" className="btn-gold !px-12">Open Demo Account</Link>
              </div>
           </div>
-          <div className="lg:w-1/2 min-h-[400px] relative">
+          <div className="lg:w-1/2 min-h-[250px] md:min-h-[400px] relative">
              <img 
                src="/images/crypto-coins.png" 
                alt="Crypto Education" 

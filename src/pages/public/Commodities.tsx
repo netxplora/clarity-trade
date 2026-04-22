@@ -113,7 +113,7 @@ export default function Commodities() {
       {/* Why Commodities - Dark Background Section */}
       <section className="section-bg-dark" id="why">
         <div className="flex flex-col lg:flex-row items-stretch">
-          <div className="lg:w-1/2 p-20 lg:p-32 flex flex-col justify-center bg-[#F5F5F5]">
+          <div className="lg:w-1/2 p-6 sm:p-12 lg:p-32 flex flex-col justify-center bg-[#F5F5F5]">
              <span className="heading-gold !text-left">Market Hedge</span>
              <h2 className="title-hyip text-gray-900 !text-left">The Ultimate <span className="text-[#D4AF37]">Safe Haven</span></h2>
              <p className="p-hyip mb-10 !text-left">
@@ -137,7 +137,7 @@ export default function Commodities() {
                 <Link to="/auth/register" className="btn-gold !px-12">Start Your Portfolio</Link>
              </div>
           </div>
-          <div className="lg:w-1/2 min-h-[500px] relative">
+          <div className="lg:w-1/2 min-h-[300px] md:min-h-[500px] relative">
              <img 
                src="/images/commodities-gold.png" 
                alt="Commodities Background" 

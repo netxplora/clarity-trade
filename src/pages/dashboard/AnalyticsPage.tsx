@@ -155,18 +155,57 @@ const AnalyticsPage = () => {
              </div>
 
              {/* Trade History */}
-             <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
-               <div className="flex items-center justify-between mb-6">
+             <div className="bg-card p-4 md:p-6 rounded-2xl border border-border shadow-sm">
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <h2 className="text-lg font-bold font-sans text-foreground">Trade History</h2>
                   <div className="flex gap-2">
-                     <div className="relative">
+                     <div className="relative flex-1 sm:flex-none">
                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                       <input className="h-10 pl-9 pr-4 bg-secondary border border-border rounded-xl text-sm w-56 focus:border-primary/50 transition-all outline-none" placeholder="Search trades..." />
+                       <input className="h-10 pl-9 pr-4 bg-secondary border border-border rounded-xl text-sm w-full sm:w-56 focus:border-primary/50 transition-all outline-none" placeholder="Search trades..." />
                      </div>
-                     <Button variant="outline" size="icon" className="h-10 w-10 border-border bg-card shadow-sm hover:bg-secondary"><Filter className="w-4 h-4 text-muted-foreground" /></Button>
+                     <Button variant="outline" size="icon" className="h-10 w-10 border-border bg-card shadow-sm hover:bg-secondary shrink-0"><Filter className="w-4 h-4 text-muted-foreground" /></Button>
                   </div>
                </div>
-               <div className="overflow-x-auto">
+
+               {/* Mobile Stacked Cards */}
+               <div className="md:hidden space-y-3">
+                 {tradeHistory.length > 0 ? tradeHistory.map((t, i) => (
+                   <div key={t.id || i} className="bg-secondary/40 rounded-xl border border-border/50 p-4 space-y-3">
+                     <div className="flex justify-between items-start">
+                       <div>
+                         <div className="font-semibold text-foreground">{t.pair}</div>
+                         <div className="text-[10px] text-muted-foreground mt-0.5">ID: {t.id?.substring(0,8) || 'A9X2..4'}{i}</div>
+                       </div>
+                       <div className={`w-fit px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                         t.type?.toLowerCase() === "buy" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"
+                       }`}>
+                         {t.type}
+                       </div>
+                     </div>
+                     <div className="flex justify-between items-center pt-2 border-t border-border/30 text-sm">
+                       <div>
+                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Amount</span>
+                         <span className="font-semibold text-foreground">${t.amount?.toLocaleString()}</span>
+                       </div>
+                       <div className="text-right">
+                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">P&L</span>
+                         <span className={`font-bold ${t.pnl && t.pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
+                           {t.pnl != null ? `${t.pnl >= 0 ? "+" : "-"}${Math.abs(t.pnl).toFixed(2)}` : "0.00"}
+                         </span>
+                       </div>
+                     </div>
+                     <div className="flex items-center gap-1.5">
+                       <span className={`w-1.5 h-1.5 rounded-full ${t.status === 'Open' ? 'bg-amber-500' : 'bg-green-500'}`} />
+                       <span className="text-xs font-medium text-foreground">{t.status}</span>
+                     </div>
+                   </div>
+                 )) : (
+                   <div className="py-16 text-center text-muted-foreground font-medium">No trade history yet. Start trading to see your results here.</div>
+                 )}
+               </div>
+
+               {/* Desktop Table View */}
+               <div className="hidden md:block overflow-x-auto">
                  <table className="w-full text-sm">
                    <thead>
                      <tr className="text-muted-foreground border-b border-border">

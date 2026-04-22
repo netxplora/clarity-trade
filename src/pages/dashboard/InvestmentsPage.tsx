@@ -413,7 +413,41 @@ export default function InvestmentsPage() {
                 </div>
               ) : (
                 <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-                   <table className="w-full text-sm">
+                   {/* Mobile Stacked Cards */}
+                   <div className="md:hidden p-4 space-y-4">
+                     {pastInvestments.map(inv => {
+                        const planData = inv.investment_plans;
+                        const planName = planData?.name || 'Investment';
+                        return (
+                          <div key={inv.id} className="bg-secondary/40 border border-border/50 rounded-2xl p-4 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="font-bold text-foreground text-sm uppercase tracking-wider">{planName}</div>
+                                <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-1 text-primary">{inv.roi_percentage}% ROI · {inv.duration_days} Days</div>
+                              </div>
+                              <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                                inv.status?.toLowerCase() === 'completed' 
+                                  ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                                  : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                              }`}>
+                                 {inv.status}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs border-t border-border/50 pt-3">
+                              <span className="text-muted-foreground font-black uppercase">Invested</span>
+                              <span className="font-mono font-black text-muted-foreground">${parseFloat(inv.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-muted-foreground font-black uppercase">Returns</span>
+                              <span className="font-mono font-black text-green-500">+${(parseFloat(inv.profit_generated) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                          </div>
+                        );
+                     })}
+                   </div>
+
+                   {/* Desktop Table View */}
+                   <table className="hidden md:table w-full text-sm">
                      <thead className="bg-secondary/30 text-[10px] font-black uppercase text-muted-foreground tracking-widest text-left">
                        <tr>
                           <th className="px-6 py-4">Plan</th>

@@ -7,18 +7,19 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
 const traderAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100&h=100";
 
 const Overview = () => {
-  const { user, balance, formatCurrency, activeTrades, activeSessions, transactions, tradeHistory } = useStore();
+  const { user, balance, formatCurrency, activeTrades, activeSessions, transactions, tradeHistory, loadingStates } = useStore();
   const navigate = useNavigate();
 
   // Aggregate all activity types (Trades, Transactions, Sessions)
-  const combinedActivity = [
-    ...transactions.map(t => ({
+  const combinedActivity = useMemo(() => {
+    return [
+      ...transactions.map(t => ({
       id: t.id,
       pair: t.asset || 'Cash',
       type: t.type, // Deposit, Withdrawal, etc.
@@ -53,6 +54,7 @@ const Overview = () => {
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
    .slice(0, 10);
+  }, [transactions, activeTrades, tradeHistory]);
 
   const [filterQuery, setFilterQuery] = useState("");
 
@@ -157,84 +159,145 @@ const Overview = () => {
             </div>
 
             <div className="flex-1 overflow-x-auto relative z-10 custom-scrollbar">
-              <table className="w-full text-sm min-w-[700px]">
-                <thead>
-                  <tr className="text-muted-foreground/30 border-b border-border/50 text-[10px] font-black uppercase tracking-[0.2em]">
-                    <th className="text-left pb-6">Event / Asset</th>
-                    <th className="text-left pb-6">Category</th>
-                    <th className="text-left pb-6">Value</th>
-                    <th className="text-left pb-6">Result</th>
-                    <th className="text-right pb-6">Time</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/20">
-                  {filteredActivity.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-24 text-center">
-                        <div className="flex flex-col items-center text-muted-foreground">
-                          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-6 opacity-40">
-                             <Activity className="w-8 h-8" />
+              {(loadingStates.transactions || loadingStates.trades) && filteredActivity.length === 0 ? (
+                <div className="space-y-4 py-2">
+                   {[1, 2, 3, 4].map(i => (
+                     <div key={i} className="h-16 w-full bg-secondary/40 animate-pulse rounded-xl" />
+                   ))}
+                </div>
+              ) : filteredActivity.length === 0 ? (
+                <div className="py-24 text-center">
+                  <div className="flex flex-col items-center text-muted-foreground">
+                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-6 opacity-40">
+                       <Activity className="w-8 h-8" />
+                    </div>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40">No recent activity in your history.</p>
+                    <Button variant="link" className="mt-4 text-primary font-bold text-[10px] uppercase tracking-widest" onClick={() => navigate("/dashboard/trading")}>Start Trading Now <ArrowRight className="w-3 h-3 ml-2" /></Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Mobile Stacked Cards */}
+                  <div className="md:hidden space-y-4 pb-4">
+                    {filteredActivity.map((item, i) => {
+                      const isTransaction = item.isTransaction;
+                      const isWin = item.pnl !== null && (item.pnl || 0) >= 0;
+                      
+                      return (
+                        <div key={`${item.id}-${i}`} className="bg-secondary/20 p-4 rounded-xl border border-border flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center border border-border">
+                                {isTransaction ? <Wallet className="w-4 h-4 opacity-50" /> : <BarChart3 className="w-4 h-4 opacity-50" />}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm tracking-tight">{item.pair}</span>
+                                <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-tighter">ID: {item.id?.substring(0, 8)}</span>
+                              </div>
+                            </div>
+                            <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-[0.1em] border flex items-center gap-1.5 ${
+                              isTransaction 
+                                ? "bg-blue-500/10 text-blue-500 border-blue-500/20" 
+                                : item.type === "Buy" || item.type === "Long" 
+                                  ? "bg-green-500/10 text-green-500 border-green-500/20" 
+                                  : "bg-red-500/10 text-red-500 border-red-500/20"
+                              }`}>
+                              {isTransaction ? `${item.type}` : item.type}
+                            </span>
                           </div>
-                          <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40">No recent activity in your history.</p>
-                          <Button variant="link" className="mt-4 text-primary font-bold text-[10px] uppercase tracking-widest" onClick={() => navigate("/dashboard/trading")}>Start Trading Now <ArrowRight className="w-3 h-3 ml-2" /></Button>
+                          
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+                             <div className="flex flex-col">
+                               <span className="text-[9px] font-bold text-muted-foreground uppercase">Value</span>
+                               <span className="font-mono font-bold text-sm">{formatCurrency(item.amount)}</span>
+                             </div>
+                             <div className="flex flex-col text-right">
+                               <span className="text-[9px] font-bold text-muted-foreground uppercase">Result</span>
+                               {item.pnl !== null ? (
+                                  <span className={`font-mono font-bold text-sm ${isWin ? "text-green-500" : "text-red-500"}`}>
+                                    {isWin ? "+" : ""}{formatCurrency(item.pnl || 0)}
+                                  </span>
+                               ) : (
+                                  <span className={`font-bold text-sm uppercase tracking-wider text-[10px] ${item.status === 'Completed' || item.status === 'approved' ? 'text-green-500/80' : 'text-amber-500/80'}`}>
+                                    {item.status || 'Processed'}
+                                  </span>
+                               )}
+                             </div>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                  ) : combinedActivity.map((item, i) => {
-                    const isTransaction = item.isTransaction;
-                    const isWin = item.pnl !== null && (item.pnl || 0) >= 0;
-                    const isLoss = item.pnl !== null && (item.pnl || 0) < 0;
-                    
-                    return (
-                      <tr key={`${item.id}-${i}`} className="group/row hover:bg-primary/[0.02] transition-colors">
-                        <td className="py-6">
-                          <div className="font-black text-foreground text-base tracking-tighter flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center border border-border group-hover/row:border-primary/30 transition-colors">
-                               {isTransaction ? <Wallet className="w-4 h-4 opacity-50" /> : <BarChart3 className="w-4 h-4 opacity-50" />}
-                            </div>
-                            <div className="flex flex-col">
-                              <span>{item.pair}</span>
-                              <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-tighter font-mono whitespace-nowrap">ID: {item.id?.substring(0, 10)}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-6">
-                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border flex items-center w-fit gap-1.5 ${
-                            isTransaction 
-                              ? "bg-blue-500/10 text-blue-500 border-blue-500/20" 
-                              : item.type === "Buy" || item.type === "Long" 
-                                ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-glow-win" 
-                                : "bg-red-500/10 text-red-500 border-red-500/20 shadow-glow-loss"
-                            }`}>
-                            <div className={`w-1 h-1 rounded-full ${
-                              isTransaction ? "bg-blue-500" : item.type === "Buy" || item.type === "Long" ? "bg-green-500" : "bg-red-500"
-                            }`} />
-                            {isTransaction ? `${item.type}` : item.type}
-                          </span>
-                        </td>
-                        <td className="py-6 font-black text-foreground tabular-nums text-sm font-mono tracking-tight">
-                          {formatCurrency(item.amount)}
-                        </td>
-                        <td className="py-6 font-black tabular-nums">
-                          {item.pnl !== null ? (
-                            <div className={`flex items-center gap-1.5 text-sm font-mono ${isWin ? "text-green-500" : "text-red-500"}`}>
-                              {isWin ? "+" : ""}{formatCurrency(item.pnl || 0)}
-                            </div>
-                          ) : (
-                            <div className={`text-[10px] font-black uppercase tracking-widest ${item.status === 'Completed' || item.status === 'approved' ? 'text-green-500/50' : 'text-amber-500/50'}`}>
-                              {item.status || 'Processed'}
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-6 text-right text-[10px] font-black text-muted-foreground/50 tabular-nums uppercase tracking-tighter font-mono">
-                          {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          <div className="text-[8px] opacity-40">{new Date(item.created_at).toLocaleDateString([], { day: '2-digit', month: 'short' })}</div>
-                        </td>
+                      )
+                    })}
+                  </div>
+
+                  {/* Desktop Table Layout */}
+                  <table className="hidden md:table w-full text-sm min-w-[700px]">
+                    <thead>
+                      <tr className="text-muted-foreground/30 border-b border-border/50 text-[10px] font-black uppercase tracking-[0.2em]">
+                        <th className="text-left pb-6">Event / Asset</th>
+                        <th className="text-left pb-6">Category</th>
+                        <th className="text-left pb-6">Value</th>
+                        <th className="text-left pb-6">Result</th>
+                        <th className="text-right pb-6">Time</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="divide-y divide-border/20">
+                      {combinedActivity.map((item, i) => {
+                        const isTransaction = item.isTransaction;
+                        const isWin = item.pnl !== null && (item.pnl || 0) >= 0;
+                        const isLoss = item.pnl !== null && (item.pnl || 0) < 0;
+                        
+                        return (
+                          <tr key={`${item.id}-${i}`} className="group/row hover:bg-primary/[0.02] transition-colors">
+                            <td className="py-6">
+                              <div className="font-black text-foreground text-base tracking-tighter flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center border border-border group-hover/row:border-primary/30 transition-colors">
+                                   {isTransaction ? <Wallet className="w-4 h-4 opacity-50" /> : <BarChart3 className="w-4 h-4 opacity-50" />}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span>{item.pair}</span>
+                                  <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-tighter font-mono whitespace-nowrap">ID: {item.id?.substring(0, 10)}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-6">
+                              <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border flex items-center w-fit gap-1.5 ${
+                                isTransaction 
+                                  ? "bg-blue-500/10 text-blue-500 border-blue-500/20" 
+                                  : item.type === "Buy" || item.type === "Long" 
+                                    ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-glow-win" 
+                                    : "bg-red-500/10 text-red-500 border-red-500/20 shadow-glow-loss"
+                                }`}>
+                                <div className={`w-1 h-1 rounded-full ${
+                                  isTransaction ? "bg-blue-500" : item.type === "Buy" || item.type === "Long" ? "bg-green-500" : "bg-red-500"
+                                }`} />
+                                {isTransaction ? `${item.type}` : item.type}
+                              </span>
+                            </td>
+                            <td className="py-6 font-black text-foreground tabular-nums text-sm font-mono tracking-tight">
+                              {formatCurrency(item.amount)}
+                            </td>
+                            <td className="py-6 font-black tabular-nums">
+                              {item.pnl !== null ? (
+                                <div className={`flex items-center gap-1.5 text-sm font-mono ${isWin ? "text-green-500" : "text-red-500"}`}>
+                                  {isWin ? "+" : ""}{formatCurrency(item.pnl || 0)}
+                                </div>
+                              ) : (
+                                <div className={`text-[10px] font-black uppercase tracking-widest ${item.status === 'Completed' || item.status === 'approved' ? 'text-green-500/50' : 'text-amber-500/50'}`}>
+                                  {item.status || 'Processed'}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-6 text-right text-[10px] font-black text-muted-foreground/50 tabular-nums uppercase tracking-tighter font-mono">
+                              {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              <div className="text-[8px] opacity-40">{new Date(item.created_at).toLocaleDateString([], { day: '2-digit', month: 'short' })}</div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </>
+              )}
             </div>
 
             <div className="mt-8 pt-6 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-10">
@@ -261,7 +324,13 @@ const Overview = () => {
               </div>
 
               <div className="flex-1 space-y-5 relative z-10">
-                {activeSessions.length === 0 ? (
+                {loadingStates.sessions && activeSessions.length === 0 ? (
+                   <div className="space-y-4 py-2">
+                     {[1, 2, 3].map(i => (
+                       <div key={i} className="h-24 w-full bg-secondary/40 animate-pulse rounded-2xl" />
+                     ))}
+                   </div>
+                ) : activeSessions.length === 0 ? (
                    <div className="py-24 text-center border-2 border-dashed border-border/10 rounded-[2rem] group/empty hover:border-primary/20 transition-all cursor-pointer bg-secondary/5">
                     <Users className="w-16 h-16 mx-auto mb-6 text-muted-foreground/10 group-hover/empty:text-primary/20 transition-colors duration-500" />
                     <p className="text-xs font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-loose px-4">No active copy trading sessions.<br />Follow traders to copy their positions.</p>

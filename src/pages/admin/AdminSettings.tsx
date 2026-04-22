@@ -166,27 +166,27 @@ const AdminSettings = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[280px_1fr] gap-12">
-          {/* Sidebar Tabs */}
-          <aside className="space-y-2">
+        <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-8 lg:gap-12">
+          {/* Sidebar Tabs - Scrolled horizontally on mobile */}
+          <aside className="no-scrollbar flex overflow-x-auto lg:flex-col items-center gap-3 pb-4 lg:pb-0 lg:items-stretch lg:space-y-2 lg:sticky lg:top-24 h-fit">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all border ${
+                className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap lg:w-full ${
                   activeTab === tab.id
                     ? "bg-primary text-white border-primary shadow-gold"
                     : "bg-card text-muted-foreground border-border hover:bg-secondary hover:border-primary/20"
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className="w-4 h-4 shrink-0" />
                 {tab.label}
               </button>
             ))}
           </aside>
 
           {/* Tab Content */}
-          <main className="space-y-8">
+          <main className="space-y-8 min-w-0">
             <AnimatePresence mode="wait">
               {activeTab === "general" && (
                 <motion.div 
@@ -196,9 +196,9 @@ const AdminSettings = () => {
                    exit={{ opacity: 0, x: -20 }}
                    className="space-y-8"
                 >
-                  <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
+                  <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-8">
                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                         <Globe className="w-6 h-6" />
                       </div>
                       <div>
@@ -207,7 +207,7 @@ const AdminSettings = () => {
                       </div>
                     </div>
                     
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Public Name</Label>
                           <Input defaultValue="Clarity Trade" className="h-14 bg-secondary border-border rounded-xl font-bold" />
@@ -218,7 +218,7 @@ const AdminSettings = () => {
                        </div>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Fee (%)</Label>
                             <Input 
@@ -315,7 +315,7 @@ const AdminSettings = () => {
                     </div>
 
                     {/* Stats Row */}
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="p-5 rounded-2xl bg-secondary border border-border text-center">
                         <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">Fee Rate</p>
                         <p className="text-2xl font-black text-primary">{settings.platformFeePercent}%</p>
@@ -348,7 +348,7 @@ const AdminSettings = () => {
                     </div>
 
                     {/* Fee % Input */}
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Fee Percentage (%)</Label>
                         <Input 
@@ -497,7 +497,7 @@ const AdminSettings = () => {
                        </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Min. Copy Allocation ($)</Label>
                             <Input 
@@ -798,7 +798,7 @@ const WalletsPanel = () => {
         </div>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-4 rounded-2xl bg-secondary border border-border text-center">
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Total Wallets</p>
             <p className="text-2xl font-black text-foreground">{wallets.length}</p>

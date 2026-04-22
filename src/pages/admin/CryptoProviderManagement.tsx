@@ -310,138 +310,140 @@ const CryptoProviderManagement = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <div className="flex items-center gap-2 text-primary mb-1">
-              <CreditCard className="w-4 h-4" />
-              <span className="text-[10px] font-black tracking-[0.2em] uppercase">Administration</span>
-            </div>
-            <h1 className="text-4xl font-black text-foreground tracking-tight">Crypto Providers</h1>
-            <p className="text-muted-foreground mt-1 text-[10px] font-black uppercase tracking-widest opacity-40">Manage third-party purchase providers</p>
+        {/* Institutional Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Payment Provider Management</h1>
+            <p className="text-muted-foreground text-sm font-medium">Manage third-party cryptocurrency purchase gateways and transaction routing policies.</p>
           </div>
           <Button
             variant="hero"
-            className="h-12 text-[10px] font-black uppercase tracking-widest px-6 shadow-gold text-white rounded-xl"
+            className="h-11 text-[10px] font-black uppercase tracking-[0.2em] px-8 shadow-gold text-white rounded-xl"
             onClick={openCreateDialog}
           >
-            <Plus className="w-4 h-4 mr-2" /> Add Provider
+            <Plus className="w-4 h-4 mr-2" /> Register Provider
           </Button>
-        </div>
+        </header>
+
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-60">Total Providers</div>
-            <div className="text-3xl font-black text-foreground tabular-nums">{providers.length}</div>
-          </div>
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-60">Active</div>
-            <div className="text-3xl font-black text-green-500 tabular-nums">{activeCount}</div>
-          </div>
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-60">Inactive</div>
-            <div className="text-3xl font-black text-red-500 tabular-nums">{providers.length - activeCount}</div>
-          </div>
-          <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10">
-            <div className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Primary Provider</div>
-            <div className="text-sm font-black text-primary truncate">{primaryProvider?.provider_name || "Not Set"}</div>
-          </div>
+        {/* Operations Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: "Total Gateways", value: providers.length, icon: Globe, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Active Channels", value: activeCount, icon: Activity, color: "text-green-600", bg: "bg-green-50" },
+            { label: "Redundancy Pool", value: providers.length - activeCount, icon: Shield, color: "text-red-500", bg: "bg-red-50" },
+            { label: "Primary Gateway", value: primaryProvider?.provider_name || "N/A", icon: Star, color: "text-primary", bg: "bg-primary/5" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-card p-6 rounded-[2rem] border border-border shadow-sm flex items-center gap-5 group hover:border-primary/20 transition-all">
+               <div className={`w-14 h-14 rounded-2xl ${stat.bg} flex items-center justify-center shrink-0`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+               </div>
+               <div className="space-y-1">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">{stat.label}</p>
+                  <p className="text-lg font-black text-foreground tracking-tight truncate max-w-[120px]">{stat.value}</p>
+               </div>
+            </div>
+          ))}
         </div>
 
-        {/* Redirect Fallback Settings */}
-        <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6 pb-6 border-b border-border">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Widget Failover & Redirect Strategy</h2>
-              <p className="text-xs text-muted-foreground mt-1 tracking-widest font-bold uppercase">Fallback overrides and intelligent redirection parameters</p>
+
+        {/* Redirect & Redundancy Settings */}
+        <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-sm">
+          <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-6 mb-10 pb-8 border-b border-border">
+            <div className="space-y-1">
+              <h2 className="text-xl font-black text-foreground uppercase tracking-tight">System Fallback Settings</h2>
+              <p className="text-[10px] text-muted-foreground tracking-widest font-black uppercase opacity-40 leading-loose">Configure fallback behavior and routing.</p>
             </div>
-            <Button variant="hero" className="shadow-gold text-white px-6 rounded-xl text-xs font-black uppercase tracking-widest h-12" onClick={handleSaveRedirectSettings} disabled={savingRedirect}>
+            <Button variant="hero" className="shadow-gold text-white px-8 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] h-12 w-full xl:w-auto" onClick={handleSaveRedirectSettings} disabled={savingRedirect}>
               {savingRedirect ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
-              Save configuration
+              Save Configuration
             </Button>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-             <div className="space-y-6">
+
+          <div className="grid lg:grid-cols-2 gap-10">
+             <div className="space-y-8">
                  {/* Main Toggle */}
-                 <div className="p-5 rounded-2xl bg-secondary/50 border border-border flex items-center justify-between hover:border-primary/20 transition-all">
-                     <div className="space-y-1 pr-4">
-                         <div className="text-sm font-black text-foreground uppercase tracking-wide">Force Widget Redirect</div>
-                         <p className="text-xs text-muted-foreground font-medium">Bypass embedded widgets entirely and route users to the secure external link.</p>
+                 <div className="p-6 rounded-2xl bg-secondary/20 border border-border flex items-center justify-between hover:border-primary/20 transition-all">
+                     <div className="space-y-1 pr-6 flex-1">
+                         <div className="text-sm font-black text-foreground uppercase tracking-wide">Force External Checkout</div>
+                         <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">Bypass embedded widgets and use direct external checkout.</p>
                      </div>
                      <button
                         onClick={() => setRedirectSettings({...redirectSettings, redirectEnabled: !redirectSettings.redirectEnabled})}
-                        className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.redirectEnabled ? 'bg-primary' : 'bg-muted'}`}
+                        className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.redirectEnabled ? 'bg-primary shadow-glow' : 'bg-muted opacity-40'}`}
                      >
-                       <div className={`w-6 h-6 rounded-full bg-white transition-transform ${redirectSettings.redirectEnabled ? 'translate-x-6' : ''}`} />
+                       <div className="w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: redirectSettings.redirectEnabled ? 'translateX(1.5rem)' : 'translateX(0)' }} />
                      </button>
                  </div>
 
                  {/* Configuration Inputs */}
-                 <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Primary Redirect URL</Label>
+                 <div className="space-y-6">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1 opacity-40">Primary Transaction URL</Label>
                       <Input
                         value={redirectSettings.primaryUrl}
                         onChange={(e) => setRedirectSettings({...redirectSettings, primaryUrl: e.target.value})}
-                        className="h-12 bg-secondary border-border rounded-xl text-sm font-mono"
-                        placeholder="https://provider.com/secure-checkout"
+                        className="h-14 bg-secondary/40 border-border rounded-xl text-xs font-mono"
+                        placeholder="https://terminal.provider.com/checkout"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Backup Provider Fallback URL</Label>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1 opacity-40">Secondary Fallback URL</Label>
                       <Input
                         value={redirectSettings.backupUrl}
                         onChange={(e) => setRedirectSettings({...redirectSettings, backupUrl: e.target.value})}
-                        className="h-12 bg-secondary border-border rounded-xl text-sm font-mono"
-                        placeholder="https://backup.provider.com/checkout"
+                        className="h-14 bg-secondary/40 border-border rounded-xl text-xs font-mono"
+                        placeholder="https://backup.terminal.com/v2"
                       />
                     </div>
                  </div>
              </div>
 
-             <div className="space-y-6">
-                 <div className="p-5 rounded-2xl bg-secondary/50 border border-border flex items-center justify-between hover:border-primary/20 transition-all">
-                     <div className="space-y-1">
-                         <div className="text-sm font-black text-foreground uppercase tracking-wide">Auto-Redirect Action</div>
-                         <p className="text-xs text-muted-foreground font-medium">Automatically forward user upon timeout or fatal iframe error.</p>
+             <div className="space-y-8">
+                 <div className="p-6 rounded-2xl bg-secondary/20 border border-border flex items-center justify-between hover:border-primary/20 transition-all group">
+                     <div className="space-y-1 flex-1 pr-6">
+                         <div className="text-sm font-black text-foreground uppercase tracking-wide group-hover:text-primary transition-colors">Automated Fallback</div>
+                         <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">System-wide auto-forwarding on connection timeout or iframe exceptions.</p>
                      </div>
                      <button
                         onClick={() => setRedirectSettings({...redirectSettings, autoRedirect: !redirectSettings.autoRedirect})}
-                        className={`w-14 h-8 rounded-full transition-colors flex items-center px-1 border border-border ${redirectSettings.autoRedirect ? 'bg-green-500' : 'bg-muted'}`}
+                        className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.autoRedirect ? 'bg-green-500 shadow-glow' : 'bg-muted opacity-40'}`}
                      >
-                       <div className={`w-6 h-6 rounded-full bg-white transition-transform ${redirectSettings.autoRedirect ? 'translate-x-6' : ''}`} />
+                       <div className="w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: redirectSettings.autoRedirect ? 'translateX(1.5rem)' : 'translateX(0)' }} />
                      </button>
                  </div>
 
-                 <div className="p-5 rounded-2xl bg-secondary/50 border border-border flex items-center justify-between hover:border-primary/20 transition-all">
-                     <div className="space-y-1">
-                         <div className="text-sm font-black text-foreground uppercase tracking-wide">Display Fallback Notice</div>
-                         <p className="text-xs text-muted-foreground font-medium">Show pre-redirect system message ("Opening in secure window...").</p>
+                 <div className="p-6 rounded-2xl bg-secondary/20 border border-border flex items-center justify-between hover:border-primary/20 transition-all group">
+                     <div className="space-y-1 flex-1 pr-6">
+                         <div className="text-sm font-black text-foreground uppercase tracking-wide group-hover:text-primary transition-colors">Fallback Notice</div>
+                         <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">Display notice before initiating fallback redirect.</p>
                      </div>
                      <button
                         onClick={() => setRedirectSettings({...redirectSettings, showMessage: !redirectSettings.showMessage})}
-                        className={`w-14 h-8 rounded-full transition-colors flex items-center px-1 border border-border ${redirectSettings.showMessage ? 'bg-primary' : 'bg-muted'}`}
+                        className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.showMessage ? 'bg-primary shadow-glow' : 'bg-muted opacity-40'}`}
                      >
-                       <div className={`w-6 h-6 rounded-full bg-white transition-transform ${redirectSettings.showMessage ? 'translate-x-6' : ''}`} />
+                       <div className="w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: redirectSettings.showMessage ? 'translateX(1.5rem)' : 'translateX(0)' }} />
                      </button>
                  </div>
 
-                 <div className="p-5 rounded-2xl bg-secondary/50 border border-border space-y-3">
-                     <div className="flex justify-between">
-                         <div className="text-sm font-black text-foreground uppercase tracking-wide">Redirection Delay Pivot</div>
-                         <span className="font-bold text-foreground text-sm tabular-nums">{redirectSettings.delaySeconds}s</span>
+                 <div className="p-6 rounded-2xl bg-secondary/20 border border-border space-y-6">
+                     <div className="flex justify-between items-center">
+                         <div className="text-sm font-black text-foreground uppercase tracking-wide">Sensitivity Threshold</div>
+                         <span className="font-black text-primary text-sm tabular-nums bg-primary/10 px-3 py-1 rounded-lg">{redirectSettings.delaySeconds}s</span>
                      </div>
-                     <input 
-                       type="range" min="1" max="10" 
-                       value={redirectSettings.delaySeconds}
-                       onChange={(e) => setRedirectSettings({...redirectSettings, delaySeconds: parseInt(e.target.value)})}
-                       className="w-full accent-primary h-2 bg-border rounded-lg appearance-none cursor-pointer"
-                     />
-                     <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
-                         <span>Instant</span>
-                         <span>Delayed</span>
+                     <div className="relative pt-2">
+                        <input 
+                          type="range" min="1" max="10" 
+                          value={redirectSettings.delaySeconds}
+                          onChange={(e) => setRedirectSettings({...redirectSettings, delaySeconds: parseInt(e.target.value)})}
+                          className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                     </div>
+                     <div className="flex justify-between text-[8px] uppercase font-black text-muted-foreground/30 tracking-[0.2em]">
+                         <span>Aggressive</span>
+                         <span>Conservative</span>
                      </div>
                  </div>
              </div>
@@ -449,11 +451,11 @@ const CryptoProviderManagement = () => {
         </div>
 
         {/* Search */}
-        <div className="relative w-full lg:max-w-md group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+        <div className="relative w-full lg:max-w-md group px-1">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
           <input
-            placeholder="Search providers..."
-            className="w-full h-12 bg-card border border-border rounded-xl pl-11 pr-4 text-[13px] font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+            placeholder="Search providers or descriptions..."
+            className="w-full h-14 bg-card border border-border rounded-2xl pl-12 pr-4 text-xs font-black uppercase tracking-widest outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all shadow-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -463,16 +465,20 @@ const CryptoProviderManagement = () => {
         <div className="rounded-[2.5rem] bg-card border border-border overflow-hidden shadow-sm">
           {loading ? (
             <div className="py-24 flex justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+               <div className="relative flex items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  <Activity className="w-4 h-4 text-primary absolute animate-pulse" />
+               </div>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="py-24 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-secondary/30 flex items-center justify-center mx-auto mb-4 border border-border/50">
-                <Globe className="w-8 h-8 text-muted-foreground/30" />
+            <div className="py-24 text-center px-6">
+              <div className="w-20 h-20 rounded-[2.5rem] bg-secondary/30 flex items-center justify-center mx-auto mb-6 border border-border/50">
+                <Globe className="w-10 h-10 text-muted-foreground opacity-20" />
               </div>
-              <p className="text-sm font-bold text-muted-foreground">No providers found.</p>
-              <p className="text-xs text-muted-foreground/50 mt-1 uppercase tracking-widest font-medium">Add your first crypto provider to get started.</p>
+              <p className="text-base font-black text-foreground uppercase tracking-tight">No active providers located</p>
+              <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-widest font-black opacity-30 max-w-xs mx-auto leading-relaxed">Adjust your search parameters or register a new payment gateway to continue.</p>
             </div>
+
           ) : (
             <div className="divide-y divide-border">
               {filtered.map((provider, index) => (
@@ -481,70 +487,66 @@ const CryptoProviderManagement = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 hover:bg-secondary/20 transition-colors group"
+                  className="p-6 sm:p-8 xl:p-10 flex flex-col md:flex-row md:items-center gap-8 hover:bg-secondary/[0.15] transition-colors group relative"
                 >
                   {/* Provider Info */}
-                  <div className="flex items-center gap-5 flex-1 min-w-0">
+                  <div className="flex items-start sm:items-center gap-6 flex-1 min-w-0">
                     <div className="relative shrink-0">
-                      <div className="w-14 h-14 rounded-2xl bg-secondary border border-border flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-secondary border border-border flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform shadow-sm">
                         {provider.provider_logo ? (
                           <img src={provider.provider_logo} alt={provider.provider_name} className="w-full h-full object-cover" />
                         ) : (
-                          <Globe className="w-6 h-6 text-muted-foreground/40" />
+                          <Globe className="w-8 h-8 text-muted-foreground/30" />
                         )}
                       </div>
                       {provider.provider_type === 'Primary' && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-gold flex items-center justify-center shadow-gold">
+                        <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-gradient-gold flex items-center justify-center shadow-gold border-2 border-card">
                           <Star className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex items-center gap-3 flex-wrap">
-                        <h3 className="font-bold text-foreground text-sm tracking-tight">{provider.provider_name}</h3>
+                        <h3 className="font-black text-foreground text-base tracking-tighter uppercase">{provider.provider_name}</h3>
                         <Badge
-                          variant={provider.provider_type === 'Primary' ? 'default' : 'secondary'}
-                          className={`text-[8px] font-black uppercase tracking-widest ${
+                          className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 ${
                             provider.provider_type === 'Primary'
-                              ? 'bg-gradient-gold text-white border-transparent shadow-gold'
-                              : provider.provider_type === 'Secondary'
-                              ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                              : ''
+                              ? 'bg-gradient-gold text-white border-transparent'
+                              : 'bg-primary/10 text-primary border-primary/20'
                           }`}
                         >
                           {provider.provider_type}
                         </Badge>
                         <Badge
                           variant="outline"
-                          className={`text-[8px] font-black uppercase tracking-widest ${
+                          className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 border-2 ${
                             provider.provider_status === 'Active'
-                              ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                              : 'bg-red-500/10 text-red-500 border-red-500/20'
+                              ? 'bg-green-500/10 text-green-500 border-green-500/10'
+                              : 'bg-red-500/10 text-red-500 border-red-500/10'
                           }`}
                         >
-                          {provider.provider_status === 'Active' ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
                           {provider.provider_status}
                         </Badge>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1 font-medium">{provider.provider_description || "No description provided."}</p>
-                      <div className="flex items-center gap-3 mt-2">
-                        <span className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest flex items-center gap-1">
-                          <Link2 className="w-3 h-3" /> {new URL(provider.provider_url).hostname}
+                      <p className="text-[11px] text-muted-foreground/70 font-medium leading-relaxed max-w-xl">{provider.provider_description || "Institutional purchase provider for secure wallet funding."}</p>
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1">
+                        <span className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest flex items-center gap-2">
+                          <Link2 className="w-3.5 h-3.5" /> {(provider.provider_url || "").replace('https://', '').split('/')[0]}
                         </span>
-                        <span className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest">
-                          Priority: {provider.provider_priority}
+                        <span className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest flex items-center gap-2">
+                          <ArrowUpDown className="w-3.5 h-3.5" /> Rank #{provider.provider_priority}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 border-border/50">
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => openEditDialog(provider)}
-                      className="h-10 w-10 rounded-xl border-border hover:bg-primary/10 hover:text-primary transition-all"
+                      className="h-12 w-12 rounded-2xl border-border hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
                     >
                       <Edit3 className="w-4 h-4" />
                     </Button>
@@ -553,10 +555,10 @@ const CryptoProviderManagement = () => {
                       variant="outline"
                       size="icon"
                       onClick={() => handleToggleStatus(provider)}
-                      className={`h-10 w-10 rounded-xl border-border transition-all ${
+                      className={`h-12 w-12 rounded-2xl border-border transition-all ${
                         provider.provider_status === 'Active'
-                          ? 'hover:bg-red-500/10 hover:text-red-500'
-                          : 'hover:bg-green-500/10 hover:text-green-500'
+                          ? 'hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30'
+                          : 'hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/30'
                       }`}
                     >
                       {provider.provider_status === 'Active' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
@@ -564,36 +566,37 @@ const CryptoProviderManagement = () => {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-border">
+                        <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-border hover:bg-secondary">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 p-2 bg-card border-border rounded-2xl shadow-huge">
-                        <DropdownMenuItem className="rounded-xl px-3 py-3 cursor-pointer group" onClick={() => handleSetPrimary(provider)}>
-                          <Star className="w-4 h-4 mr-3 text-primary transition-transform group-hover:scale-110" />
+                      <DropdownMenuContent align="end" className="w-64 p-3 bg-card border-border rounded-[2rem] shadow-huge">
+                        <DropdownMenuItem className="rounded-2xl px-4 py-4 cursor-pointer group" onClick={() => handleSetPrimary(provider)}>
+                          <Star className="w-5 h-5 mr-4 text-primary transition-transform group-hover:scale-125" />
                           <div className="flex flex-col">
-                            <span className="text-xs font-black uppercase tracking-tight">Set as Primary</span>
-                            <span className="text-[9px] text-muted-foreground font-bold">Default load provider</span>
+                            <span className="text-xs font-black uppercase tracking-tight">Assign Primary</span>
+                            <span className="text-[9px] text-muted-foreground font-bold opacity-60">Set as root node</span>
                           </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="rounded-xl px-3 py-3 cursor-pointer"
+                          className="rounded-2xl px-4 py-4 cursor-pointer group"
                           onClick={() => window.open(provider.provider_url, '_blank')}
                         >
-                          <ExternalLink className="w-4 h-4 mr-3" />
+                          <ExternalLink className="w-5 h-5 mr-4 text-muted-foreground group-hover:text-primary" />
                           <div className="flex flex-col">
-                            <span className="text-xs font-black uppercase tracking-tight">Open URL</span>
-                            <span className="text-[9px] text-muted-foreground font-bold">Test in new tab</span>
+                            <span className="text-xs font-black uppercase tracking-tight">Validate Protocol</span>
+                            <span className="text-[9px] text-muted-foreground font-bold opacity-60">Test endpoint link</span>
                           </div>
                         </DropdownMenuItem>
+                        <div className="h-px bg-border my-2 mx-1" />
                         <DropdownMenuItem
-                          className="rounded-xl px-3 py-3 cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10 group"
+                          className="rounded-2xl px-4 py-4 cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10 group"
                           onClick={() => setDeleteConfirm(provider)}
                         >
-                          <Trash2 className="w-4 h-4 mr-3 transition-transform group-hover:rotate-12" />
+                          <Trash2 className="w-5 h-5 mr-4 transition-transform group-hover:rotate-12" />
                           <div className="flex flex-col">
-                            <span className="text-xs font-black uppercase tracking-tight">Delete Provider</span>
-                            <span className="text-[9px] text-red-500/60 font-bold">Permanently remove</span>
+                            <span className="text-xs font-black uppercase tracking-tight">Purge Provider</span>
+                            <span className="text-[9px] text-red-500/60 font-bold">Destroy entry permanently</span>
                           </div>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -604,49 +607,52 @@ const CryptoProviderManagement = () => {
             </div>
           )}
 
-          <div className="p-6 border-t border-border bg-secondary/10 flex items-center justify-between">
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
-              {filtered.length} of {providers.length} Providers
+          <div className="p-6 px-10 border-t border-border bg-secondary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">
+              Total Providers: {filtered.length} active
             </span>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">Real-time Sync</span>
+            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-glow" />
+              <span className="text-[9px] font-black text-green-500 uppercase tracking-[0.2em]">Live Data Sync</span>
             </div>
           </div>
         </div>
 
-        {/* Recent Failover Activity */}
-        <div className="bg-card border border-border rounded-[2rem] p-8 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-               <Activity className="w-5 h-5" />
+        {/* Redundancy Log */}
+        <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-10">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-200/50 shadow-sm">
+               <Activity className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">Recent Failover Events</h3>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">Audit trail of widget failures and redirections</p>
+              <h3 className="text-xl font-black text-foreground uppercase tracking-tight">System Fallback Log</h3>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black opacity-40 mt-1 leading-loose">Audit trail of automated fallback routing actions.</p>
             </div>
           </div>
 
-          <div className="space-y-3">
+
+          <div className="space-y-4">
              {loadingLogs ? (
-               <div className="py-10 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+               <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary opacity-20" /></div>
              ) : failoverLogs.length === 0 ? (
-               <div className="py-10 text-center text-xs font-bold text-muted-foreground opacity-40 uppercase tracking-widest">No recent failover events detected</div>
+               <div className="py-16 text-center bg-secondary/10 rounded-3xl border border-dashed border-border">
+                 <p className="text-[10px] font-black text-muted-foreground opacity-40 uppercase tracking-[0.2em]">No failover exceptions detected in current cycle</p>
+               </div>
              ) : (
                failoverLogs.map((log) => (
-                 <div key={log.id} className="p-4 rounded-xl bg-secondary/30 border border-border flex items-center justify-between group hover:border-primary/20 transition-all">
-                    <div className="flex items-center gap-4">
-                       <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
-                          <AlertTriangle className="w-4 h-4" />
+                 <div key={log.id} className="p-5 sm:p-6 rounded-3xl bg-secondary/30 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group hover:border-primary/30 hover:bg-secondary/40 transition-all">
+                    <div className="flex items-start gap-4">
+                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 shrink-0">
+                          <AlertTriangle className="w-5 h-5" />
                        </div>
                        <div>
-                          <div className="text-[11px] font-black text-foreground uppercase tracking-wide">{log.user_name} encountered an error</div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{log.details}</p>
+                          <div className="text-xs font-black text-foreground uppercase tracking-wide group-hover:text-red-400 transition-colors">{log.user_name || "System Actor"} Exception</div>
+                          <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed max-w-xl">{log.details}</p>
                        </div>
                     </div>
-                    <div className="text-right shrink-0">
-                       <div className="text-[10px] font-bold text-foreground mb-0.5">{new Date(log.created_at).toLocaleTimeString()}</div>
-                       <div className="text-[9px] text-muted-foreground uppercase tracking-tighter whitespace-nowrap">{new Date(log.created_at).toLocaleDateString()}</div>
+                    <div className="w-full sm:w-auto text-left sm:text-right shrink-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                       <div className="text-sm font-black text-foreground mb-1 tabular-nums">{new Date(log.created_at).toLocaleTimeString()}</div>
+                       <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-black opacity-30">{new Date(log.created_at).toLocaleDateString()}</div>
                     </div>
                  </div>
                ))

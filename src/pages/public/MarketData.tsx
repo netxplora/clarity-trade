@@ -122,10 +122,55 @@ export default function MarketData() {
             className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden"
           >
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-secondary/50 border-b border-border">
+              {/* Mobile Stacked Cards */}
+              <div className="md:hidden space-y-4 p-4 text-left">
+                 {filteredData.map((item) => (
+                    <div key={item.symbol} className="bg-white border border-gray-100 rounded-xl p-4 space-y-3 shadow-sm">
+                       <div className="flex justify-between items-start">
+                         <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center font-bold text-xs text-primary shrink-0">
+                             {item.symbol.split("/")[0].substring(0, 3)}
+                           </div>
+                           <div>
+                             <div className="font-semibold text-foreground">{item.name}</div>
+                             <div className="text-xs text-muted-foreground">{item.symbol}</div>
+                           </div>
+                         </div>
+                         <div className="font-bold text-foreground tabular-nums text-lg">{item.price}</div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-2 text-sm border-t border-gray-50 pt-3">
+                         <div>
+                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Change</span>
+                            <span className={`inline-flex items-center gap-1 font-semibold ${item.up ? "text-green-600" : "text-red-600"}`}>
+                              {item.up ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                              {item.change}
+                            </span>
+                         </div>
+                         <div>
+                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Volume</span>
+                            <span className="text-muted-foreground font-semibold tabular-nums">{item.volume}</span>
+                         </div>
+                         {activeTab === "crypto" && (
+                           <div className="col-span-2">
+                             <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Market Cap</span>
+                             <span className="text-muted-foreground font-semibold tabular-nums">{item.marketCap}</span>
+                           </div>
+                         )}
+                       </div>
+                       <div className="pt-2">
+                         <Button variant="outline" className="w-full text-xs font-semibold h-10 border-border" asChild>
+                           <Link to="/auth/register">Trade {item.symbol.split("/")[0]} <ArrowUpRight className="w-3.5 h-3.5 ml-1" /></Link>
+                         </Button>
+                       </div>
+                    </div>
+                 ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <table className="hidden md:table w-full">
+                <thead className="bg-secondary/50 border-b border-border text-left">
                   <tr className="text-xs text-muted-foreground font-semibold">
-                    <th className="text-left py-4 px-6">Market</th>
+                    <th className="py-4 px-6">Market</th>
                     <th className="text-right py-4 px-6">Price</th>
                     <th className="text-right py-4 px-6">24h Change</th>
                     {activeTab === "crypto" && <th className="text-right py-4 px-6">Market Cap</th>}
@@ -133,7 +178,7 @@ export default function MarketData() {
                     <th className="text-right py-4 px-6"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-border text-left">
                   {filteredData.map((item) => (
                     <tr key={item.symbol} className="hover:bg-secondary/30 transition-colors group">
                       <td className="py-4 px-6">

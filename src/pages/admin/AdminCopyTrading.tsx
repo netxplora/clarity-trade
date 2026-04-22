@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
-  Search, CheckCircle, Ban, Star, ShieldCheck, Target, Users, Zap, TrendingUp, MoreVertical, Shield, Clock, Plus, Trash2, Filter, Activity, Upload, Loader2, Camera, X, Settings2, Percent, DollarSign
+  Search, CheckCircle, Ban, Star, ShieldCheck, Target, Users, Zap, TrendingUp, MoreVertical, Shield, Clock, Plus, Trash2, Filter, Activity, Upload, Loader2, Camera, X, Settings2, Percent, DollarSign, Pencil as Edit
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { supabase } from "@/lib/supabase";
@@ -469,12 +469,13 @@ const AdminCopyTrading = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
-        {/* Header */}
+        {/* Institutional Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Copy Trading Management</h1>
-            <p className="text-muted-foreground mt-2 text-sm">Review, approve, and manage professional traders on the platform.</p>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Copy Trading Management</h1>
+            <p className="text-muted-foreground text-sm font-medium">Monitor and manage professional traders and active copy trading accounts across the platform.</p>
           </div>
+
           <div className="flex gap-3">
              <Button 
                 variant="outline" 
@@ -487,42 +488,44 @@ const AdminCopyTrading = () => {
 
             <Dialog open={showAudit} onOpenChange={setShowAudit}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-11 border-border bg-card text-sm font-medium px-6 shadow-sm hover:bg-secondary">
-                  <ShieldCheck className="w-4 h-4 mr-2" /> Audit Log
+                <Button variant="outline" className="h-11 border-border bg-card text-[10px] font-black uppercase tracking-widest px-6 shadow-sm hover:bg-secondary">
+                  <ShieldCheck className="w-4 h-4 mr-2" /> Audit History
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-card border-border sm:rounded-2xl">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" /> Trading Audit Log
+              <DialogContent className="max-w-2xl bg-card border-border sm:rounded-[2rem] shadow-huge overflow-hidden">
+                <DialogHeader className="p-6">
+                  <DialogTitle className="text-xl font-black flex items-center gap-2 uppercase tracking-tight">
+                    <Clock className="w-5 h-5 text-primary" /> Trading Activity Log
                   </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 mt-4 max-h-[400px] overflow-y-auto pr-2">
+                <div className="p-6 pt-0 space-y-4 max-h-[400px] overflow-y-auto pr-2">
                    {auditLogs.filter(log => log.type === 'Trading').map(log => (
-                     <div key={log.id} className="p-4 rounded-xl bg-secondary/50 border border-border flex justify-between items-start">
+                     <div key={log.id} className="p-5 rounded-2xl bg-secondary/30 border border-border flex justify-between items-start group hover:border-primary/20 transition-all">
                         <div className="space-y-1">
-                           <p className="text-sm font-medium text-foreground">{log.action}</p>
-                           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Executed by {log.user}</p>
+                           <p className="text-sm font-bold text-foreground">{log.action}</p>
+                           <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest opacity-40">Admin Action • {log.user}</p>
                         </div>
-                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-secondary px-2.5 py-1 rounded-lg border border-border">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                      </div>
                    ))}
                  </div>
               </DialogContent>
             </Dialog>
 
+
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-11 border-border bg-card text-foreground text-sm font-medium px-6 shadow-sm hover:bg-secondary">
-                  <ShieldCheck className="w-4 h-4 mr-2" /> Global Tier Rules
+                <Button variant="outline" className="h-11 border-border bg-card text-foreground text-[10px] font-black uppercase tracking-widest px-6 shadow-sm hover:bg-secondary">
+                  <ShieldCheck className="w-4 h-4 mr-2" /> Global Rules
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-xl bg-card border-border sm:rounded-2xl">
-                 <DialogHeader>
-                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <DialogContent className="max-w-xl bg-card border-border sm:rounded-[2rem] shadow-huge overflow-hidden">
+                 <DialogHeader className="p-6">
+                    <DialogTitle className="text-xl font-black flex items-center gap-2 uppercase tracking-tight">
                        <ShieldCheck className="w-5 h-5 text-primary" /> Tier Requirements
                     </DialogTitle>
                  </DialogHeader>
+
                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mt-2 mb-2">
                     <p className="text-[10px] font-bold text-primary uppercase tracking-widest leading-relaxed">
                        Update the minimum required balance across all traders inside a specific tier instantly.
@@ -583,12 +586,12 @@ const AdminCopyTrading = () => {
             </Dialog>
 
             <Dialog open={showAddTrader} onOpenChange={setShowAddTrader}>
-
                 <DialogTrigger asChild>
-                    <Button variant="hero" className="h-11 px-6 shadow-gold text-sm font-medium text-white">
+                    <Button variant="hero" className="h-11 px-8 shadow-gold text-[10px] font-black uppercase tracking-widest text-white rounded-xl">
                         Add Trader <Star className="w-4 h-4 ml-2" />
                     </Button>
                 </DialogTrigger>
+
                 <DialogContent className="max-w-xl bg-card border-border sm:rounded-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
                     <DialogHeader className="p-6 pb-2 shrink-0">
                         <DialogTitle className="text-xl font-bold">{traderForm.id ? 'Edit Professional Trader' : 'Add Professional Trader'}</DialogTitle>
@@ -902,20 +905,21 @@ const AdminCopyTrading = () => {
                         </div>
                     </div>
                 </div>
-                
-                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm max-h-[600px] overflow-y-auto">
-                    <table className="w-full text-sm">
+                              <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm max-h-[600px] overflow-y-auto">
+                    {/* Desktop View */}
+                    <table className="w-full text-sm hidden lg:table">
                         <thead className="sticky top-0 z-10">
-                            <tr className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border bg-secondary/80 backdrop-blur-md">
-                                <th className="text-left p-4">User Identity</th>
-                                <th className="text-left p-4">Copied Trader</th>
-                                <th className="text-left p-4">Entry / Current Bal</th>
-                                <th className="text-left p-4">Current PNL</th>
-                                <th className="text-left p-4">Duration</th>
-                                <th className="text-center p-4">Status</th>
-                                <th className="text-right p-4">Actions</th>
+                            <tr className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border bg-secondary/60 backdrop-blur-md">
+                                <th className="text-left p-6">User Account</th>
+                                <th className="text-left p-6">Copied Trader</th>
+                                <th className="text-left p-6">Capital Allocation</th>
+                                <th className="text-left p-6">Active P/L</th>
+                                <th className="text-left p-6">Duration</th>
+                                <th className="text-center p-6">Status</th>
+                                <th className="text-right p-6">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody className="divide-y divide-border relative">
                             {activeSessions.length === 0 ? (
                                 <tr>
@@ -996,6 +1000,62 @@ const AdminCopyTrading = () => {
                             )}
                         </tbody>
                     </table>
+
+                    {/* Mobile View */}
+                    <div className="lg:hidden divide-y divide-border">
+                         {activeSessions.length === 0 ? (
+                             <div className="p-8 text-center text-muted-foreground italic text-sm">No active sessions found.</div>
+                         ) : activeSessions.map((session) => (
+                             <div key={session.id} className="p-5 space-y-4 hover:bg-secondary/10 transition-colors">
+                                 <div className="flex justify-between items-start">
+                                     <div className="flex items-center gap-3">
+                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs bg-secondary text-muted-foreground border border-border shadow-sm">
+                                             {(session.profiles?.name || 'U').charAt(0).toUpperCase()}
+                                         </div>
+                                         <div>
+                                             <div className="font-bold text-foreground text-sm">{session.profiles?.name || 'Unknown User'}</div>
+                                             <div className="text-[10px] text-muted-foreground font-mono uppercase truncate max-w-[150px]">{session.user_id.slice(0, 12)}...</div>
+                                         </div>
+                                     </div>
+                                     <Button 
+                                         variant="secondary" 
+                                         size="sm" 
+                                         onClick={() => setManageSession(session)}
+                                         className="h-9 px-3 rounded-xl border-border bg-card text-[10px] font-black uppercase tracking-widest shadow-sm"
+                                     >
+                                         Manage
+                                     </Button>
+                                 </div>
+                                 
+                                 <div className="grid grid-cols-2 gap-4">
+                                     <div className="p-3 rounded-xl bg-secondary/40 border border-border/50">
+                                         <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Copied Trader</div>
+                                         <div className="text-xs font-black text-foreground truncate">{session.copy_traders?.name || 'Unknown'}</div>
+                                     </div>
+                                     <div className="p-3 rounded-xl bg-secondary/40 border border-border/50">
+                                         <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Duration</div>
+                                         <div className="text-xs font-black text-foreground flex items-center gap-1">
+                                             <Clock className="w-3 h-3 text-primary" />
+                                             {Math.max(1, Math.floor((new Date().getTime() - new Date(session.created_at).getTime()) / (1000 * 60 * 60 * 24)))}d
+                                         </div>
+                                     </div>
+                                 </div>
+
+                                 <div className="flex justify-between items-center px-1">
+                                     <div>
+                                         <div className="text-[9px] font-bold text-muted-foreground uppercase opacity-60">Capital Balance</div>
+                                         <div className="text-sm font-black text-foreground tabular-nums">{formatCurrency(session.allocated_amount + (session.pnl || 0))}</div>
+                                     </div>
+                                     <div className="text-right">
+                                         <div className="text-[9px] font-bold text-muted-foreground uppercase opacity-60">Realtime PNL</div>
+                                         <div className={`text-sm font-black tabular-nums ${session.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                             {session.pnl >= 0 ? '+' : ''}{formatCurrency(session.pnl)}
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         ))}
+                    </div>
                 </div>
             </div>
         </div>
@@ -1011,38 +1071,42 @@ const AdminCopyTrading = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl ml-auto">
-            {['All', 'Crypto', 'Forex', 'Commodities'].map((c) => (
-              <button 
-                key={c} 
-                onClick={() => setCategoryFilter(c as any)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                  categoryFilter === c ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
+          <div className="w-full lg:w-auto overflow-x-auto no-scrollbar">
+            <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl w-fit">
+              {['All', 'Crypto', 'Forex', 'Commodities'].map((c) => (
+                <button 
+                  key={c} 
+                  onClick={() => setCategoryFilter(c as any)}
+                  className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                    categoryFilter === c ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl">
-            {['All', 'Approved', 'Rejected', 'Revoked'].map((f) => (
-              <button 
-                key={f} 
-                onClick={() => setFilter(f.toLowerCase() as any)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                  filter === f.toLowerCase() ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+          <div className="w-full lg:w-auto overflow-x-auto no-scrollbar lg:ml-auto">
+            <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl w-fit">
+              {['All', 'Approved', 'Rejected', 'Revoked'].map((f) => (
+                <button 
+                  key={f} 
+                  onClick={() => setFilter(f.toLowerCase() as any)}
+                  className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                    filter === f.toLowerCase() ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="shrink-0 relative">
+          <div className="w-full lg:w-32 shrink-0 relative">
             <select
               value={tierFilter}
               onChange={(e) => setTierFilter(e.target.value as any)}
-              className="h-11 px-4 pr-10 rounded-xl bg-secondary border border-border text-[10px] font-black uppercase tracking-widest text-foreground outline-none focus:border-primary/50 transition-all cursor-pointer appearance-none shadow-sm"
+              className="w-full h-11 px-4 pr-10 rounded-xl bg-secondary border border-border text-[10px] font-black uppercase tracking-widest text-foreground outline-none focus:border-primary/50 transition-all cursor-pointer appearance-none shadow-sm"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
             >
               <option value="All">All Tiers</option>
@@ -1054,9 +1118,10 @@ const AdminCopyTrading = () => {
           </div>
         </div>
 
-        {/* Traders Table */}
+        {/* Traders View */}
         <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="overflow-x-auto hidden lg:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs font-medium text-muted-foreground border-b border-border bg-secondary/30">
@@ -1148,15 +1213,77 @@ const AdminCopyTrading = () => {
               </tbody>
             </table>
           </div>
-          
-          <div className="p-5 bg-secondary/30 border-t border-border flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+
+          {/* Mobile Grid */}
+          <div className="lg:hidden divide-y divide-border">
+              {filtered.map((trader) => (
+                  <div key={trader.id} className="p-5 space-y-4 hover:bg-secondary/10 transition-colors">
+                      <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm overflow-hidden ${
+                                trader.ranking_level === 'Elite' ? 'bg-gradient-gold text-white' : 'bg-secondary text-muted-foreground'
+                              }`}>
+                                {trader.avatar_url ? (
+                                  <img src={trader.avatar_url} alt={trader.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  trader.name.substring(0, 1)
+                                )}
+                              </div>
+                              <div>
+                                  <div className="font-black text-foreground text-sm flex items-center gap-2">
+                                      {trader.name}
+                                      {trader.is_trending && <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />}
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${
+                                          trader.ranking_level === 'Elite' ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-secondary text-muted-foreground border-border'
+                                      }`}>
+                                          {trader.ranking_level || 'STANDARD'}
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="flex gap-2">
+                              <button onClick={() => openEdit(trader)} className="p-2 rounded-xl bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors border border-border">
+                                  <Edit className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDeleteTrader(trader.id, trader.name)} className="p-2 rounded-xl bg-secondary text-red-500 hover:bg-red-500/10 transition-colors border border-border">
+                                  <Trash2 className="w-4 h-4" />
+                              </button>
+                          </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                          <div className="bg-secondary/40 p-2 rounded-xl border border-border/50 text-center">
+                              <div className="text-[8px] font-black text-muted-foreground uppercase mb-0.5">ROI</div>
+                              <div className="text-[10px] font-black text-green-500">+{trader.roi}%</div>
+                          </div>
+                          <div className="bg-secondary/40 p-2 rounded-xl border border-border/50 text-center">
+                              <div className="text-[8px] font-black text-muted-foreground uppercase mb-0.5">WR</div>
+                              <div className="text-[10px] font-black text-blue-500">{trader.win_rate || 0}%</div>
+                          </div>
+                          <div className="bg-secondary/40 p-2 rounded-xl border border-border/50 text-center">
+                              <div className="text-[8px] font-black text-muted-foreground uppercase mb-0.5">Min</div>
+                              <div className="text-[10px] font-black text-foreground">${trader.min_amount || 0}</div>
+                          </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                           {trader.categories?.map((cat: string) => (
+                               <span key={cat} className="text-[8px] bg-secondary/60 px-2 py-1 rounded-lg border border-border/50 uppercase font-bold text-muted-foreground whitespace-nowrap">{cat}</span>
+                           ))}
+                      </div>
+                  </div>
+              ))}
+          </div>
+          <div className="p-5 bg-secondary/30 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground order-2 sm:order-1">
               <Shield className="w-4 h-4" /> All changes are logged and auditable.
             </div>
-            <div className="flex gap-3">
-              <Button variant="link" className="text-xs font-medium text-primary" onClick={() => toast.success("Report export started")}>Export Report</Button>
-              <div className="w-px h-5 bg-border" />
-              <Button variant="link" className="text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => toast.success("Bulk actions dialogue opened")}>Bulk Actions</Button>
+            <div className="flex gap-3 order-1 sm:order-2">
+              <Button variant="link" className="text-xs font-medium text-primary p-0 h-auto" onClick={() => toast.success("Report export started")}>Export Report</Button>
+              <div className="w-px h-5 bg-border hidden sm:block" />
+              <Button variant="link" className="text-xs font-medium text-muted-foreground hover:text-foreground p-0 h-auto" onClick={() => toast.success("Bulk actions dialogue opened")}>Bulk Actions</Button>
             </div>
           </div>
         </div>
@@ -1274,17 +1401,17 @@ const AdminCopyTrading = () => {
 
       {/* Global PNL Management Dialog */}
       <Dialog open={showGlobalPnl} onOpenChange={setShowGlobalPnl}>
-          <DialogContent className="max-w-md bg-card border-border sm:rounded-2xl shadow-huge">
-              <DialogHeader>
-                  <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                      <Target className="w-5 h-5 text-primary" /> Global PNL Alteration
+          <DialogContent className="max-w-md bg-card border-border sm:rounded-[2rem] shadow-huge overflow-hidden">
+              <DialogHeader className="p-8">
+                  <DialogTitle className="text-xl font-black flex items-center gap-2 uppercase tracking-tight">
+                      <Target className="w-5 h-5 text-primary" /> Global P/L Adjustment
                   </DialogTitle>
-                  <p className="text-xs text-muted-foreground mt-1 text-left px-1">
-                      Apply wide scale PNL injections across all active copy trades smoothly. Safe manipulation prevents massive UI jitter.
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40 mt-3 leading-relaxed">
+                      Apply multi-account profit or loss adjustments across all active traders.
                   </p>
               </DialogHeader>
 
-              <div className="space-y-6 mt-4">
+              <div className="space-y-6 mt-4 px-8 pb-8">
                   <div className="space-y-4">
                       <div className="flex gap-2 p-1 bg-secondary border border-border rounded-xl">
                           <button
@@ -1326,26 +1453,27 @@ const AdminCopyTrading = () => {
                           </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div className="grid grid-cols-2 gap-4 pt-2">
                           <Button 
                               onClick={() => applyGlobalPNL('increase')}
                               disabled={loading || !globalPnlInput}
-                              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold h-12 shadow-sm"
+                              className="w-full h-14 bg-green-600 hover:bg-green-700 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm"
                           >
-                              {loading ? 'Processing...' : <><TrendingUp className="w-4 h-4 mr-2" /> Global Profit Push</>}
+                              {loading ? 'Processing...' : <><TrendingUp className="w-4 h-4 mr-2" /> Add Global Profit</>}
                           </Button>
                           <Button 
                               onClick={() => applyGlobalPNL('decrease')}
                               disabled={loading || !globalPnlInput}
-                              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold h-12 shadow-sm"
+                              className="w-full h-14 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm"
                           >
-                             {loading ? 'Processing...' : <><TrendingUp className="w-4 h-4 mr-2 rotate-180" /> Global Loss Push</>}
+                             {loading ? 'Processing...' : <><TrendingUp className="w-4 h-4 mr-2 rotate-180" /> Add Global Loss</>}
                           </Button>
                       </div>
                   </div>
               </div>
           </DialogContent>
       </Dialog>
+
     </AdminLayout>
   );
 };

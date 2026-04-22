@@ -52,7 +52,7 @@ export default function CopyTrading() {
         </div>
 
         {/* Why Choose Copy Trading */}
-        <section className="py-24 bg-[hsl(40,20%,97%)] -mx-6 md:-mx-24 px-6 md:px-24 rounded-[3rem] shadow-sm mb-24 border border-border/50">
+        <section className="py-16 md:py-24 bg-[hsl(40,20%,97%)] -mx-4 md:-mx-6 px-4 md:px-6 rounded-2xl md:rounded-[3rem] shadow-sm mb-24 border border-border/50">
             <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
                 <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="space-y-8">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest">

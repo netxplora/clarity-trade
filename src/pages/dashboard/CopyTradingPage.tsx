@@ -565,7 +565,31 @@ const CopyTradingPage = () => {
               </span>
             </h3>
             <div className="bg-card border border-border rounded-2xl overflow-hidden">
-              <table className="w-full text-left">
+              {/* Mobile Stacked Cards */}
+              <div className="md:hidden p-4 space-y-3">
+                {closedSessions.slice(0, 10).map((s) => (
+                   <div key={s.id} className="bg-secondary/40 rounded-xl border border-border/50 p-3 space-y-3">
+                     <div className="flex justify-between items-center">
+                        <div className="font-bold text-foreground text-sm flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center text-xs font-black">
+                            {s.traderName ? s.traderName.charAt(0) : (s.trader_name ? s.trader_name.charAt(0) : 'T')}
+                          </div>
+                          {s.traderName || s.trader_name}
+                        </div>
+                        <div className={`font-bold text-sm ${(s.pnl || 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                          {(s.pnl || 0) >= 0 ? '+' : ''}{formatCurrency(s.pnl || 0)}
+                        </div>
+                     </div>
+                     <div className="flex justify-between items-center text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">
+                        <div>Invested: {formatCurrency(s.allocated_amount)}</div>
+                        <div>{new Date(s.updated_at).toLocaleDateString()}</div>
+                     </div>
+                   </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <table className="hidden md:table w-full text-left">
                 <thead>
                   <tr className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-border bg-secondary/30">
                     <th className="p-3">Trader</th><th className="p-3">Invested</th><th className="p-3">P&L</th><th className="p-3 text-right">Closed</th>

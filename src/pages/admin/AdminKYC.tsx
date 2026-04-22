@@ -140,16 +140,14 @@ const AdminKYC = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
+        {/* Institutional Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
-          <div>
-            <div className="flex items-center gap-2 text-primary mb-1">
-               <ShieldAlert className="w-4 h-4" />
-               <span className="text-[10px] font-black tracking-[0.2em] uppercase">Compliance</span>
-            </div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight">KYC Management</h1>
-            <p className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-widest opacity-60">Review and verify user identities</p>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Compliance Verification</h1>
+            <p className="text-muted-foreground text-sm font-medium">Review and validate user identity submissions to maintain platform regulatory standards.</p>
           </div>
         </header>
+
 
         {/* Toolbar */}
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-4 rounded-2xl border border-border shadow-sm">
@@ -163,35 +161,37 @@ const AdminKYC = () => {
             />
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
-            <select className="h-11 px-4 rounded-xl bg-secondary/50 border border-border text-xs font-bold outline-none uppercase tracking-widest" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending Review</option>
+            <select className="h-11 px-4 rounded-xl bg-secondary/50 border border-border text-[10px] font-black outline-none uppercase tracking-widest" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+              <option value="all">Verification Status</option>
+              <option value="pending">Pending Audit</option>
               <option value="verified">Verified</option>
-              <option value="rejected">Rejected</option>
+              <option value="rejected">Declined</option>
             </select>
-            <select className="h-11 px-4 rounded-xl bg-secondary/50 border border-border text-xs font-bold outline-none uppercase tracking-widest" value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
-              <option value="all">All Levels</option>
-              <option value="1">Level 1 (Basic)</option>
-              <option value="2">Level 2 (Identity)</option>
-              <option value="3">Level 3 (Address)</option>
+            <select className="h-11 px-4 rounded-xl bg-secondary/50 border border-border text-[10px] font-black outline-none uppercase tracking-widest" value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
+              <option value="all">Verification Tier</option>
+              <option value="1">Tier 1 (Basic)</option>
+              <option value="2">Tier 2 (Identity)</option>
+              <option value="3">Tier 3 (Address)</option>
             </select>
           </div>
+
         </div>
 
-        {/* Table */}
+        {/* Table/Cards */}
         <div className="rounded-[2rem] bg-card border border-border overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-[9px] font-black text-muted-foreground uppercase tracking-widest border-b border-border bg-secondary/30">
-                  <th className="text-left py-4 px-6 w-16">Profile</th>
-                  <th className="text-left py-4 px-6">User Details</th>
-                  <th className="text-left py-4 px-6">KYC Level</th>
-                  <th className="text-left py-4 px-6">Status</th>
-                  <th className="text-left py-4 px-6 hidden md:table-cell">Submission Date</th>
-                  <th className="text-right py-4 px-6">Actions</th>
+                <tr className="text-[9px] font-black text-muted-foreground uppercase tracking-widest border-b border-border bg-secondary/20">
+                  <th className="text-left py-4 px-8 w-20">Account</th>
+                  <th className="text-left py-4 px-8">Client Information</th>
+                  <th className="text-left py-4 px-8">Audit Tier</th>
+                  <th className="text-left py-4 px-8">Status</th>
+                  <th className="text-left py-4 px-8">Submission Date</th>
+                  <th className="text-right py-4 px-8">Administrative Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-border">
                 {filtered.map(sub => (
                   <tr key={sub.id} className="hover:bg-secondary/20 transition-colors">
@@ -222,54 +222,89 @@ const AdminKYC = () => {
                         {sub.status}
                       </Badge>
                     </td>
-                    <td className="py-4 px-6 hidden md:table-cell text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <td className="py-4 px-6 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                       {new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}
                     </td>
-                    <td className="py-4 px-6 text-right">
-                      <Button variant="outline" size="sm" onClick={() => setSelectedSubmission(sub)} className="h-8 rounded-lg text-[9px] font-bold uppercase tracking-widest">
-                        <Eye className="w-3.5 h-3.5 mr-1.5" /> Review
+                    <td className="py-4 px-8 text-right">
+                      <Button variant="outline" size="sm" onClick={() => setSelectedSubmission(sub)} className="h-9 rounded-xl text-[9px] font-black uppercase tracking-widest border-border hover:bg-primary/5 hover:text-primary transition-all">
+                        <Eye className="w-3.5 h-3.5 mr-2" /> Audit Record
                       </Button>
                     </td>
+
                   </tr>
                 ))}
-                {filtered.length === 0 && !loading && (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                      <ShieldCheck className="w-8 h-8 opacity-20 mx-auto mb-3" />
-                      <p className="text-xs font-bold uppercase tracking-widest">No KYC submissions found</p>
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card List */}
+          <div className="lg:hidden divide-y divide-border">
+            {filtered.map(sub => (
+               <div key={sub.id} className="p-4 space-y-4 hover:bg-secondary/10 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center overflow-hidden font-bold text-foreground">
+                        {sub.user?.avatar_url ? <img src={sub.user.avatar_url} className="w-full h-full object-cover" /> : sub.user?.name?.charAt(0) || '?'}
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm text-foreground">{sub.user?.name || sub.full_name || 'Unknown'}</div>
+                        <div className="text-[9px] font-black uppercase text-muted-foreground tracking-widest opacity-60">Level {sub.kyc_level} Submission</div>
+                      </div>
+                    </div>
+                    <Badge className={`uppercase text-[8px] font-black tracking-widest px-2 py-0.5 ${
+                        sub.status === 'Verified' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                        sub.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                        'bg-red-500/10 text-red-500 border-red-500/20'
+                    }`}>
+                      {sub.status}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                    <span>{new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}</span>
+                    <Button variant="outline" size="sm" onClick={() => setSelectedSubmission(sub)} className="h-8 rounded-lg text-[9px] font-bold uppercase tracking-widest border-border">
+                      <Eye className="w-3.5 h-3.5 mr-1.5" /> Review
+                    </Button>
+                  </div>
+               </div>
+            ))}
+          </div>
+
+          {filtered.length === 0 && !loading && (
+            <div className="py-24 text-center">
+              <ShieldCheck className="w-16 h-16 opacity-10 mx-auto mb-6 text-muted-foreground" />
+              <p className="text-base font-black text-foreground uppercase tracking-tight">No Pending Verifications</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black opacity-30 mt-2">All compliance records are currently up to date.</p>
+            </div>
+          )}
+
         </div>
       </div>
 
       {/* Review Dialog */}
       <Dialog open={!!selectedSubmission} onOpenChange={(open) => { if(!open) setSelectedSubmission(null); }}>
-        <DialogContent className="max-w-3xl bg-card border-border shadow-huge p-0 rounded-[2rem] overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogContent className="max-w-3xl bg-card border-border shadow-huge p-0 rounded-2xl sm:rounded-[2rem] overflow-hidden flex flex-col max-h-[90vh] w-[95vw] sm:w-full">
           {selectedSubmission && (
             <>
-              <div className="p-6 border-b border-border bg-secondary/10 shrink-0 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-lg font-black">{selectedSubmission.kyc_level}</div>
+              <div className="p-5 sm:p-6 border-b border-border bg-secondary/10 shrink-0 flex items-center justify-between">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-base sm:text-lg font-black">{selectedSubmission.kyc_level}</div>
                   <div>
-                    <h2 className="text-lg font-bold text-foreground">Level {selectedSubmission.kyc_level} Verification</h2>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{selectedSubmission.user?.name || selectedSubmission.full_name}</p>
+                    <h2 className="text-base sm:text-lg font-bold text-foreground">Level {selectedSubmission.kyc_level} Verification</h2>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{selectedSubmission.user?.name || selectedSubmission.full_name}</p>
                   </div>
                 </div>
-                <Badge className={`uppercase text-[10px] font-black tracking-widest px-3 py-1.5 ${selectedSubmission.status === 'Verified' ? 'bg-green-500 text-white' : selectedSubmission.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+                <Badge className={`uppercase text-[9px] sm:text-[10px] font-black tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 ${selectedSubmission.status === 'Verified' ? 'bg-green-500 text-white' : selectedSubmission.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
                   {selectedSubmission.status}
                 </Badge>
               </div>
 
-              <div className="p-6 overflow-y-auto flex-1 space-y-8">
+              <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6 sm:space-y-8">
                 {selectedSubmission.kyc_level === 1 && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {[{l:'Full Name', v: selectedSubmission.full_name}, {l: 'Date of Birth', v: selectedSubmission.date_of_birth}, {l: 'Country', v: selectedSubmission.country}, {l: 'Phone', v: selectedSubmission.phone}, {l: 'Residential Address', v: selectedSubmission.address}].map(({l,v}) => v ? (
-                      <div key={l} className="p-4 rounded-2xl bg-secondary/30 border border-border">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{l}</div>
+                      <div key={l} className="p-3 sm:p-4 rounded-2xl bg-secondary/30 border border-border">
+                        <div className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{l}</div>
                         <div className="text-sm font-bold text-foreground mt-1">{v}</div>
                       </div>
                     ) : null)}
@@ -278,7 +313,7 @@ const AdminKYC = () => {
 
                 {selectedSubmission.kyc_level === 2 && (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="p-4 rounded-2xl bg-secondary/30 border border-border">
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Document Type</div>
                         <div className="text-sm font-bold text-foreground mt-1">{selectedSubmission.id_type || 'N/A'}</div>

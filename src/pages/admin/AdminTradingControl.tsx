@@ -142,110 +142,113 @@ const AdminTradingControl = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-8 lg:space-y-12 mb-10">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Trading Control</h1>
-            <p className="text-muted-foreground text-sm mt-2">Manage market pairs, spreads, fees, and trading availability.</p>
+      <div className="space-y-8">
+        {/* Institutional Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Market Operations</h1>
+            <p className="text-muted-foreground text-sm font-medium">Configure global trading parameters, asset pairs, and platform-wide execution policies.</p>
           </div>
           <div className="flex items-center gap-3">
             <Button 
               onClick={handleGlobalKillSwitch}
-              className={`h-10 px-6 rounded-xl flex items-center gap-2 text-[10px] uppercase tracking-widest font-black transition-all ${
+              className={`h-11 px-6 rounded-xl flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-black transition-all shadow-sm ${
                   globalActive 
-                  ? "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white" 
-                  : "bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white"
+                  ? "bg-red-500/10 text-red-500 border border-red-200/50 hover:bg-red-500 hover:text-white" 
+                  : "bg-green-500/10 text-green-500 border border-green-200/50 hover:bg-green-500 hover:text-white"
               }`}
             >
               <Power className="w-4 h-4" />
-              {globalActive ? "Pause All Trading" : "Resume Trading"}
+              {globalActive ? "Emergency Halt" : "Resume Operations"}
             </Button>
-            <Button variant="hero" className="h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-gold" onClick={() => setAddPairModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Add Market Pair
+            <Button variant="hero" className="h-11 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-gold" onClick={() => setAddPairModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" /> Register Asset
             </Button>
           </div>
-        </div>
+        </header>
 
-        {/* Quick Stats */}
+
+        {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-card p-6 rounded-3xl border border-border shadow-sm text-center hover:shadow-md transition-shadow">
-            <Globe className="w-6 h-6 text-blue-500 mx-auto mb-3 opacity-60" />
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Active Markets</div>
-            <div className="text-2xl font-black text-foreground">{pairs.filter(p => p.active).length} of {pairs.length}</div>
-          </div>
-          <div className="bg-card p-6 rounded-3xl border border-border shadow-sm text-center hover:shadow-md transition-shadow">
-            <RefreshCw className="w-6 h-6 text-primary mx-auto mb-3 opacity-60" />
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Platform Uptime</div>
-            <div className="text-2xl font-black text-foreground">99.998%</div>
-          </div>
-          <div className="bg-card p-6 rounded-3xl border border-border shadow-sm text-center hover:shadow-md transition-shadow">
-            <Activity className="w-6 h-6 text-green-500 mx-auto mb-3 opacity-60" />
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Requests / Second</div>
-            <div className="text-2xl font-black text-foreground">1,240</div>
-          </div>
+          {[
+            { label: "Active Markets", value: `${pairs.filter(p => p.active).length} / ${pairs.length}`, icon: Globe, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "System Uptime", value: "99.998%", icon: RefreshCw, color: "text-primary", bg: "bg-primary/5" },
+            { label: "Execution Speed", value: "1,240 req/s", icon: Activity, color: "text-green-600", bg: "bg-green-50" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-card p-6 rounded-[2rem] border border-border shadow-sm flex items-center gap-5 group hover:border-primary/20 transition-all">
+              <div className={`w-14 h-14 rounded-2xl ${stat.bg} flex items-center justify-center shrink-0`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                <p className="text-2xl font-black text-foreground tracking-tight">{stat.value}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Markets Table */}
-        <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm flex flex-col">
-          <div className="p-6 border-b border-border flex items-center justify-between">
-            <h2 className="text-xl font-bold font-sans text-foreground">Market Pairs</h2>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-glow" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Live</span>
+
+        <div className="bg-card rounded-[2rem] border border-border overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-border flex items-center justify-between bg-secondary/10">
+            <h2 className="text-xl font-black font-sans text-foreground uppercase tracking-tight">Registered Assets</h2>
+            <div className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-full border border-border">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Network Live</span>
             </div>
           </div>
           
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-sm min-w-[600px]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="text-muted-foreground border-b border-border text-xs font-semibold uppercase tracking-wider">
-                  <th className="text-left pb-4 pl-6">Trading Pair</th>
-                  <th className="text-left pb-4">Spread</th>
-                  <th className="text-left pb-4">Fee</th>
-                  <th className="text-left pb-4">Latency</th>
-                  <th className="text-left pb-4">Active</th>
-                  <th className="text-right pb-4 pr-6">Actions</th>
+                <tr className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border bg-secondary/40">
+                  <th className="text-left p-6">Asset Pair</th>
+                  <th className="text-left p-6">Base Spread</th>
+                  <th className="text-left p-6">Fixed Fee</th>
+                  <th className="text-left p-6">Execution</th>
+                  <th className="text-left p-6">Activity</th>
+                  <th className="text-right p-6">Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-border">
                 {pairs.map((pair) => (
-                  <tr key={pair.id} className={`group hover:bg-secondary/30 transition-colors ${!pair.active ? 'opacity-50' : ''}`}>
-                    <td className="py-5 pl-6">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center font-black text-xs uppercase tracking-tighter ${pair.active ? "text-primary" : "text-muted-foreground"}`}>
+                  <tr key={pair.id} className={`group hover:bg-secondary/20 transition-colors ${!pair.active ? 'opacity-40 grayscale' : ''}`}>
+                    <td className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-2xl bg-secondary border border-border flex items-center justify-center font-black text-xs uppercase tracking-tighter shadow-sm transition-all group-hover:border-primary/30 ${pair.active ? "text-primary" : "text-muted-foreground"}`}>
                           {pair.name.split('/')[0].substring(0, 3)}
                         </div>
                         <div>
-                          <div className="font-bold text-sm text-foreground">{pair.name}</div>
-                          <div className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-tighter mt-0.5">Load: {pair.load_status}</div>
+                          <div className="font-black text-sm text-foreground tracking-tight">{pair.name}</div>
+                          <div className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Load Status: {pair.load_status}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-5">
-                      <span className="font-bold text-sm text-foreground tabular-nums">{pair.spread}</span>
+                    <td className="p-6">
+                      <span className="font-bold text-xs text-foreground tabular-nums bg-secondary/50 px-2 py-1 rounded-lg border border-border">{pair.spread}</span>
                     </td>
-                    <td className="py-5">
-                      <span className="font-bold text-sm text-foreground tabular-nums">{pair.fee}</span>
+                    <td className="p-6">
+                      <span className="font-bold text-xs text-foreground tabular-nums bg-secondary/50 px-2 py-1 rounded-lg border border-border">{pair.fee}</span>
                     </td>
-                    <td className="py-5">
+                    <td className="p-6">
                       <div className="flex items-center gap-2">
-                        <Zap className={`w-3.5 h-3.5 ${pair.active ? "text-primary glow-primary" : "text-muted-foreground/30"}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{pair.latency}</span>
+                        <Zap className={`w-3.5 h-3.5 ${pair.active ? "text-primary shadow-gold" : "text-muted-foreground/30"}`} />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">{pair.latency}</span>
                       </div>
                     </td>
-                    <td className="py-5">
+                    <td className="p-6">
                       <Switch 
                         checked={pair.active} 
-                        onCheckedChange={() => togglePair(pair.id, pair.active, pair.name)} 
+                        onCheckedChange={() => togglePair(pair.id, pair.active, pair.name)}
+                        className="data-[state=checked]:bg-primary"
                       />
                     </td>
-                    <td className="py-5 pr-6 text-right">
+                    <td className="p-6 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="icon" className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-border bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/20" onClick={() => openEdit(pair)}>
+                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border bg-card hover:bg-secondary shadow-sm" onClick={() => openEdit(pair)}>
                           <Settings2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="icon" className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-border bg-card hover:bg-loss/10 hover:text-loss hover:border-loss/20" onClick={() => deletePair(pair.id, pair.name)}>
+                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-red-100 text-red-500 hover:bg-red-50 shadow-sm" onClick={() => deletePair(pair.id, pair.name)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -255,6 +258,7 @@ const AdminTradingControl = () => {
               </tbody>
             </table>
           </div>
+
           
           <div className="p-5 border-t border-border flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -269,68 +273,69 @@ const AdminTradingControl = () => {
           </div>
         </div>
 
-        {/* Advanced Market Controls */}
-        <div className="grid lg:grid-cols-2 gap-8 pt-4">
-            <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-6 flex flex-col hover:shadow-md transition-shadow">
+        <div className="grid lg:grid-cols-2 gap-8">
+            <div className="bg-card p-8 rounded-[2rem] border border-border shadow-sm space-y-6 flex flex-col group hover:border-primary/10 transition-all">
                 <div className="flex items-center gap-4 mb-2">
-                    <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center text-red-600 border border-red-200">
+                    <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 border border-red-100 shadow-sm">
                         <AlertTriangle className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-foreground">Risk Management</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">Safety rules to limit losses automatically.</p>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Risk Protocols</h2>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-1">Safety parameters and execution filters.</p>
                     </div>
                 </div>
                 <div className="space-y-4">
                     {[
-                        { label: "Flash Crash Protection", enabled: true, desc: "Pause trading if price drops > 5% in 1min." },
-                        { label: "Large Order Alerts", enabled: true, desc: `Alert admins on orders > ${formatCurrency(1000000)}.` },
-                        { label: "Global Stop-Loss", enabled: false, desc: "Close all trades if total platform value drops more than 20%." },
+                        { label: "Trading Pause Trigger", enabled: true, desc: "Pause trading if volatility exceeds 5% per minute." },
+                        { label: "Large Order Flag", enabled: true, desc: `Flag orders exceeding institutional limits.` },
+                        { label: "Systemic Halt", enabled: false, desc: "Automatically halt operations on total value drain." },
                     ].map((risk) => (
-                        <div key={risk.label} className="p-4 rounded-xl bg-secondary/30 border border-border flex items-center justify-between group hover:bg-secondary/50 transition-all">
+                        <div key={risk.label} className="p-5 rounded-2xl bg-secondary/30 border border-border flex items-center justify-between group/item hover:bg-secondary/50 transition-all">
                             <div className="flex flex-col gap-1">
-                                <span className="text-sm font-bold text-foreground font-sans italic lowercase tracking-tight">{risk.label}</span>
-                                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{risk.desc}</span>
+                                <span className="text-[11px] font-black text-foreground uppercase tracking-widest">{risk.label}</span>
+                                <span className="text-[10px] text-muted-foreground font-medium opacity-60 leading-relaxed max-w-[220px]">{risk.desc}</span>
                             </div>
-                            <Switch defaultChecked={risk.enabled} onCheckedChange={(checked) => toast.success(`${risk.label} ${checked ? 'enabled' : 'disabled'}`)} />
+                            <Switch defaultChecked={risk.enabled} onCheckedChange={(checked) => toast.success(`${risk.label} policies ${checked ? 'deployed' : 'revoked'}`)} />
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-6 flex flex-col hover:shadow-md transition-shadow">
+            <div className="bg-card p-8 rounded-[2rem] border border-border shadow-sm space-y-6 flex flex-col group hover:border-primary/10 transition-all">
                 <div className="flex items-center gap-4 mb-2">
-                    <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-200">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm">
                         <TrendingUp className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-foreground">Market Sentiment Controls</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">Control displayed market sentiment indicators.</p>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Market View Settings</h2>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-1">Configure market visual adjustments.</p>
                     </div>
                 </div>
+
                 <div className="space-y-6">
-                    <div className="space-y-3">
-                        <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                            <span>Synthetic Bullish Bias</span>
+                    <div className="space-y-4">
+                        <div className="flex justify-between text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                            <span>Positive Bias Setting</span>
                             <span className={sentimentBias > 0 ? "text-green-600" : "text-muted-foreground"}>+{sentimentBias}%</span>
                         </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden flex items-center">
-                            <div className="h-full bg-green-500 shadow-glow transition-all duration-500" style={{ width: `${Math.min(100, 50 + sentimentBias)}%` }} />
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden flex items-center border border-border shadow-inner">
+                            <div className="h-full bg-green-500 shadow-gold transition-all duration-700 ease-out" style={{ width: `${Math.min(100, 50 + sentimentBias)}%` }} />
                         </div>
-                        <p className="text-[10px] text-muted-foreground italic leading-relaxed">Artificially inflate the 'Buy' sentiment percentage across all pairs to encourage market entry.</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed italic opacity-70">Adjust positive visual trends for platform asset lists.</p>
                     </div>
-                    <div className="flex gap-4">
-                        <Button variant="outline" className="flex-1 h-10 text-xs font-bold border-border hover:bg-secondary uppercase tracking-widest" onClick={() => applySentimentBias(0)}>
-                            Neutralize
+                    <div className="flex flex-wrap gap-2 pt-2">
+                        <Button variant="outline" className="flex-1 h-11 text-[9px] font-black border-border hover:bg-secondary uppercase tracking-widest rounded-xl" onClick={() => applySentimentBias(0)}>
+                            Neutral
                         </Button>
-                        <Button className="flex-1 h-10 text-xs font-bold bg-primary text-white hover:bg-primary/90 uppercase tracking-widest shadow-gold" onClick={() => applySentimentBias(12)}>
-                            Apply Bias (+12%)
+                        <Button className="flex-1 h-11 text-[9px] font-black bg-primary text-white hover:bg-primary/90 uppercase tracking-widest shadow-gold rounded-xl" onClick={() => applySentimentBias(12)}>
+                            Moderate (+12%)
                         </Button>
-                        <Button className="flex-1 h-10 text-xs font-bold bg-primary text-white hover:bg-primary/90 uppercase tracking-widest shadow-gold" onClick={() => applySentimentBias(25)}>
-                            Max Bias (+25%)
+                        <Button className="flex-2 h-11 text-[9px] font-black bg-zinc-950 text-white hover:bg-zinc-800 uppercase tracking-widest shadow-huge rounded-xl px-6" onClick={() => applySentimentBias(25)}>
+                            High (+25%)
                         </Button>
                     </div>
                 </div>
+
             </div>
         </div>
       </div>

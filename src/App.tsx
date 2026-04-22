@@ -8,7 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import { useCurrencyDetection } from "./hooks/useCurrencyDetection";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { useStore } from "@/store/useStore";
+import { useStore, debouncedSync } from "@/store/useStore";
 import LiveChatWidget from "./components/dashboard/LiveChatWidget";
 
 import Index from "./pages/Index";
@@ -189,13 +189,13 @@ const AuthListener = () => {
 
             currentSub.current = supabase
                 .channel(`user-${userId}-sync`)
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'balances', filter: `user_id=eq.${userId}` }, () => syncData(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${userId}` }, () => syncData(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${userId}` }, () => syncData(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => syncData(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${userId}` }, () => syncData(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => syncData(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'referrals', filter: `referrer_id=eq.${userId}` }, () => syncData(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'balances', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'referrals', filter: `referrer_id=eq.${userId}` }, () => debouncedSync(userId))
                 .subscribe();
         };
 
