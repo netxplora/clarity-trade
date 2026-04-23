@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { 
-  Settings, Globe, Key, Bell, ShieldCheck, Zap, Server, 
+import {
+  Settings, Globe, Key, Bell, ShieldCheck, Zap, Server,
   RefreshCw, Lock, Wallet, CreditCard, Target, History,
   Shield, Scale, ArrowRight, Percent, CheckCircle, XCircle, Copy
 } from "lucide-react";
@@ -79,32 +79,32 @@ const AdminSettings = () => {
 
   const handleSave = async (payload: any = {}) => {
     try {
-        const finalPayload = { ...settings, ...payload };
-        const { error } = await supabase.from('platform_settings').upsert({
-          id: 1,
-          platform_fee_percent: finalPayload.platformFeePercent,
-          fee_wallet_address: finalPayload.feeWalletAddress,
-          fee_wallet_network: finalPayload.feeWalletNetwork,
-          fee_enabled: finalPayload.feeEnabled,
-          min_withdrawal_amount: finalPayload.minWithdrawalAmount,
-          max_withdrawal_amount: finalPayload.maxWithdrawalAmount,
-          kyc_required_for_withdrawal: finalPayload.kycRequiredForWithdrawal,
-          copy_trading_enabled: finalPayload.copyTradingEnabled,
-          min_copy_allocation: finalPayload.minCopyAllocation,
-          commission_auto_deduct_percent: finalPayload.commissionAutoDeduct,
-          global_trading_enabled: finalPayload.globalTradingEnabled
+      const finalPayload = { ...settings, ...payload };
+      const { error } = await supabase.from('platform_settings').upsert({
+        id: 1,
+        platform_fee_percent: finalPayload.platformFeePercent,
+        fee_wallet_address: finalPayload.feeWalletAddress,
+        fee_wallet_network: finalPayload.feeWalletNetwork,
+        fee_enabled: finalPayload.feeEnabled,
+        min_withdrawal_amount: finalPayload.minWithdrawalAmount,
+        max_withdrawal_amount: finalPayload.maxWithdrawalAmount,
+        kyc_required_for_withdrawal: finalPayload.kycRequiredForWithdrawal,
+        copy_trading_enabled: finalPayload.copyTradingEnabled,
+        min_copy_allocation: finalPayload.minCopyAllocation,
+        commission_auto_deduct_percent: finalPayload.commissionAutoDeduct,
+        global_trading_enabled: finalPayload.globalTradingEnabled
+      });
+
+      if (!error) {
+        setSettings(finalPayload);
+        toast.success("System settings updated", {
+          description: "Settings have been saved across the platform."
         });
-        
-        if (!error) {
-            setSettings(finalPayload);
-            toast.success("System settings updated", {
-                description: "Settings have been saved across the platform."
-            });
-        } else {
-            throw error;
-        }
+      } else {
+        throw error;
+      }
     } catch (err) {
-        toast.error("Failed to save settings");
+      toast.error("Failed to save settings");
     }
   };
 
@@ -119,11 +119,11 @@ const AdminSettings = () => {
   const handleSaveFeeWallet = async () => {
     setSavingFee(true);
     try {
-    const { error } = await supabase.from('platform_settings').update({
-         fee_wallet_address: settings.feeWalletAddress,
-         fee_wallet_network: settings.feeWalletNetwork,
-         platform_fee_percent: settings.platformFeePercent,
-         fee_enabled: settings.feeEnabled
+      const { error } = await supabase.from('platform_settings').update({
+        fee_wallet_address: settings.feeWalletAddress,
+        fee_wallet_network: settings.feeWalletNetwork,
+        platform_fee_percent: settings.platformFeePercent,
+        fee_enabled: settings.feeEnabled
       }).eq('id', 1);
 
       if (!error) {
@@ -160,9 +160,9 @@ const AdminSettings = () => {
             <p className="text-muted-foreground text-sm mt-2">Manage global platform behavior, financial rules, and infra settings.</p>
           </div>
           <div className="flex gap-3">
-             <Button variant="outline" onClick={handleRestart} className="h-11 border-border bg-card text-sm font-medium px-6 shadow-sm hover:bg-secondary">
-               <RefreshCw className="w-4 h-4 mr-2" /> Restart Services
-             </Button>
+            <Button variant="outline" onClick={handleRestart} className="h-11 border-border bg-card text-sm font-medium px-6 shadow-sm hover:bg-secondary">
+              <RefreshCw className="w-4 h-4 mr-2" /> Restart Services
+            </Button>
           </div>
         </div>
 
@@ -173,11 +173,10 @@ const AdminSettings = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap lg:w-full ${
-                  activeTab === tab.id
+                className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap lg:w-full ${activeTab === tab.id
                     ? "bg-primary text-white border-primary shadow-gold"
                     : "bg-card text-muted-foreground border-border hover:bg-secondary hover:border-primary/20"
-                }`}
+                  }`}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />
                 {tab.label}
@@ -189,12 +188,12 @@ const AdminSettings = () => {
           <main className="space-y-8 min-w-0">
             <AnimatePresence mode="wait">
               {activeTab === "general" && (
-                <motion.div 
-                   key="general"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: -20 }}
-                   className="space-y-8"
+                <motion.div
+                  key="general"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
                 >
                   <div className="bg-card p-6 sm:p-8 rounded-3xl border border-border shadow-sm space-y-8">
                     <div className="flex items-center gap-4 border-b border-border pb-6">
@@ -206,47 +205,47 @@ const AdminSettings = () => {
                         <p className="text-xs text-muted-foreground mt-0.5">Manage public details displayed across the platform.</p>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                       <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Public Name</Label>
-                          <Input defaultValue="Clarity Trade" className="h-14 bg-secondary border-border rounded-xl font-bold" />
-                       </div>
-                       <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Contact Support Email</Label>
-                          <Input defaultValue="support@claritytrade.com" className="h-14 bg-secondary border-border rounded-xl font-bold" />
-                       </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Public Name</Label>
+                        <Input defaultValue="Clarity Trade" className="h-14 bg-secondary border-border rounded-xl font-bold" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Contact Support Email</Label>
+                        <Input defaultValue="support@claritytrade.com" className="h-14 bg-secondary border-border rounded-xl font-bold" />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Fee (%)</Label>
-                            <Input 
-                               value={settings.platformFeePercent} 
-                               onChange={(e) => setSettings({...settings, platformFeePercent: parseFloat(e.target.value) || 0})} 
-                               type="number" 
-                               className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                            />
-                            <p className="text-[9px] text-muted-foreground px-1 italic">Applied to all buy/sell transactions.</p>
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Min. Withdrawal (USD)</Label>
-                            <Input 
-                               value={settings.minWithdrawalAmount} 
-                               onChange={(e) => setSettings({...settings, minWithdrawalAmount: parseFloat(e.target.value) || 0})} 
-                               type="number" 
-                               className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Max. Withdrawal (USD)</Label>
-                            <Input 
-                               value={settings.maxWithdrawalAmount} 
-                               onChange={(e) => setSettings({...settings, maxWithdrawalAmount: parseFloat(e.target.value) || 0})} 
-                               type="number" 
-                               className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                            />
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Fee (%)</Label>
+                        <Input
+                          value={settings.platformFeePercent}
+                          onChange={(e) => setSettings({ ...settings, platformFeePercent: parseFloat(e.target.value) || 0 })}
+                          type="number"
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
+                        />
+                        <p className="text-[9px] text-muted-foreground px-1 italic">Applied to all buy/sell transactions.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Min. Withdrawal (USD)</Label>
+                        <Input
+                          value={settings.minWithdrawalAmount}
+                          onChange={(e) => setSettings({ ...settings, minWithdrawalAmount: parseFloat(e.target.value) || 0 })}
+                          type="number"
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Max. Withdrawal (USD)</Label>
+                        <Input
+                          value={settings.maxWithdrawalAmount}
+                          onChange={(e) => setSettings({ ...settings, maxWithdrawalAmount: parseFloat(e.target.value) || 0 })}
+                          type="number"
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
+                        />
+                      </div>
                     </div>
 
                     <Button variant="hero" onClick={handleSave} className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold">
@@ -256,40 +255,40 @@ const AdminSettings = () => {
 
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                       <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
-                         <CreditCard className="w-6 h-6" />
-                       </div>
-                       <div>
-                         <h2 className="text-xl font-bold text-foreground">Payment Gateways</h2>
-                         <p className="text-xs text-muted-foreground mt-0.5">Configure fiat-to-crypto onramp providers.</p>
-                       </div>
+                      <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                        <CreditCard className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">Payment Gateways</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Configure fiat-to-crypto onramp providers.</p>
+                      </div>
                     </div>
-                    
+
                     <div className="p-8 rounded-2xl bg-secondary border border-border flex flex-col items-center text-center space-y-4">
-                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                           <Globe className="w-8 h-8" />
-                       </div>
-                       <h3 className="text-lg font-bold text-foreground">Third Party Crypto Providers</h3>
-                       <p className="text-xs text-muted-foreground max-w-md">
-                           Manage authorized iframe providers for purchasing crypto. Configure priority, failover mechanisms, URLs, and logos entirely dynamically.
-                       </p>
-                       <Link to="/admin/crypto-providers" className="mt-4 inline-block">
-                           <Button variant="hero" className="h-12 px-8 text-xs font-black uppercase tracking-widest text-white shadow-gold flex items-center">
-                               Manage Providers <ArrowRight className="w-4 h-4 ml-2" />
-                           </Button>
-                       </Link>
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                        <Globe className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">Third Party Crypto Providers</h3>
+                      <p className="text-xs text-muted-foreground max-w-md">
+                        Manage authorized iframe providers for purchasing crypto. Configure priority, failover mechanisms, URLs, and logos entirely dynamically.
+                      </p>
+                      <Link to="/admin/crypto-providers" className="mt-4 inline-block">
+                        <Button variant="hero" className="h-12 px-8 text-xs font-black uppercase tracking-widest text-white shadow-gold flex items-center">
+                          Manage Providers <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </motion.div>
               )}
 
               {activeTab === "fees" && (
-                <motion.div 
-                   key="fees"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: -20 }}
-                   className="space-y-8"
+                <motion.div
+                  key="fees"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
                 >
                   {/* Fee Configuration Card */}
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
@@ -341,9 +340,9 @@ const AdminSettings = () => {
                           <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Toggle to enable or disable the 2% platform fee on all transactions.</div>
                         </div>
                       </div>
-                      <Switch 
-                        checked={settings.feeEnabled} 
-                        onCheckedChange={(checked) => setSettings({...settings, feeEnabled: checked})} 
+                      <Switch
+                        checked={settings.feeEnabled}
+                        onCheckedChange={(checked) => setSettings({ ...settings, feeEnabled: checked })}
                       />
                     </div>
 
@@ -351,23 +350,23 @@ const AdminSettings = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Platform Fee Percentage (%)</Label>
-                        <Input 
-                          value={settings.platformFeePercent} 
-                          onChange={(e) => setSettings({...settings, platformFeePercent: parseFloat(e.target.value) || 0})}
-                          type="number" 
+                        <Input
+                          value={settings.platformFeePercent}
+                          onChange={(e) => setSettings({ ...settings, platformFeePercent: parseFloat(e.target.value) || 0 })}
+                          type="number"
                           step="0.1"
                           min="0"
                           max="100"
-                          className="h-14 bg-secondary border-border rounded-xl font-bold" 
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
                         />
                         <p className="text-[9px] text-muted-foreground px-1 italic">Applied automatically to buy/sell/deposit transactions at completion.</p>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Collection Network</Label>
-                        <Input 
-                          value={settings.feeWalletNetwork} 
-                          onChange={(e) => setSettings({...settings, feeWalletNetwork: e.target.value})}
-                          className="h-14 bg-secondary border-border rounded-xl font-bold" 
+                        <Input
+                          value={settings.feeWalletNetwork}
+                          onChange={(e) => setSettings({ ...settings, feeWalletNetwork: e.target.value })}
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
                           placeholder="e.g. ERC-20, TRC-20, BEP-20"
                         />
                       </div>
@@ -377,14 +376,14 @@ const AdminSettings = () => {
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-1">Fee Collection Wallet Address</Label>
                       <div className="flex gap-3">
-                        <Input 
-                          value={settings.feeWalletAddress} 
-                          onChange={(e) => setSettings({...settings, feeWalletAddress: e.target.value})}
-                          className="h-14 bg-secondary border-border rounded-xl font-mono text-xs font-bold flex-1" 
+                        <Input
+                          value={settings.feeWalletAddress}
+                          onChange={(e) => setSettings({ ...settings, feeWalletAddress: e.target.value })}
+                          className="h-14 bg-secondary border-border rounded-xl font-mono text-xs font-bold flex-1"
                           placeholder="0x... or T... or bc1..."
                         />
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="h-14 px-4 border-border bg-card"
                           onClick={() => {
                             navigator.clipboard.writeText(settings.feeWalletAddress);
@@ -407,9 +406,9 @@ const AdminSettings = () => {
                       </div>
                     )}
 
-                    <Button 
-                      variant="hero" 
-                      onClick={handleSaveFeeWallet} 
+                    <Button
+                      variant="hero"
+                      onClick={handleSaveFeeWallet}
                       disabled={savingFee}
                       className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold"
                     >
@@ -469,99 +468,99 @@ const AdminSettings = () => {
               )}
 
               {activeTab === "wallets" && (
-                <motion.div 
-                   key="wallets"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   className="space-y-8"
+                <motion.div
+                  key="wallets"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-8"
                 >
                   <WalletsPanel />
                 </motion.div>
               )}
 
               {activeTab === "trading" && (
-                <motion.div 
-                   key="trading"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   className="space-y-8"
+                <motion.div
+                  key="trading"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-8"
                 >
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
-                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                       <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/20">
-                         <Target className="w-6 h-6" />
-                       </div>
-                       <div>
-                         <h2 className="text-xl font-bold text-foreground">Copy Trading Parameters</h2>
-                         <p className="text-xs text-muted-foreground mt-0.5">Manage risk levels and participation limits.</p>
-                       </div>
+                    <div className="flex items-center gap-4 border-b border-border pb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/20">
+                        <Target className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">Copy Trading Parameters</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Manage risk levels and participation limits.</p>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Min. Copy Allocation ($)</Label>
-                            <Input 
-                                value={settings.minCopyAllocation} 
-                                onChange={(e) => setSettings({...settings, minCopyAllocation: e.target.value})}
-                                type="number" 
-                                className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Commission Auto-Deduct (%)</Label>
-                            <Input 
-                                value={settings.commissionAutoDeduct} 
-                                onChange={(e) => setSettings({...settings, commissionAutoDeduct: e.target.value})}
-                                type="number" 
-                                className="h-14 bg-secondary border-border rounded-xl font-bold" 
-                            />
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Min. Copy Allocation ($)</Label>
+                        <Input
+                          value={settings.minCopyAllocation}
+                          onChange={(e) => setSettings({ ...settings, minCopyAllocation: e.target.value })}
+                          type="number"
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Commission Auto-Deduct (%)</Label>
+                        <Input
+                          value={settings.commissionAutoDeduct}
+                          onChange={(e) => setSettings({ ...settings, commissionAutoDeduct: e.target.value })}
+                          type="number"
+                          className="h-14 bg-secondary border-border rounded-xl font-bold"
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-6">
-                         <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
-                            <div className="flex gap-4">
-                                <div className="w-11 h-11 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20">
-                                   <Shield className="w-5 h-5" />
-                                </div>
-                                <div>
-                                   <div className="text-sm font-black text-foreground">Large Trade Limits</div>
-                                   <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Limit copy trades per trader to $1M volume.</div>
-                                </div>
-                            </div>
-                            <Switch defaultChecked />
-                         </div>
-
-                         <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
-                            <div className="flex gap-4">
-                                <div className="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
-                                   <Scale className="w-5 h-5" />
-                                </div>
-                                <div>
-                                   <div className="text-sm font-black text-foreground">Market Volatility Protection</div>
-                                   <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Auto-pause trading during extreme market swings.</div>
-                                </div>
-                            </div>
-                            <Switch />
-                         </div>
-
-                         <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
-                             <div className="flex gap-4">
-                                 <div className="w-11 h-11 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
-                                    <Zap className="w-5 h-5" />
-                                 </div>
-                                 <div>
-                                    <div className="text-sm font-black text-foreground">Emergency Trading Pause</div>
-                                    <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic text-red-600/80">Instantly pause all market activity platform-wide.</div>
-                                 </div>
-                             </div>
-                             <Switch 
-                               checked={settings.globalTradingEnabled}
-                               onCheckedChange={(checked) => setSettings({...settings, globalTradingEnabled: checked})}
-                             />
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
+                        <div className="flex gap-4">
+                          <div className="w-11 h-11 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20">
+                            <Shield className="w-5 h-5" />
                           </div>
+                          <div>
+                            <div className="text-sm font-black text-foreground">Large Trade Limits</div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Limit copy trades per trader to $1M volume.</div>
+                          </div>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
+                        <div className="flex gap-4">
+                          <div className="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
+                            <Scale className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-black text-foreground">Market Volatility Protection</div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic">Auto-pause trading during extreme market swings.</div>
+                          </div>
+                        </div>
+                        <Switch />
+                      </div>
+
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-secondary border border-border hover:bg-card transition-colors">
+                        <div className="flex gap-4">
+                          <div className="w-11 h-11 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                            <Zap className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-black text-foreground">Emergency Trading Pause</div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5 italic text-red-600/80">Instantly pause all market activity platform-wide.</div>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={settings.globalTradingEnabled}
+                          onCheckedChange={(checked) => setSettings({ ...settings, globalTradingEnabled: checked })}
+                        />
+                      </div>
                     </div>
-                    
+
                     <Button variant="hero" onClick={handleSave} className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold">
                       Update Trading Settings
                     </Button>
@@ -570,104 +569,104 @@ const AdminSettings = () => {
               )}
 
               {activeTab === "security" && (
-                <motion.div 
-                   key="security"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   className="space-y-8"
+                <motion.div
+                  key="security"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-8"
                 >
                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
-                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
-                           <Lock className="w-6 h-6" />
-                        </div>
-                        <div>
-                           <h2 className="text-xl font-bold text-foreground">Platform Security Policies</h2>
-                           <p className="text-xs text-muted-foreground mt-0.5">Configure enforcement of user protection rules.</p>
-                        </div>
-                     </div>
+                    <div className="flex items-center gap-4 border-b border-border pb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                        <Lock className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">Platform Security Policies</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Configure enforcement of user protection rules.</p>
+                      </div>
+                    </div>
 
-                     <div className="space-y-4">
-                         {[
-                             { label: "Force 2FA on Withdrawals", enabled: true, desc: "Require users to have 2FA enabled for any outbound funds." },
-                             { label: "Strict IP Validation", enabled: false, desc: "Auto-lock account if login IP changes during active session." },
-                             { label: "Identity Verification Required", enabled: true, desc: "Users must verify identity for trades > $10,000." },
-                             { label: "Admin Login Notifications", enabled: true, desc: "Notify admin Slack/Email on every successful admin login." },
-                         ].map((policy) => (
-                             <div key={policy.label} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between hover:border-primary/20 transition-all">
-                                 <div className="space-y-1">
-                                     <div className="text-sm font-black text-foreground uppercase tracking-wide">{policy.label}</div>
-                                     <p className="text-xs text-muted-foreground italic font-medium">{policy.desc}</p>
-                                 </div>
-                                 <Switch defaultChecked={policy.enabled} />
-                             </div>
-                         ))}
-                     </div>
-
-                     <div className="p-5 rounded-2xl bg-red-500/5 border border-red-500/20 flex items-start gap-4">
-                        <Lock className="w-5 h-5 text-red-500 mt-1" />
-                        <div>
-                            <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-1">Security Warning</p>
-                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">Changes here affect authentication settings. Modify with caution.</p>
+                    <div className="space-y-4">
+                      {[
+                        { label: "Force 2FA on Withdrawals", enabled: true, desc: "Require users to have 2FA enabled for any outbound funds." },
+                        { label: "Strict IP Validation", enabled: false, desc: "Auto-lock account if login IP changes during active session." },
+                        { label: "Identity Verification Required", enabled: true, desc: "Users must verify identity for trades > $10,000." },
+                        { label: "Admin Login Notifications", enabled: true, desc: "Notify admin Slack/Email on every successful admin login." },
+                      ].map((policy) => (
+                        <div key={policy.label} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between hover:border-primary/20 transition-all">
+                          <div className="space-y-1">
+                            <div className="text-sm font-black text-foreground uppercase tracking-wide">{policy.label}</div>
+                            <p className="text-xs text-muted-foreground italic font-medium">{policy.desc}</p>
+                          </div>
+                          <Switch defaultChecked={policy.enabled} />
                         </div>
-                     </div>
+                      ))}
+                    </div>
 
-                     <Button variant="hero" onClick={handleSave} className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold">
-                        Update Policy
-                     </Button>
+                    <div className="p-5 rounded-2xl bg-red-500/5 border border-red-500/20 flex items-start gap-4">
+                      <Lock className="w-5 h-5 text-red-500 mt-1" />
+                      <div>
+                        <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-1">Security Warning</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">Changes here affect authentication settings. Modify with caution.</p>
+                      </div>
+                    </div>
+
+                    <Button variant="hero" onClick={handleSave} className="h-14 px-10 text-xs font-black uppercase tracking-widest text-white shadow-gold">
+                      Update Policy
+                    </Button>
                   </div>
                 </motion.div>
               )}
 
               {activeTab === "api" && (
-                <motion.div 
-                   key="api"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   className="space-y-8"
+                <motion.div
+                  key="api"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-8"
                 >
-                   <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
-                      <div className="flex items-center gap-4 border-b border-border pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 border border-purple-500/20">
-                          <Key className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-foreground">Infrastructure & API Keys</h2>
-                          <p className="text-xs text-muted-foreground mt-0.5">Manage external service connections.</p>
-                        </div>
+                  <div className="bg-card p-8 rounded-3xl border border-border shadow-sm space-y-8">
+                    <div className="flex items-center gap-4 border-b border-border pb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 border border-purple-500/20">
+                        <Key className="w-6 h-6" />
                       </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">Infrastructure & API Keys</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Manage external service connections.</p>
+                      </div>
+                    </div>
 
-                      <div className="space-y-4">
-                        {["Blockchain Network Connection", "Trading Simulator", "Email Delivery Service", "GeoIP Provider"].map((key) => (
-                          <div key={key} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between">
-                             <div className="space-y-1">
-                                <div className="text-sm font-black text-foreground uppercase">{key}</div>
-                                <div className="text-xs font-mono text-muted-foreground">••••••••••••••••••••••••••••••••</div>
-                             </div>
-                             <Button variant="outline" className="h-10 border-border bg-card font-bold text-[10px] uppercase tracking-widest hover:text-primary">
-                                Rotate Config
-                             </Button>
+                    <div className="space-y-4">
+                      {["Blockchain Network Connection", "Trading Simulator", "Email Delivery Service", "GeoIP Provider"].map((key) => (
+                        <div key={key} className="p-6 rounded-2xl bg-secondary border border-border flex items-center justify-between">
+                          <div className="space-y-1">
+                            <div className="text-sm font-black text-foreground uppercase">{key}</div>
+                            <div className="text-xs font-mono text-muted-foreground">••••••••••••••••••••••••••••••••</div>
                           </div>
-                        ))}
-                      </div>
+                          <Button variant="outline" className="h-10 border-border bg-card font-bold text-[10px] uppercase tracking-widest hover:text-primary">
+                            Rotate Config
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
 
-                      <div className="bg-secondary/40 p-6 rounded-2xl border border-border flex items-center justify-between">
-                         <div className="flex items-center gap-4">
-                            <Server className="w-6 h-6 text-primary" />
-                            <div>
-                               <div className="text-sm font-bold text-foreground">Platform Server Status</div>
-                               <p className="text-[10px] font-bold text-green-500 uppercase">Operational • 99.99% Uptime</p>
-                            </div>
-                         </div>
-                         <div className="flex gap-4 items-center">
-                            <div className="text-right">
-                               <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Active Memory</p>
-                               <p className="text-sm font-black text-foreground">4.2 GB / 16 GB</p>
-                            </div>
-                            <ActivityIndicator color="bg-green-500" />
-                         </div>
+                    <div className="bg-secondary/40 p-6 rounded-2xl border border-border flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Server className="w-6 h-6 text-primary" />
+                        <div>
+                          <div className="text-sm font-bold text-foreground">Platform Server Status</div>
+                          <p className="text-[10px] font-bold text-green-500 uppercase">Operational • 99.99% Uptime</p>
+                        </div>
                       </div>
-                   </div>
+                      <div className="flex gap-4 items-center">
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Active Memory</p>
+                          <p className="text-sm font-black text-foreground">4.2 GB / 16 GB</p>
+                        </div>
+                        <ActivityIndicator color="bg-green-500" />
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -719,7 +718,7 @@ const WalletsPanel = () => {
 
   const handleAdd = async () => {
     if (!newWallet.address.trim()) { toast.error('Wallet address is required'); return; }
-    
+
     // Validation
     const validation = await validateWalletAddress(newWallet.address.trim(), newWallet.coin, newWallet.network);
     if (!validation.isValid) {
@@ -787,8 +786,8 @@ const WalletsPanel = () => {
               <p className="text-xs text-muted-foreground mt-0.5">Define system addresses for user deposits and reserves.</p>
             </div>
           </div>
-          <Button 
-            variant="hero" 
+          <Button
+            variant="hero"
             onClick={() => setShowAdd(!showAdd)}
             className="h-12 px-6 text-xs font-black uppercase tracking-widest text-white shadow-gold"
           >
@@ -816,9 +815,9 @@ const WalletsPanel = () => {
         {/* Add New Wallet Form */}
         <AnimatePresence>
           {showAdd && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }} 
-              animate={{ opacity: 1, height: 'auto' }} 
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
@@ -842,25 +841,25 @@ const WalletsPanel = () => {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Network</Label>
-                    <Input 
-                      value={newWallet.network} 
+                    <Input
+                      value={newWallet.network}
                       onChange={(e) => setNewWallet({ ...newWallet, network: e.target.value })}
                       placeholder="e.g. ERC-20, TRC-20, BEP-20, Mainnet"
-                      className="h-12 bg-card border-border text-xs font-bold" 
+                      className="h-12 bg-card border-border text-xs font-bold"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Wallet Address</Label>
-                    <Input 
-                      value={newWallet.address} 
+                    <Input
+                      value={newWallet.address}
                       onChange={(e) => setNewWallet({ ...newWallet, address: e.target.value })}
                       placeholder="0x... or bc1... or T..."
-                      className="h-12 bg-card border-border font-mono text-xs font-bold" 
+                      className="h-12 bg-card border-border font-mono text-xs font-bold"
                     />
                   </div>
                 </div>
-                <Button 
-                  onClick={handleAdd} 
+                <Button
+                  onClick={handleAdd}
                   disabled={saving === 'new'}
                   className="h-12 px-8 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-widest"
                 >
@@ -902,16 +901,15 @@ const WalletsPanel = () => {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleUpdate(wallet.id, { status: wallet.status === 'Active' ? 'Inactive' : 'Active' })}
-                      className={`text-[10px] uppercase font-black px-3 py-1.5 rounded-full border cursor-pointer transition-colors ${
-                        wallet.status === 'Active' 
-                          ? 'text-green-500 bg-green-500/10 border-green-500/20 hover:bg-green-500/20' 
+                      className={`text-[10px] uppercase font-black px-3 py-1.5 rounded-full border cursor-pointer transition-colors ${wallet.status === 'Active'
+                          ? 'text-green-500 bg-green-500/10 border-green-500/20 hover:bg-green-500/20'
                           : 'text-red-500 bg-red-500/10 border-red-500/20 hover:bg-red-500/20'
-                      }`}
+                        }`}
                     >
                       {wallet.status === 'Active' ? <><CheckCircle className="w-3 h-3 inline mr-1" />Active</> : <><XCircle className="w-3 h-3 inline mr-1" />Inactive</>}
                     </button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       className="h-8 px-3 text-[10px] font-black uppercase border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => handleDelete(wallet.id, wallet.coin)}
@@ -925,19 +923,19 @@ const WalletsPanel = () => {
                 <div className="space-y-2">
                   <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">Deposit Receiving Address</Label>
                   <div className="flex gap-2">
-                    <Input 
-                      value={wallet.address} 
+                    <Input
+                      value={wallet.address}
                       onChange={(e) => setWallets(prev => prev.map(w => w.id === wallet.id ? { ...w, address: e.target.value } : w))}
-                      className="h-12 bg-card border-border font-mono text-xs font-bold flex-1" 
+                      className="h-12 bg-card border-border font-mono text-xs font-bold flex-1"
                     />
-                    <Button 
+                    <Button
                       variant="outline"
                       className="h-12 px-3 border-border bg-card"
                       onClick={() => { navigator.clipboard.writeText(wallet.address); toast.success('Address copied'); }}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
-                    <Button 
+                    <Button
                       variant="outline"
                       className="h-12 px-4 border-border bg-card text-xs font-bold"
                       disabled={saving === wallet.id}
@@ -952,19 +950,19 @@ const WalletsPanel = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground">Network</Label>
-                    <Input 
-                      value={wallet.network || ''} 
+                    <Input
+                      value={wallet.network || ''}
                       onChange={(e) => setWallets(prev => prev.map(w => w.id === wallet.id ? { ...w, network: e.target.value } : w))}
                       onBlur={() => handleUpdate(wallet.id, { network: wallet.network })}
-                      className="h-10 bg-card border-border text-xs font-bold" 
+                      className="h-10 bg-card border-border text-xs font-bold"
                     />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground">Wallet Type</Label>
-                    <Input 
-                      defaultValue="HOT_WALLET" 
+                    <Input
+                      defaultValue="HOT_WALLET"
                       readOnly
-                      className="h-10 bg-card border-border text-xs font-bold uppercase text-muted-foreground cursor-not-allowed" 
+                      className="h-10 bg-card border-border text-xs font-bold uppercase text-muted-foreground cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -978,11 +976,11 @@ const WalletsPanel = () => {
 };
 
 const ActivityIndicator = ({ color }: { color: string }) => (
-    <div className="flex gap-1">
-        <div className={`w-1 h-3 ${color} rounded-full animate-pulse transition-all`} />
-        <div className={`w-1 h-3 ${color} rounded-full animate-pulse delay-75 transition-all`} />
-        <div className={`w-1 h-3 ${color} rounded-full animate-pulse delay-150 transition-all`} />
-    </div>
+  <div className="flex gap-1">
+    <div className={`w-1 h-3 ${color} rounded-full animate-pulse transition-all`} />
+    <div className={`w-1 h-3 ${color} rounded-full animate-pulse delay-75 transition-all`} />
+    <div className={`w-1 h-3 ${color} rounded-full animate-pulse delay-150 transition-all`} />
+  </div>
 );
 
 export default AdminSettings;

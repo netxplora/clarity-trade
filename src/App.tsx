@@ -22,7 +22,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 
 // Public Pages
 import Trading from "./pages/public/Trading";
-import CopyTradingPublic from "./pages/public/CopyTrading";
+
 import WalletPublic from "./pages/public/Wallet";
 import AnalyticsPublic from "./pages/public/Analytics";
 import Crypto from "./pages/public/Crypto";
@@ -45,13 +45,13 @@ import { lazy, Suspense } from "react";
 const Overview = lazy(() => import("./pages/dashboard/Overview"));
 const WalletPage = lazy(() => import("./pages/dashboard/WalletPage"));
 const TradingPage = lazy(() => import("./pages/dashboard/TradingPage"));
-const CopyTradingPage = lazy(() => import("./pages/dashboard/CopyTradingPage"));
+
 const AnalysisPage = lazy(() => import("./pages/dashboard/AnalysisPage"));
 const ReferralPage = lazy(() => import("./pages/dashboard/ReferralPage"));
 const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
 const KYCPage = lazy(() => import("./pages/dashboard/KYCPage"));
 const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage"));
-const TraderProfilePage = lazy(() => import("./pages/dashboard/TraderProfilePage"));
+
 const InvestmentsPage = lazy(() => import("./pages/dashboard/InvestmentsPage"));
 const HelpCenter = lazy(() => import("./pages/dashboard/HelpCenter"));
 const StatusPage = lazy(() => import("./pages/dashboard/StatusPage"));
@@ -61,7 +61,7 @@ const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
 const FinancialManagement = lazy(() => import("./pages/admin/FinancialManagement"));
 const AdminTradingControl = lazy(() => import("./pages/admin/AdminTradingControl"));
-const AdminCopyTrading = lazy(() => import("./pages/admin/AdminCopyTrading"));
+
 const ReferralManagement = lazy(() => import("./pages/admin/ReferralManagement"));
 const ContentManagement = lazy(() => import("./pages/admin/ContentManagement"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
@@ -103,7 +103,7 @@ const AnimatedRoutes = () => {
 
         {/* Public Informational Pages */}
         <Route path="/trading" element={<Trading />} />
-        <Route path="/copy-trading" element={<CopyTradingPublic />} />
+
         <Route path="/wallet" element={<WalletPublic />} />
         <Route path="/analytics" element={<AnalyticsPublic />} />
         <Route path="/crypto" element={<Crypto />} />
@@ -126,8 +126,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
         <Route path="/dashboard/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
         <Route path="/dashboard/trading" element={<ProtectedRoute><TradingPage /></ProtectedRoute>} />
-        <Route path="/dashboard/copy-trading" element={<ProtectedRoute><CopyTradingPage /></ProtectedRoute>} />
-        <Route path="/dashboard/copy-trading/trader/:id" element={<ProtectedRoute><TraderProfilePage /></ProtectedRoute>} />
+
         <Route path="/dashboard/analysis" element={<ProtectedRoute><AnalysisPage /></ProtectedRoute>} />
         <Route path="/dashboard/referrals" element={<ProtectedRoute><ReferralPage /></ProtectedRoute>} />
         <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
@@ -144,7 +143,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/users" element={<ProtectedRoute adminOnly><UserManagement /></ProtectedRoute>} />
         <Route path="/admin/finances" element={<ProtectedRoute adminOnly><FinancialManagement /></ProtectedRoute>} />
         <Route path="/admin/trading" element={<ProtectedRoute adminOnly><AdminTradingControl /></ProtectedRoute>} />
-        <Route path="/admin/copy-trading" element={<ProtectedRoute adminOnly><AdminCopyTrading /></ProtectedRoute>} />
+
         <Route path="/admin/referrals" element={<ProtectedRoute adminOnly><ReferralManagement /></ProtectedRoute>} />
         <Route path="/admin/content" element={<ProtectedRoute adminOnly><ContentManagement /></ProtectedRoute>} />
         <Route path="/admin/settings" element={<ProtectedRoute adminOnly><AdminSettings /></ProtectedRoute>} />
@@ -190,12 +189,11 @@ const AuthListener = () => {
             currentSub.current = supabase
                 .channel(`user-${userId}-sync`)
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'balances', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${userId}` }, (payload) => useStore.getState().handleRealtimeEvent('trades', payload))
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => debouncedSync(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${userId}` }, () => debouncedSync(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => debouncedSync(userId))
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'referrals', filter: `referrer_id=eq.${userId}` }, () => debouncedSync(userId))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${userId}` }, (payload) => useStore.getState().handleRealtimeEvent('transactions', payload))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (payload) => useStore.getState().handleRealtimeEvent('notifications', payload))
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'referrals', filter: `referrer_id=eq.${userId}` }, (payload) => useStore.getState().handleRealtimeEvent('referrals', payload))
                 .subscribe();
         };
 

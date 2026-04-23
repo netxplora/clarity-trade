@@ -183,6 +183,9 @@ export interface AppState {
     transactions: Transaction[];
     displayCurrency: string;
     exchangeRates: Record<string, number>;
+
+    /** Realtime Array Patcher */
+    handleRealtimeEvent: (table: string, payload: any) => void;
     
     /** Granular loading states */
     loadingStates: LoadingStates;
@@ -692,6 +695,66 @@ export const useStore = create<AppState>((set, get) => ({
                 loadingStates: { ...DEFAULT_LOADING },
                 errorStates: { ...get().errorStates, profile: 'Unexpected error during data sync' }
             });
+        }
+    },
+
+    handleRealtimeEvent: (table: string, payload: any) => {
+        const state = get();
+        const { eventType, new: newRecord, old: oldRecord } = payload;
+
+        if (table === 'trades') {
+            if (eventType === 'INSERT') {
+                set({ tradeHistory: [newRecord, ...state.tradeHistory] });
+                if (newRecord.status === 'Open') {
+                    set({ activeTrades: [newRecord, ...state.activeTrades] });
+                }
+            } else if (eventType === 'UPDATE') {
+                set({ tradeHistory: state.tradeHistory.map(t => t.id === newRecord.id ? newRecord : t) });
+                const stillOpen = newRecord.status === 'Open';
+                const wasOpen = state.activeTrades.some(t => t.id === newRecord.id);
+                if (stillOpen && !wasOpen) {
+                    set({ activeTrades: [newRecord, ...state.activeTrades] });
+                } else if (!stillOpen && wasOpen) {
+                    set({ activeTrades: state.activeTrades.filter(t => t.id !== newRecord.id) });
+                } else if (stillOpen && wasOpen) {
+                    set({ activeTrades: state.activeTrades.map(t => t.id === newRecord.id ? newRecord : t) });
+                }
+            } else if (eventType === 'DELETE') {
+                set({
+                    tradeHistory: state.tradeHistory.filter(t => t.id !== oldRecord.id),
+                    activeTrades: state.activeTrades.filter(t => t.id !== oldRecord.id)
+                });
+            }
+        }
+
+        if (table === 'transactions') {
+            if (eventType === 'INSERT') {
+                set({ transactions: [{ ...newRecord, date: newRecord.created_at }, ...state.transactions] });
+            } else if (eventType === 'UPDATE') {
+                set({ transactions: state.transactions.map(t => t.id === newRecord.id ? { ...newRecord, date: newRecord.created_at || newRecord.date } : t) });
+            } else if (eventType === 'DELETE') {
+                set({ transactions: state.transactions.filter(t => t.id !== oldRecord.id) });
+            }
+        }
+
+        if (table === 'notifications') {
+            if (eventType === 'INSERT') {
+                set({ notifications: [newRecord, ...state.notifications] });
+            } else if (eventType === 'UPDATE') {
+                set({ notifications: state.notifications.map(n => n.id === newRecord.id ? newRecord : n) });
+            } else if (eventType === 'DELETE') {
+                set({ notifications: state.notifications.filter(n => n.id !== oldRecord.id) });
+            }
+        }
+
+        if (table === 'referrals') {
+            if (eventType === 'INSERT') {
+                set({ referrals: [newRecord, ...state.referrals] });
+            } else if (eventType === 'UPDATE') {
+                set({ referrals: state.referrals.map(r => r.id === newRecord.id ? newRecord : r) });
+            } else if (eventType === 'DELETE') {
+                set({ referrals: state.referrals.filter(r => r.id !== oldRecord.id) });
+            }
         }
     }
 }));

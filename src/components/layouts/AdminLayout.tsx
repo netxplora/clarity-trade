@@ -22,7 +22,7 @@ const navItems = [
   { icon: ShieldCheck, label: "KYC Management", path: "/admin/kyc", description: "Verify Identities" },
   { icon: Wallet, label: "Finances", path: "/admin/finances", description: "Money & Balance" },
   { icon: LineChart, label: "Trading", path: "/admin/trading", description: "Market Control" },
-  { icon: Copy, label: "Copy Trading", path: "/admin/copy-trading", description: "Top Traders" },
+
   { icon: Gift, label: "Referrals", path: "/admin/referrals", description: "User Program" },
   { icon: FileText, label: "Content", path: "/admin/content", description: "Blog & Pages" },
   { icon: MessageSquare, label: "Support Hub", path: "/admin/support", description: "Live Chat" },

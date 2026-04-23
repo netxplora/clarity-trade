@@ -3,7 +3,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import StatisticsSection from "@/components/landing/StatisticsSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import MarketPreviewSection from "@/components/landing/MarketPreviewSection";
-import CopyTradingSection from "@/components/landing/CopyTradingSection";
+
 import LeaderboardSection from "@/components/landing/LeaderboardSection";
 import SubscriptionPlansSection from "@/components/landing/SubscriptionPlansSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
@@ -21,7 +21,7 @@ const Index = () => {
       <StatisticsSection />
       <HowItWorksSection />
       <MarketPreviewSection />
-      <CopyTradingSection />
+
       <LeaderboardSection />
       <SubscriptionPlansSection />
       <FeaturesSection />

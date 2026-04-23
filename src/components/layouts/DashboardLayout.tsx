@@ -21,7 +21,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/dashboard", description: "Account Summary" },
   { icon: Wallet, label: "Wallet", path: "/dashboard/wallet", description: "Funds & Assets" },
   { icon: TrendingUp, label: "Investment", path: "/dashboard/investments", description: "Growth Plans" },
-  { icon: Users, label: "Copy Trading", path: "/dashboard/copy-trading", description: "Follow Experts" },
+
   { icon: BarChart3, label: "Trading", path: "/dashboard/trading", description: "Markets & Orders" },
   { icon: LineChart, label: "Analysis", path: "/dashboard/analysis", description: "Performance" },
   { icon: ShieldCheck, label: "Verification", path: "/dashboard/kyc", description: "Identity & KYC" },
