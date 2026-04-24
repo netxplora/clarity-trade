@@ -22,7 +22,11 @@ const categoryIcons: Record<string, string> = {
 type Tab = "overview" | "plans" | "history";
 
 export default function InvestmentsPage() {
-  const { user } = useStore();
+  const { user, fetchAppData } = useStore();
+  
+  useEffect(() => {
+    fetchAppData();
+  }, [fetchAppData]);
   const [tab, setTab] = useState<Tab>("overview");
   const [plans, setPlans] = useState<any[]>([]);
   const [investments, setInvestments] = useState<any[]>([]);

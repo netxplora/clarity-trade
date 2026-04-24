@@ -13,8 +13,12 @@ import { supabase } from "@/lib/supabase";
 const traderAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100&h=100";
 
 const Overview = () => {
-  const { user, balance, formatCurrency, activeTrades, activeSessions, transactions, tradeHistory, loadingStates } = useStore();
+  const { user, balance, formatCurrency, activeTrades, activeSessions, transactions, tradeHistory, loadingStates, fetchAppData } = useStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchAppData();
+  }, [fetchAppData]);
 
   // Aggregate all activity types (Trades, Transactions, Sessions)
   const combinedActivity = useMemo(() => {

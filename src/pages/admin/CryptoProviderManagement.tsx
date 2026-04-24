@@ -32,6 +32,9 @@ interface CryptoProvider {
   provider_type: string;
   provider_logo: string | null;
   provider_description: string | null;
+  supported_assets: string[] | null;
+  supported_regions: string[] | null;
+  supported_payment_methods: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -41,9 +44,12 @@ const EMPTY_FORM: Omit<CryptoProvider, 'id' | 'created_at' | 'updated_at'> = {
   provider_url: '',
   provider_priority: 100,
   provider_status: 'Active',
-  provider_type: 'Backup',
+  provider_type: 'Secondary',
   provider_logo: null,
   provider_description: null,
+  supported_assets: null,
+  supported_regions: null,
+  supported_payment_methods: null,
 };
 
 const CryptoProviderManagement = () => {
@@ -193,6 +199,9 @@ const CryptoProviderManagement = () => {
       provider_type: provider.provider_type,
       provider_logo: provider.provider_logo,
       provider_description: provider.provider_description,
+      supported_assets: provider.supported_assets,
+      supported_regions: provider.supported_regions,
+      supported_payment_methods: provider.supported_payment_methods,
     });
     setFormOpen(true);
   };
@@ -213,18 +222,23 @@ const CryptoProviderManagement = () => {
 
     setSaving(true);
     try {
+      const providerPayload = {
+        provider_name: form.provider_name,
+        provider_url: form.provider_url,
+        provider_priority: form.provider_priority,
+        provider_status: form.provider_status,
+        provider_type: form.provider_type,
+        provider_logo: form.provider_logo,
+        provider_description: form.provider_description,
+        supported_assets: form.supported_assets,
+        supported_regions: form.supported_regions,
+        supported_payment_methods: form.supported_payment_methods,
+      };
+
       if (editingProvider) {
         const { error } = await supabase
           .from('crypto_providers')
-          .update({
-            provider_name: form.provider_name,
-            provider_url: form.provider_url,
-            provider_priority: form.provider_priority,
-            provider_status: form.provider_status,
-            provider_type: form.provider_type,
-            provider_logo: form.provider_logo,
-            provider_description: form.provider_description,
-          })
+          .update(providerPayload)
           .eq('id', editingProvider.id);
         if (error) throw error;
 
@@ -233,15 +247,7 @@ const CryptoProviderManagement = () => {
       } else {
         const { error } = await supabase
           .from('crypto_providers')
-          .insert({
-            provider_name: form.provider_name,
-            provider_url: form.provider_url,
-            provider_priority: form.provider_priority,
-            provider_status: form.provider_status,
-            provider_type: form.provider_type,
-            provider_logo: form.provider_logo,
-            provider_description: form.provider_description,
-          });
+          .insert(providerPayload);
         if (error) throw error;
 
         toast.success(`Provider "${form.provider_name}" added.`);
@@ -726,6 +732,42 @@ const CryptoProviderManagement = () => {
                   placeholder="Brief description of this provider..."
                   className="w-full h-24 bg-secondary/50 border border-border rounded-xl p-4 text-sm font-medium outline-none resize-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
                 />
+              </div>
+
+              {/* Supported Payment Methods */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                  <CreditCard className="w-3 h-3 text-primary" /> Supported Payment Methods
+                </Label>
+                <Input
+                  value={form.supported_payment_methods || ''}
+                  onChange={(e) => setForm({ ...form, supported_payment_methods: e.target.value || null })}
+                  placeholder="e.g. Visa, Mastercard, Apple Pay"
+                  className="h-12 bg-secondary/50 border-border rounded-xl font-bold"
+                />
+                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Separate with commas for clarity</p>
+              </div>
+
+              {/* Assets & Regions */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-foreground uppercase tracking-widest">Supported Assets</Label>
+                  <Input
+                    value={form.supported_assets?.join(', ') || ''}
+                    onChange={(e) => setForm({ ...form, supported_assets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                    placeholder="BTC, ETH, USDT"
+                    className="h-12 bg-secondary/50 border-border rounded-xl font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-foreground uppercase tracking-widest">Supported Regions</Label>
+                  <Input
+                    value={form.supported_regions?.join(', ') || ''}
+                    onChange={(e) => setForm({ ...form, supported_regions: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                    placeholder="Global, US, EU"
+                    className="h-12 bg-secondary/50 border-border rounded-xl font-bold"
+                  />
+                </div>
               </div>
 
               {/* Type & Priority Row */}

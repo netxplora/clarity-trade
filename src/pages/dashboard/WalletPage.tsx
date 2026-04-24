@@ -25,7 +25,8 @@ import {
   RefreshCw,
   Coins,
   ArrowRightLeft,
-  History
+  History,
+  XCircle
 } from "lucide-react";
 import CardDepositModule from "@/components/dashboard/CardDepositModule";
 import CryptoDepositModule from "@/components/dashboard/CryptoDepositModule";
@@ -57,31 +58,29 @@ const WalletPage = () => {
   const [transactions, setLocalTransactions] = useState<Transaction[]>([]);
   const [depositWallets, setDepositWallets] = useState<DepositWallet[]>([]);
   
-  const { user, balance, formatCurrency, transactions: storeTransactions, fetchAppData } = useStore();
+  const { user, balance, formatCurrency, transactions: storeTransactions, cryptoDeposits, fetchAppData } = useStore();
 
-  // Sync transactions from global store (kept in sync by AuthListener real-time subscription)
+  // Process and unify transaction history from the global store
+  const allHistory = (storeTransactions || []).concat(
+    (cryptoDeposits || [])
+      .filter(cd => cd.status !== 'approved')
+      .map(cd => ({
+        ...cd,
+        type: 'Crypto Deposit',
+        amount: cd.amount_expected,
+        isCryptoDeposit: true
+      }))
+  ).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
   useEffect(() => {
-    if (storeTransactions && storeTransactions.length > 0) {
-      setLocalTransactions(storeTransactions);
-    }
-  }, [storeTransactions]);
-
-  const fetchWalletData = async () => {
+     fetchAppData();
      if (!user?.id) return;
-     // Fetch deposit wallets (admin config, not covered by user-level real-time)
-     const { data: walletData } = await supabase.from('deposit_wallets').select('*').eq('status', 'Active');
-     if (walletData) setDepositWallets(walletData);
-     
-     // If store transactions are empty, do an initial fetch
-     if (!storeTransactions || storeTransactions.length === 0) {
-       const { data: txData } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-       if (txData) setLocalTransactions(txData);
-     }
-  };
-
-  useEffect(() => {
-     fetchWalletData();
-  }, [user?.id]);
+     const fetchWallets = async () => {
+       const { data: walletData } = await supabase.from('deposit_wallets').select('*').eq('status', 'Active');
+       if (walletData) setDepositWallets(walletData);
+     };
+     fetchWallets();
+  }, [user?.id, fetchAppData]);
 
   const currentWallet = depositWallets.find(w => {
     const symbolMap: Record<string, string> = { 'BTC': 'Bitcoin', 'ETH': 'Ethereum', 'USDT': 'USDT' };
@@ -229,9 +228,9 @@ const WalletPage = () => {
 
            toast.success(`${method.toUpperCase()} Withdrawal request submitted successfully`);
            setWithdrawAddress("");
+           setWithdrawAddress("");
            setWithdrawAmount("");
            setTab("history");
-           fetchWalletData();
         } else {
            toast.error(error.message);
         }
@@ -695,7 +694,7 @@ const WalletPage = () => {
 
                   {tab === "history" && (
                     <div className="space-y-6">
-                      {transactions.length === 0 ? (
+                      {allHistory.length === 0 ? (
                         <div className="py-24 text-center">
                            <div className="w-16 h-16 rounded-2xl bg-secondary/30 flex items-center justify-center mx-auto mb-4 border border-border/50">
                               <History className="w-8 h-8 text-muted-foreground/30" />
@@ -705,7 +704,7 @@ const WalletPage = () => {
                         </div>
                       ) : (
                         Object.entries(
-                          transactions.reduce((groups: any, tx) => {
+                          allHistory.reduce((groups: any, tx) => {
                             const date = new Date(tx.created_at).toLocaleDateString("en-US", { 
                               weekday: 'long', 
                               year: 'numeric', 
@@ -746,12 +745,14 @@ const WalletPage = () => {
                                          </div>
                                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
                                             <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${
-                                            tx.status === "Completed" ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                            tx.status === "Completed" || tx.status === "approved" ? "bg-green-500/10 text-green-600 border-green-500/20" : 
+                                            tx.status === "Rejected" || tx.status === "rejected" ? "bg-red-500/10 text-red-600 border-red-500/20" :
+                                            "bg-orange-500/10 text-orange-600 border-orange-500/20"
                                             }`}>
-                                               {tx.status === "Completed" ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                               {(tx.status === "Completed" || tx.status === "approved") ? <ShieldCheck className="w-3 h-3" /> : (tx.status === "Rejected" || tx.status === "rejected") ? <XCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                                                {tx.status}
                                             </div>
-                                            <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">Ref: {tx.id.substring(0,6)}</span>
+                                            <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">Ref: {tx.reference_id || tx.id.substring(0,6)}</span>
                                          </div>
                                        </div>
                                      ))}
@@ -798,12 +799,16 @@ const WalletPage = () => {
                                             <td className="py-4.5 px-6 text-right">
                                                <div className="flex flex-col items-end gap-1.5">
                                                   <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${
-                                                  tx.status === "Completed" ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                                  tx.status === "Completed" || tx.status === "approved" ? "bg-green-500/10 text-green-600 border-green-500/20" : 
+                                                  tx.status === "Rejected" || tx.status === "rejected" ? "bg-red-500/10 text-red-600 border-red-500/20" :
+                                                  "bg-orange-500/10 text-orange-600 border-orange-500/20"
                                                   }`}>
-                                                     {tx.status === "Completed" ? <ShieldCheck className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                                                     {(tx.status === "Completed" || tx.status === "approved") ? <ShieldCheck className="w-3.5 h-3.5" /> : (tx.status === "Rejected" || tx.status === "rejected") ? <XCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
                                                      {tx.status}
                                                   </div>
-                                                  <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] pr-2">Verification Passed</span>
+                                                  <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] pr-2">
+                                                     {(tx.status === "Completed" || tx.status === "approved") ? "Verification Passed" : (tx.status === "Rejected" || tx.status === "rejected") ? "Verification Failed" : "Awaiting Verification"}
+                                                  </span>
                                                </div>
                                             </td>
                                          </tr>

@@ -162,9 +162,9 @@ const TradingPage = () => {
   };
 
   useEffect(() => {
-    fetchUserTrades();
+    fetchAppData();
     fetchMarketData();
-  }, [user?.id]);
+  }, [fetchAppData]);
   
   const dynamicPairs = useMemo(() => {
      const pairs = dbPairs.length > 0 ? dbPairs.map(dbP => {

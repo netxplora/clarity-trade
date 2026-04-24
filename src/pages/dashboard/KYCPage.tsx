@@ -42,7 +42,11 @@ const LEVELS = [
 ];
 
 const KYCPage = () => {
-  const { user, setUser } = useStore();
+  const { user, setUser, fetchAppData } = useStore();
+  
+  useEffect(() => {
+    fetchAppData();
+  }, [fetchAppData]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submissions, setSubmissions] = useState<KYCSubmission[]>([]);

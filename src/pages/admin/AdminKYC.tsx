@@ -286,18 +286,18 @@ const AdminKYC = () => {
         <DialogContent className="max-w-3xl bg-card border-border shadow-huge p-0 rounded-2xl sm:rounded-[2rem] overflow-hidden flex flex-col max-h-[90vh] w-[95vw] sm:w-full">
           {selectedSubmission && (
             <>
-              <div className="p-5 sm:p-6 border-b border-border bg-secondary/10 shrink-0 flex items-center justify-between">
+              <DialogHeader className="p-5 sm:p-6 border-b border-border bg-secondary/10 shrink-0 flex flex-row items-center justify-between space-y-0">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-base sm:text-lg font-black">{selectedSubmission.kyc_level}</div>
                   <div>
-                    <h2 className="text-base sm:text-lg font-bold text-foreground">Level {selectedSubmission.kyc_level} Verification</h2>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{selectedSubmission.user?.name || selectedSubmission.full_name}</p>
+                    <DialogTitle className="text-base sm:text-lg font-bold text-foreground">Level {selectedSubmission.kyc_level} Verification</DialogTitle>
+                    <DialogDescription className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{selectedSubmission.user?.name || selectedSubmission.full_name}</DialogDescription>
                   </div>
                 </div>
                 <Badge className={`uppercase text-[9px] sm:text-[10px] font-black tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 ${selectedSubmission.status === 'Verified' ? 'bg-green-500 text-white' : selectedSubmission.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
                   {selectedSubmission.status}
                 </Badge>
-              </div>
+              </DialogHeader>
 
               <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6 sm:space-y-8">
                 {selectedSubmission.kyc_level === 1 && (
@@ -446,6 +446,8 @@ const AdminKYC = () => {
       {/* Lightbox */}
       <Dialog open={!!previewImage} onOpenChange={(open) => { if(!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-[95vw] lg:max-w-[80vw] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+          <DialogTitle className="sr-only">Document Preview</DialogTitle>
+          <DialogDescription className="sr-only">Viewing uploaded document image</DialogDescription>
           {previewImage && (
              <div className="relative group w-full flex flex-col items-center">
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/80 backdrop-blur-xl px-6 py-2 rounded-full border border-white/10 z-50">

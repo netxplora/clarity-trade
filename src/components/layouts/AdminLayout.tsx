@@ -4,8 +4,9 @@ import {
   LayoutDashboard, Users, Wallet, LineChart, Copy, FileText,
   Settings, LogOut, TrendingUp, Menu, X, Bell, ChevronDown, Shield,
   Activity, Zap, ShieldCheck, Database, Globe, Lock, Radio, Gift, AlertTriangle,
-  CreditCard, MessageSquare, ShieldAlert
+  CreditCard, MessageSquare, ShieldAlert, Download
 } from "lucide-react";
+import { toast } from "sonner";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
@@ -21,13 +22,15 @@ const navItems = [
   { icon: Users, label: "Users", path: "/admin/users", description: "Manage Accounts" },
   { icon: ShieldCheck, label: "KYC Management", path: "/admin/kyc", description: "Verify Identities" },
   { icon: Wallet, label: "Finances", path: "/admin/finances", description: "Money & Balance" },
+  { icon: Download, label: "Deposits", path: "/admin/deposits", description: "Verify Crypto" },
+  { icon: Shield, label: "Deposit Wallets", path: "/admin/wallets", description: "Manage Destinations" },
   { icon: LineChart, label: "Trading", path: "/admin/trading", description: "Market Control" },
 
   { icon: Gift, label: "Referrals", path: "/admin/referrals", description: "User Program" },
   { icon: FileText, label: "Content", path: "/admin/content", description: "Blog & Pages" },
   { icon: MessageSquare, label: "Support Hub", path: "/admin/support", description: "Live Chat" },
   { icon: LineChart, label: "Investments", path: "/admin/investments", description: "Plans & Portfolios" },
-  { icon: CreditCard, label: "Crypto Providers", path: "/admin/crypto-providers", description: "Widget Failover" },
+  { icon: CreditCard, label: "Crypto Providers", path: "/admin/crypto-providers", description: "Purchase Gateways" },
   { icon: Settings, label: "Settings", path: "/admin/settings", description: "System Config" },
 ];
 
@@ -58,7 +61,18 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/login");
+      if (!session) {
+        navigate("/auth/login");
+        return;
+      }
+      
+      // Check for admin role
+      if (user && user.role !== 'admin') {
+        toast.error("Access Denied", {
+          description: "You do not have permission to access the administrative dashboard."
+        });
+        navigate("/dashboard");
+      }
     });
 
     playAppOpenSound();
@@ -67,12 +81,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     return () => {
       document.documentElement.classList.remove("dashboard-scale");
     };
-  }, [navigate]);
+  }, [navigate, user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     logout();
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
@@ -106,7 +120,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               }`}
             >
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${active ? "bg-gradient-gold shadow-gold text-white" : "bg-sidebar-accent"}`}>
-                 <item.icon className="w-4.5 h-4.5" />
+                 <item.icon className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold">{item.label}</span>
@@ -227,7 +241,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   notificationsOpen ? "bg-primary/20 border-primary shadow-glow" : "bg-secondary border-border hover:bg-secondary/80"
                 }`}
               >
-                <Bell className={`w-4.5 h-4.5 transition-colors ${notificationsOpen ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
+                <Bell className={`w-5 h-5 transition-colors ${notificationsOpen ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
                 {unreadCount > 0 && (
                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-glow animate-pulse" />
                 )}

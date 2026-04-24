@@ -187,12 +187,14 @@ export default function BuyCryptoModule() {
   const currentWallet = depositWallets.find(w => {
     const symbolMap: Record<string, string> = { 'BTC': 'Bitcoin', 'ETH': 'Ethereum', 'USDT': 'USDT' };
     const targetName = symbolMap[selectedCoin.toUpperCase()] || selectedCoin;
-    return w.coin.toUpperCase() === targetName.toUpperCase();
+    const coinName = (w.coin || w.asset || '').toUpperCase();
+    return coinName === targetName.toUpperCase();
   });
 
   const handleCopyAddress = () => {
-    if (currentWallet) {
-      navigator.clipboard.writeText(currentWallet.address);
+    const addr = currentWallet?.address || currentWallet?.wallet_address;
+    if (addr) {
+      navigator.clipboard.writeText(addr);
       toast.success(`${selectedCoin} address copied to clipboard`);
     } else {
       toast.error("No address available for this asset");

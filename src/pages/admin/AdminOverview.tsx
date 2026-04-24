@@ -40,60 +40,57 @@ const AdminOverview = () => {
 
     try {
         // Critical: Users & Trades
-        Promise.all([
+        const [profilesRes, tradesRes] = await Promise.all([
            supabase.from('profiles').select('*, balances:balances(*)'),
            supabase.from('trades').select('*')
-        ]).then(([{ data: usersData }, { data: tradeData }]) => {
-           if (usersData) {
-               setUsers(usersData.map(u => {
-                   const b = Array.isArray(u.balances) ? u.balances[0] : u.balances;
-                   const fiat = Number(b?.fiat_balance || 0);
-                   const trading = Number(b?.trading_balance || 0);
-                   const copyTrading = Number(b?.copy_trading_balance || 0);
-                   const crypto = b?.crypto_balances || {};
-                   
-                   const cryptoPrices: Record<string, number> = { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580 };
-                   const cryptoTotal = Object.entries(crypto).reduce((acc, [coin, amount]) => {
-                       return acc + (Number(amount) * (cryptoPrices[coin.toLowerCase()] || 0));
-                   }, 0);
+        ]);
 
-                   return {
-                       ...u,
-                       balanceNum: fiat + trading + copyTrading + cryptoTotal,
-                       cryptoBalanceNum: cryptoTotal,
-                       fiatBalanceNum: fiat,
-                       tradingBalance: trading,
-                       copyTradingBalance: copyTrading,
-                       balances: crypto,
-                       joined: new Date(u.created_at).toLocaleDateString()
-                   };
-               }));
-           }
-           if (tradeData) {
-               setTradeVolume(tradeData.reduce((acc, t) => acc + (Number(t.amount) || 0), 0));
-               setBuyOrders(tradeData.filter(t => t.type?.toLowerCase() === 'buy' || t.type?.toLowerCase() === 'long').length);
-               setSellOrders(tradeData.filter(t => t.type?.toLowerCase() === 'sell' || t.type?.toLowerCase() === 'short').length);
-           }
-           setIsCriticalLoading(false);
-        }).catch(err => {
-           console.error("Failed critical admin data", err);
-           setIsCriticalLoading(false);
-        });
+        if (profilesRes.data) {
+            setUsers(profilesRes.data.map(u => {
+                const b = Array.isArray(u.balances) ? u.balances[0] : u.balances;
+                const fiat = Number(b?.fiat_balance || 0);
+                const trading = Number(b?.trading_balance || 0);
+                const copyTrading = Number(b?.copy_trading_balance || 0);
+                const crypto = b?.crypto_balances || {};
+                
+                const cryptoPrices: Record<string, number> = { btc: 65000, eth: 3500, usdt: 1, sol: 145, usdc: 1, xrp: 0.62, bnb: 580 };
+                const cryptoTotal = Object.entries(crypto).reduce((acc, [coin, amount]) => {
+                    return acc + (Number(amount) * (cryptoPrices[coin.toLowerCase()] || 0));
+                }, 0);
+
+                return {
+                    ...u,
+                    balanceNum: fiat + trading + copyTrading + cryptoTotal,
+                    cryptoBalanceNum: cryptoTotal,
+                    fiatBalanceNum: fiat,
+                    tradingBalance: trading,
+                    copyTradingBalance: copyTrading,
+                    balances: crypto,
+                    joined: new Date(u.created_at).toLocaleDateString()
+                };
+            }));
+        }
+
+        if (tradesRes.data) {
+            setTradeVolume(tradesRes.data.reduce((acc, t) => acc + (Number(t.amount) || 0), 0));
+            setBuyOrders(tradesRes.data.filter(t => t.type?.toLowerCase() === 'buy' || t.type?.toLowerCase() === 'long').length);
+            setSellOrders(tradesRes.data.filter(t => t.type?.toLowerCase() === 'sell' || t.type?.toLowerCase() === 'short').length);
+        }
+
+        setIsCriticalLoading(false);
 
         // Deferred: Sessions, TXs, Fees
-        Promise.all([
+        const [sessionsRes, txRes, feeRes] = await Promise.all([
            supabase.from('active_sessions').select('*'),
            supabase.from('transactions').select('*, profiles(name)').order('created_at', { ascending: false }),
            supabase.from('fee_ledger').select('fee_amount')
-        ]).then(([{ data: sessionsData }, { data: txData }, { data: feeData }]) => {
-           if (sessionsData) setActiveSessions(sessionsData);
-           if (txData) setTransactions(txData);
-           if (feeData) setPlatformRevenue(feeData.reduce((acc, r) => acc + (Number(r.fee_amount) || 0), 0));
-           setIsDeferredLoading(false);
-        }).catch(err => {
-           console.error("Failed deferred admin data", err);
-           setIsDeferredLoading(false);
-        });
+        ]);
+
+        if (sessionsRes.data) setActiveSessions(sessionsRes.data);
+        if (txRes.data) setTransactions(txRes.data);
+        if (feeRes.data) setPlatformRevenue(feeRes.data.reduce((acc, r) => acc + (Number(r.fee_amount) || 0), 0));
+        
+        setIsDeferredLoading(false);
 
     } catch (err) {
         console.error("Failed to fetch admin data", err);
