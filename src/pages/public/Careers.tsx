@@ -46,18 +46,18 @@ export default function Careers() {
       />
 
       {/* Team Stats */}
-      <section className="py-24 bg-white relative z-20 -mt-10">
+      <section className="py-24 bg-background relative z-20 -mt-10">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {teamIcons.map((t, i) => (
               <motion.div key={t.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-4 p-8 rounded-3xl bg-white border border-gray-100 shadow-xl"
+                className="flex items-center gap-4 p-8 rounded-3xl bg-background border border-gray-100 shadow-xl"
               >
                 <div className="w-14 h-14 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center shrink-0 border border-[#D4AF37]/20">
                   <t.icon className="w-7 h-7 text-[#D4AF37]" />
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-gray-900">{t.count}</div>
+                  <div className="text-3xl font-black text-foreground">{t.count}</div>
                   <div className="text-[10px] text-[#D4AF37] font-black uppercase tracking-widest">{t.name}</div>
                 </div>
               </motion.div>
@@ -67,7 +67,7 @@ export default function Careers() {
       </section>
 
       {/* Culture & Perks */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-4xl font-playfair font-bold text-foreground mb-6">Why You'll Love Working Here</h2>
@@ -78,7 +78,7 @@ export default function Careers() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {perks.map((perk, i) => (
               <motion.div key={perk.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-3xl bg-white border border-border shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group"
+                className="p-8 rounded-3xl bg-background border border-border shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group"
               >
                 <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-6 group-hover:bg-gradient-gold group-hover:shadow-gold transition-all">
                   <perk.icon className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
@@ -103,7 +103,7 @@ export default function Careers() {
           <div className="max-w-4xl mx-auto space-y-4">
             {openings.map((job, i) => (
               <motion.div key={job.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                className="group p-6 rounded-2xl bg-white border border-border shadow-sm hover:shadow-lg hover:border-primary/20 transition-all flex flex-col md:flex-row md:items-center gap-6"
+                className="group p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-lg hover:border-primary/20 transition-all flex flex-col md:flex-row md:items-center gap-6"
               >
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -126,11 +126,11 @@ export default function Careers() {
       </section>
 
       {/* Hiring Process */}
-      <section className="py-24 bg-white" id="process">
+      <section className="py-24 bg-background" id="process">
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-20">
             <span className="heading-gold">Join the Crew</span>
-            <h2 className="title-hyip text-gray-900">How We Hire</h2>
+            <h2 className="title-hyip text-foreground">How We Hire</h2>
             <p className="p-hyip">A transparent, efficient process designed to find the best fit for both you and the team.</p>
           </motion.div>
           <div className="grid md:grid-cols-4 gap-8">
@@ -145,7 +145,7 @@ export default function Careers() {
                 >
                     <div className="text-5xl font-black text-[#D4AF37]/10 absolute -top-2 -left-2 group-hover:text-[#D4AF37]/20 transition-colors uppercase italic">{s.step}</div>
                     <div className="relative z-10 pt-4">
-                        <h3 className="text-lg font-bold text-gray-900 mb-3">{s.title}</h3>
+                        <h3 className="text-lg font-bold text-foreground mb-3">{s.title}</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                     </div>
                 </motion.div>
@@ -166,7 +166,7 @@ export default function Careers() {
               </div>
               <div className="lg:w-1/2 space-y-8">
                  <span className="heading-gold">Our DNA</span>
-                 <h2 className="title-hyip text-gray-900 text-4xl">Ownership, Speed, and Relentless Curiosity</h2>
+                 <h2 className="title-hyip text-foreground text-4xl">Ownership, Speed, and Relentless Curiosity</h2>
                  <p className="p-hyip text-lg">
                     We're not just building a platform; we're building a community of owners. At Clarity Trade, you have the autonomy to make decisions that impact the future of finance.
                  </p>
@@ -181,7 +181,7 @@ export default function Careers() {
                             <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
                             </div>
-                            <span className="text-sm font-semibold text-gray-700">{val}</span>
+                            <span className="text-sm font-semibold text-foreground">{val}</span>
                         </li>
                     ))}
                  </ul>
@@ -191,7 +191,7 @@ export default function Careers() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-white text-center">
+      <section className="py-24 bg-background text-center">
         <div className="container mx-auto px-6">
            <div className="max-w-3xl mx-auto p-12 rounded-[3rem] bg-[#1a1510] relative overflow-hidden group shadow-huge">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
@@ -203,7 +203,7 @@ export default function Careers() {
                     <Button variant="hero" className="h-14 px-10 rounded-xl text-white shadow-gold font-bold uppercase tracking-widest">
                        View Open Positions
                     </Button>
-                    <Button variant="outline" className="h-14 px-10 rounded-xl border-white/10 text-white font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10">
+                    <Button variant="outline" className="h-14 px-10 rounded-xl border-white/10 text-white font-bold uppercase tracking-widest bg-background/5 hover:bg-background/10">
                        Follow on LinkedIn
                     </Button>
                  </div>

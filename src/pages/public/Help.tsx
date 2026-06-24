@@ -20,19 +20,19 @@ export default function Help() {
         title="Solutions & Support"
         description="Search our extensive knowledge base or browse help topics to find solutions for your inquiries. Our team is always here for you."
         icon={HelpCircle}
-        image="/images/3d-hq.png"
+        image="/images/help_center_hero_1777448252651.png"
       />
 
-      <section className="py-24 bg-white" id="help-search">
+      <section className="py-24 bg-background" id="help-search">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto relative -mt-32 z-20">
-            <div className="bg-white p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-100 mb-20 flex flex-col md:flex-row gap-6">
+            <div className="bg-background p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-100 mb-20 flex flex-col md:flex-row gap-6">
               <div className="relative flex-1">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
                 <input 
                   type="text" 
                   placeholder="Ask a question or search topics..." 
-                  className="w-full h-16 pl-16 pr-6 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-bold outline-none focus:border-[#D4AF37] transition-all"
+                  className="w-full h-16 pl-16 pr-6 rounded-2xl bg-gray-50 border border-gray-100 text-foreground font-bold outline-none focus:border-[#D4AF37] transition-all"
                 />
               </div>
               <Button variant="hero" className="h-16 px-10 rounded-2xl font-black shadow-gold text-white">Search Help</Button>
@@ -41,17 +41,17 @@ export default function Help() {
             <div className="grid md:grid-cols-2 gap-8">
               {categories.map((cat, i) => (
                 <motion.div key={cat.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                  className="p-10 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#D4AF37] transition-all duration-500 group"
+                  className="p-10 rounded-3xl bg-background border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#D4AF37] transition-all duration-500 group"
                 >
                   <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center mb-8 group-hover:bg-[#D4AF37] transition-all">
                     <cat.icon className="w-8 h-8 text-[#D4AF37] group-hover:text-white transition-colors" />
                   </div>
-                  <h3 className="text-2xl font-black text-gray-900 mb-4">{cat.title}</h3>
-                  <p className="text-gray-500 mb-8 leading-relaxed font-bold">{cat.desc}</p>
+                  <h3 className="text-2xl font-black text-foreground mb-4">{cat.title}</h3>
+                  <p className="text-muted-foreground mb-8 leading-relaxed font-bold">{cat.desc}</p>
                   
                   <ul className="space-y-4">
                     {cat.items.map(item => (
-                      <li key={item} className="flex items-center gap-3 text-sm text-gray-900 font-bold group/item cursor-pointer">
+                      <li key={item} className="flex items-center gap-3 text-sm text-foreground font-bold group/item cursor-pointer">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] group-hover/item:scale-150 transition-transform" />
                         {item}
                       </li>
@@ -75,7 +75,7 @@ export default function Help() {
               <Button variant="hero" className="h-16 px-12 rounded-2xl font-black shadow-gold text-white" asChild>
                  <Link to="/contact">Chat Now <MessageSquare className="w-5 h-5 ml-2" /></Link>
               </Button>
-              <Button variant="outline" className="h-16 px-12 rounded-2xl font-black border-white/20 text-white hover:bg-white/10" asChild>
+              <Button variant="outline" className="h-16 px-12 rounded-2xl font-black border-white/20 text-white hover:bg-background/10" asChild>
                  <Link to="/contact">Submit Ticket</Link>
               </Button>
            </div>

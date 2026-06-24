@@ -94,6 +94,7 @@ const AdminLogin = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
                   className="w-full h-14 bg-black/40 border border-white/5 rounded-2xl px-12 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-sm font-medium text-white" 
                   placeholder="admin@clarity.trade"
                 />
@@ -109,6 +110,7 @@ const AdminLogin = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                   className="w-full h-14 bg-black/40 border border-white/5 rounded-2xl px-12 pr-12 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-sm font-medium text-white tracking-[0.3em]" 
                   placeholder="••••••••"
                 />

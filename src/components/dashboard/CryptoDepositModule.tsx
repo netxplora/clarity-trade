@@ -96,6 +96,11 @@ export default function CryptoDepositModule({ onComplete }: { onComplete?: () =>
     }
   }, [isLoading]);
 
+  // Reset selectedNetwork when selectedAsset changes to prevent stale state
+  useEffect(() => {
+    setSelectedNetwork(null);
+  }, [selectedAsset]);
+
   // Rate Fetching Logic
   useEffect(() => {
     if (selectedAsset && amountUsd) {
@@ -111,8 +116,15 @@ export default function CryptoDepositModule({ onComplete }: { onComplete?: () =>
     }
   }, [selectedAsset, amountUsd]);
 
-  const uniqueAssets = useMemo(() => {
-    return Array.from(new Set(wallets.map(w => (w.asset || w.coin || '').toUpperCase()))).filter(Boolean).sort();
+  // Use SUPPORTED_ASSETS as the selector source, with availability indicators from DB wallets
+  const assetsWithAvailability = useMemo(() => {
+    const activeAssetSet = new Set(
+      wallets.map(w => (w.asset || w.coin || '').toUpperCase()).filter(Boolean)
+    );
+    return SUPPORTED_ASSETS.map(a => ({
+      ...a,
+      hasWallet: activeAssetSet.has(a.symbol),
+    }));
   }, [wallets]);
 
   const availableNetworks = useMemo(() => {
@@ -131,6 +143,13 @@ export default function CryptoDepositModule({ onComplete }: { onComplete?: () =>
   const handleInitialize = () => {
     if (!selectedAsset || !amountUsd || parseFloat(amountUsd) <= 0) {
       toast.error('Please select an asset and enter a valid amount.');
+      return;
+    }
+    // Check if there are any active wallets for the selected asset
+    if (availableNetworks.length === 0) {
+      toast.error('No active deposit wallet configured for this asset.', {
+        description: 'Please contact support or try a different cryptocurrency.'
+      });
       return;
     }
     // Auto-select network if only one available
@@ -261,18 +280,21 @@ export default function CryptoDepositModule({ onComplete }: { onComplete?: () =>
                 <div className="space-y-4">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Select Cryptocurrency</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {uniqueAssets.map(asset => {
-                      const config = SUPPORTED_ASSETS.find(a => a.symbol === asset);
-                      const isSelected = selectedAsset === asset;
+                    {assetsWithAvailability.map(asset => {
+                      const isSelected = selectedAsset === asset.symbol;
                       return (
-                        <button key={asset} onClick={() => setSelectedAsset(asset)}
-                          className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                            isSelected ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 scale-105' : 'bg-card border-border hover:border-primary/50'
+                        <button key={asset.symbol} onClick={() => setSelectedAsset(asset.symbol)}
+                          className={`relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
+                            isSelected ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 scale-105' : asset.hasWallet ? 'bg-card border-border hover:border-primary/50' : 'bg-card border-border/50 opacity-50 hover:opacity-80 hover:border-border'
                           }`}>
-                          <div className={`w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-xl font-black ${config?.color || 'text-primary'}`}>
-                            {config?.icon || asset.slice(0, 2)}
+                          {asset.hasWallet && (
+                            <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500" title="Wallet configured" />
+                          )}
+                          <div className={`w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-xl font-black ${asset.color}`}>
+                            {asset.icon}
                           </div>
-                          <span className="text-[10px] font-black uppercase tracking-widest">{asset}</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest">{asset.symbol}</span>
+                          <span className="text-[8px] font-bold text-muted-foreground/60 -mt-1">{asset.name}</span>
                         </button>
                       );
                     })}
@@ -357,7 +379,7 @@ export default function CryptoDepositModule({ onComplete }: { onComplete?: () =>
                   {selectedNetwork && currentWallet && (
                     <div className="space-y-6">
                       <div className="flex flex-col items-center space-y-4">
-                        <div className="p-4 bg-white rounded-3xl shadow-xl border border-border">
+                        <div className="p-4 bg-background rounded-3xl shadow-xl border border-border">
                           <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentWallet.wallet_address}`} 
                             alt="QR" className="w-40 h-40 object-contain" />
                         </div>

@@ -472,7 +472,7 @@ const SettingsPage = () => {
     <div className="space-y-6">
       <SettingsCard title="Referral Invitation" desc="Earn rewards by inviting other traders">
         <div className="p-7 rounded-[2rem] bg-gradient-to-br from-primary to-primary-foreground text-white space-y-6 shadow-huge relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-background/10 rounded-full -mr-16 -mt-16 blur-3xl" />
           <div className="relative z-10">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-4">Your Invitation Link</p>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/10 p-4 rounded-2xl border border-white/10">
@@ -482,7 +482,7 @@ const SettingsPage = () => {
                     navigator.clipboard.writeText(referralLink);
                     toast.success("Link copied to clipboard");
                   }}
-                  className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 h-11 px-6 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                  className="w-full sm:w-auto bg-background text-primary hover:bg-background/90 h-11 px-6 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
                 >
                   <Copy className="w-4 h-4 mr-2" /> Copy link
                 </Button>

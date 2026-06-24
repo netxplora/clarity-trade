@@ -77,7 +77,7 @@ export default function ConvertModule() {
         if (error) throw error;
 
         // Record transaction
-        const txPromise = supabase.from('transactions').insert({
+        await supabase.from('transactions').insert({
             user_id: user?.id,
             amount: amountNum,
             asset: fromAsset,
@@ -87,17 +87,19 @@ export default function ConvertModule() {
             address: 'Internal Exchange'
         });
 
-        // Record fee in platform ledger (USD value)
-        const feeInUsd = conversion.fee * (cryptoPrices[toAsset] || 1);
-        const feePromise = supabase.from('fee_ledger').insert({
-            user_id: user?.id,
-            fee_amount: feeInUsd,
-            fee_type: 'Conversion',
-            asset: toAsset,
-            asset_amount: conversion.fee
-        });
-
-        await Promise.all([txPromise, feePromise]);
+        // Record fee in platform ledger (USD value) — non-blocking
+        try {
+            const feeInUsd = conversion.fee * (cryptoPrices[toAsset] || 1);
+            await supabase.from('fee_ledger').insert({
+                user_id: user?.id,
+                fee_amount: feeInUsd,
+                fee_type: 'Conversion',
+                asset: toAsset,
+                asset_amount: conversion.fee
+            });
+        } catch (feeErr) {
+            console.warn('[ConvertModule] Fee ledger insert failed (table may not exist):', feeErr);
+        }
 
         toast.success("Conversion Complete", {
             description: `Successfully converted ${amountNum} ${fromAsset} to ${conversion.receive.toFixed(6)} ${toAsset}.`

@@ -48,7 +48,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/auth/login");
+      if (!session) navigate("/auth/login"); else useStore.getState().fetchAppData();
     });
 
     playAppOpenSound();

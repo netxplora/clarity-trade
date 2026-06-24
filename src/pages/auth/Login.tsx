@@ -5,28 +5,21 @@ import { TrendingUp, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-
+import { useStore } from "@/store/useStore";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { hasActiveSession, user } = useStore();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        supabase.from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .maybeSingle()
-          .then(({ data: profile }) => {
-            if (profile?.role === 'admin') navigate("/admin");
-            else navigate("/dashboard");
-          });
-      }
-    });
-  }, [navigate]);
+    if (hasActiveSession) {
+      if (user?.role === 'admin') navigate("/admin");
+      else navigate("/dashboard");
+    }
+  }, [hasActiveSession, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,19 +36,10 @@ const Login = () => {
         return;
       }
 
-      const { user } = data;
-      
-      // Fetch role but don't block if it fails or is missing (default to dashboard)
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).maybeSingle();
-
       toast.success("Successfully authenticated!");
       
       // Use window.location.href to ensure full store re-initialization
-      if (profile?.role === 'admin') {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/dashboard";
-      }
+      window.location.href = "/dashboard";
     } catch (err: any) {
        toast.error(err.message || "An error occurred during authentication.");
     } finally {
@@ -111,6 +95,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
                   placeholder="name@company.com" 
                   className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                />
@@ -127,6 +112,7 @@ const Login = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
                     placeholder="••••••••" 
                     className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 pr-12 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm tracking-widest text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                  />

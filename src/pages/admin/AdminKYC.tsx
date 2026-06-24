@@ -455,7 +455,7 @@ const AdminKYC = () => {
                    <button onClick={() => setPreviewImage(null)} className="text-white/60 hover:text-white transition-colors ml-4"><X className="w-4 h-4" /></button>
                 </div>
                 {previewImage.toLowerCase().endsWith('.pdf') ? (
-                  <iframe src={previewImage} className="w-full h-[85vh] rounded-3xl bg-white" />
+                  <iframe src={previewImage} className="w-full h-[85vh] rounded-3xl bg-background" />
                 ) : (
                   <img src={previewImage} className="max-h-[85vh] w-auto rounded-3xl border border-white/10 shadow-huge bg-black/50" alt="Preview" />
                 )}

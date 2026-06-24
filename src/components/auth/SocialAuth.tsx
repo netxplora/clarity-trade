@@ -30,7 +30,7 @@ const SocialAuth = () => {
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-4 text-muted-foreground font-bold tracking-widest">Or continue with</span>
+          <span className="bg-background px-4 text-muted-foreground font-bold tracking-widest">Or continue with</span>
         </div>
       </div>
 
@@ -39,7 +39,7 @@ const SocialAuth = () => {
           variant="outline"
           disabled={!!loading}
           onClick={() => handleSocialLogin('google')}
-          className="h-12 rounded-xl border-border bg-white hover:bg-secondary hover:border-primary/20 transition-all group"
+          className="h-12 rounded-xl border-border bg-background hover:bg-secondary hover:border-primary/20 transition-all group"
         >
           {loading === 'google' ? (
             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -52,7 +52,7 @@ const SocialAuth = () => {
           variant="outline"
           disabled={!!loading}
           onClick={() => handleSocialLogin('apple')}
-          className="h-12 rounded-xl border-border bg-white hover:bg-secondary hover:border-primary/20 transition-all group"
+          className="h-12 rounded-xl border-border bg-background hover:bg-secondary hover:border-primary/20 transition-all group"
         >
           {loading === 'apple' ? (
             <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
@@ -67,7 +67,7 @@ const SocialAuth = () => {
           variant="outline"
           disabled={!!loading}
           onClick={() => handleSocialLogin('facebook')}
-          className="h-12 rounded-xl border-border bg-white hover:bg-secondary hover:border-primary/20 transition-all group"
+          className="h-12 rounded-xl border-border bg-background hover:bg-secondary hover:border-primary/20 transition-all group"
         >
           {loading === 'facebook' ? (
             <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />

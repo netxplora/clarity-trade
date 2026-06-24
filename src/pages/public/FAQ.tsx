@@ -39,16 +39,16 @@ export default function FAQ() {
         title="Common Questions"
         description="Everything you need to know about our platform, security, and trading services. Can't find what you're looking for? Our team is available 24/5."
         icon={HelpCircle}
-        image="/images/3d-hq.png"
+        image="/images/help_center_hero_1777448252651.png"
       />
 
-      <section className="py-24 bg-white" id="faq-content">
+      <section className="py-24 bg-background" id="faq-content">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto space-y-20">
             {faqs.map((group, groupIdx) => (
               <div key={group.category} className="space-y-8">
                 <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-                  <h2 className="text-3xl font-black text-gray-900 border-l-4 border-[#D4AF37] pl-6">{group.category}</h2>
+                  <h2 className="text-3xl font-black text-foreground border-l-4 border-[#D4AF37] pl-6">{group.category}</h2>
                 </motion.div>
                 
                 <div className="space-y-4">
@@ -56,11 +56,11 @@ export default function FAQ() {
                     <motion.div key={faq.q} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                       className="hyip-card !p-8 group hover:!border-[#D4AF37] cursor-pointer"
                     >
-                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-start gap-4">
+                      <h3 className="text-xl font-bold text-foreground mb-4 flex items-start gap-4">
                         <span className="text-[#D4AF37] font-black">Q.</span>
                         {faq.q}
                       </h3>
-                      <p className="text-gray-500 leading-relaxed pl-8">
+                      <p className="text-muted-foreground leading-relaxed pl-8">
                         {faq.a}
                       </p>
                     </motion.div>
@@ -75,16 +75,16 @@ export default function FAQ() {
       {/* Help CTA */}
       <section className="py-24 bg-gray-50 border-t border-gray-100">
         <div className="container mx-auto px-6">
-          <div className="max-w-5xl mx-auto bg-white rounded-3xl p-12 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="max-w-5xl mx-auto bg-background rounded-3xl p-12 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="text-center md:text-left">
-              <h3 className="text-2xl font-black text-gray-900 mb-4">Still have questions?</h3>
-              <p className="text-gray-500 mb-0">Our dedicated support team is available via live chat and email 24/5.</p>
+              <h3 className="text-2xl font-black text-foreground mb-4">Still have questions?</h3>
+              <p className="text-muted-foreground mb-0">Our dedicated support team is available via live chat and email 24/5.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 shrink-0">
                <Button variant="hero" className="h-14 px-10 rounded-xl font-black shadow-gold text-white" asChild>
                   <Link to="/contact">Chat with Us <MessageCircle className="w-5 h-5 ml-2" /></Link>
                </Button>
-               <Button variant="outline" className="h-14 px-10 rounded-xl font-black text-gray-900" asChild>
+               <Button variant="outline" className="h-14 px-10 rounded-xl font-black text-foreground" asChild>
                   <Link to="/help">Visit Help Center <ArrowRight className="w-5 h-5 ml-2" /></Link>
                </Button>
             </div>

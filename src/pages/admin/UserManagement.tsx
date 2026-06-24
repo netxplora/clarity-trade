@@ -1206,7 +1206,7 @@ const UserManagement = () => {
              <div className="relative group w-full flex flex-col items-center">
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/80 backdrop-blur-xl px-6 py-2 rounded-full border border-white/10 z-50">
                    <div className="text-[10px] font-black text-white uppercase tracking-widest">Document Preview</div>
-                   <div className="w-px h-3 bg-white/20" />
+                   <div className="w-px h-3 bg-background/20" />
                    <button onClick={() => setPreviewImage(null)} className="text-white/60 hover:text-white transition-colors">
                       <X className="w-4 h-4" />
                    </button>

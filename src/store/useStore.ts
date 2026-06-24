@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export interface AppUser {
     id: string | number;
@@ -433,316 +434,206 @@ export const useStore = create<AppState>()(
                 const targetId = userId || user?.id;
                 if (!targetId) return;
 
-                // Rate limiting: avoid re-fetching if data is less than 5 seconds old, unless forced
                 const now = Date.now();
                 if (!force && lastFetchTime && (now - lastFetchTime < 5000)) {
                     console.log("[Store] Skipping redundant fetch (data is fresh)");
                     return;
                 }
 
-                console.log(`[Store] Initiating synchronized platform sync for: ${targetId}`);
-
-                // Set top-level loading only if we have no user data yet (prevents flickering on refresh)
+                console.log(`[Store] Initiating platform sync for: ${targetId}`);
                 if (!user || force) set({ isLoading: true });
 
                 set({
                     lastFetchTime: now,
-                    loadingStates: {
-                        profile: true, trades: true, sessions: true,
-                        transactions: true, notifications: true, referrals: true, adminData: true,
-                    },
+                    loadingStates: { profile: true, trades: true, sessions: true, transactions: true, notifications: true, referrals: true, adminData: true },
                     errorStates: { ...DEFAULT_ERRORS },
                 });
 
+                // ── PHASE 1: Profile Fetch (own try/catch — exceptions NEVER bypass fallback) ──
+                let profile: any = null;
+
                 try {
-                    // ── PHASE 1: Profile Fetch (Critical, Blocking) ──
-                    console.log("[Store] Phase 1: Fetching User Profile...");
-                    let profile = null;
-                    let retries = 0;
-                    const maxRetries = 3;
+                    console.log("[Store] Phase 1: Fetching user profile...");
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('*, balances(*)')
+                        .eq('id', targetId)
+                        .maybeSingle();
 
-                    while (retries < maxRetries) {
-                        const { data, error } = await supabase
-                            .from('profiles')
-                            .select('*, balances(*)')
-                            .eq('id', targetId)
-                            .maybeSingle();
-
-                        if (data) {
-                            profile = data;
-                            break;
-                        }
-
-                        retries++;
-                        if (retries < maxRetries) {
-                            console.warn(`[Store] Profile not found. Retrying in 1s... (${retries}/${maxRetries})`);
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
+                    if (data) {
+                        profile = data;
+                    } else if (error) {
+                        console.warn("[Store] Profile query error:", error.message);
                     }
+                } catch (fetchErr: any) {
+                    console.warn("[Store] Profile fetch exception:", fetchErr.message);
+                }
 
-                    if (!profile) {
-                        console.error("Critical: Profile not found after retries. Attempting to recover...");
-                        try {
-                            const { data: authData } = await supabase.auth.getUser();
-                            if (authData?.user) {
-                                const email = authData.user.email || '';
-                                const name = authData.user.user_metadata?.full_name || authData.user.user_metadata?.name || email.split('@')[0] || 'Trader';
+                // Recovery upsert if first fetch failed
+                if (!profile) {
+                    try {
+                        console.log("[Store] Attempting recovery upsert...");
+                        const { data: authData } = await supabase.auth.getUser();
+                        if (authData?.user) {
+                            const email = authData.user.email || '';
+                            const name = authData.user.user_metadata?.full_name || authData.user.user_metadata?.name || email.split('@')[0] || 'Trader';
 
-                                const { data: recoveredProfile } = await supabase
-                                    .from('profiles')
-                                    .upsert({ id: targetId, email: email, name: name, role: 'user', status: 'Active', kyc: 'Pending' })
-                                    .select('*, balances(*)')
-                                    .maybeSingle();
+                            const { data: recovered } = await supabase
+                                .from('profiles')
+                                .upsert({ id: targetId, email, name, role: 'user', status: 'Active', kyc: 'Pending' })
+                                .select('*, balances(*)')
+                                .maybeSingle();
 
-                                if (!recoveredProfile) {
-                                    throw new Error("Force upsert didn't return a profile");
-                                }
-
+                            if (recovered) {
+                                profile = recovered;
                                 await supabase.from('balances').upsert({
-                                    user_id: targetId,
-                                    fiat_balance: 0,
-                                    trading_balance: 0,
-                                    copy_trading_balance: 0,
+                                    user_id: targetId, fiat_balance: 0, trading_balance: 0, copy_trading_balance: 0,
                                     crypto_balances: { bnb: 0, btc: 0, eth: 0, sol: 0, usdc: 0, usdt: 0 }
-                                }).select().maybeSingle();
-
-                                profile = recoveredProfile;
-                            } else {
-                                set({
-                                    isLoading: false,
-                                    loadingStates: { ...DEFAULT_LOADING },
-                                    errorStates: { ...get().errorStates, profile: 'No authenticated user found' }
-                                });
-                                return;
+                                }).then(() => {}, () => {});
                             }
-                        } catch (recoveryErr) {
-                            console.error("Recovery failed:", recoveryErr);
-                            set({
-                                isLoading: false,
-                                loadingStates: { ...DEFAULT_LOADING },
-                                errorStates: { ...get().errorStates, profile: 'Profile recovery failed' }
-                            });
-                            return;
                         }
+                    } catch (e: any) {
+                        console.warn("[Store] Recovery upsert failed:", e.message);
                     }
+                }
 
+                // FINAL FALLBACK: build in-memory profile so dashboard always opens
+                if (!profile) {
+                    console.warn("[Store] Building fallback profile for dashboard access.");
+                    let fallbackEmail = 'user@claritytrade.com';
+                    let fallbackName = 'Trader';
+                    try {
+                        const { data: authData } = await supabase.auth.getUser();
+                        if (authData?.user) {
+                            fallbackEmail = authData.user.email || fallbackEmail;
+                            fallbackName = authData.user.user_metadata?.full_name || fallbackEmail.split('@')[0];
+                        }
+                    } catch (e) { /* ignore */ }
+
+                    profile = {
+                        id: targetId, email: fallbackEmail, name: fallbackName,
+                        role: 'user', status: 'Active', kyc: 'Pending',
+                        created_at: new Date().toISOString(),
+                        balances: { fiat_balance: 0, trading_balance: 0, copy_trading_balance: 0, crypto_balances: {} }
+                    };
+                    toast.error("Could not load your profile from the database. Showing limited data.");
+                }
+
+                // ── PHASE 2: Process profile → commit to store → unblock dashboard ──
+                try {
                     const b = Array.isArray(profile.balances) ? profile.balances[0] : profile.balances;
                     const crypto = b?.crypto_balances || {};
                     const cryptoTotal = calcCryptoTotal(crypto);
 
                     const userData = {
-                        id: profile.id,
-                        name: profile.name,
-                        email: profile.email,
-                        phone: profile.phone || '',
-                        role: profile.role,
-                        status: profile.status,
-                        kyc: profile.kyc,
-                        frozen: profile.frozen,
-                        joined: profile.created_at,
+                        id: profile.id, name: profile.name, email: profile.email,
+                        phone: profile.phone || '', role: profile.role, status: profile.status,
+                        kyc: profile.kyc, frozen: profile.frozen, joined: profile.created_at,
                         fiatBalanceNum: Number(b?.fiat_balance || 0),
                         tradingBalance: Number(b?.trading_balance || 0),
                         copyTradingBalance: Number(b?.copy_trading_balance || 0),
-                        cryptoBalanceNum: cryptoTotal,
-                        balances: crypto,
+                        cryptoBalanceNum: cryptoTotal, balances: crypto,
                         referralCode: profile.referral_code,
                         preferred_currency: profile.preferred_currency || 'USD',
-                        avatar_url: profile.avatar_url,
-                        current_plan: profile.current_plan,
+                        avatar_url: profile.avatar_url, current_plan: profile.current_plan,
                         theme_preference: profile.theme_preference,
                         admin_theme_preference: profile.admin_theme_preference
                     };
 
                     const balanceData = {
                         total: userData.fiatBalanceNum + userData.tradingBalance + userData.copyTradingBalance + userData.cryptoBalanceNum,
-                        available: userData.fiatBalanceNum,
-                        invested: userData.tradingBalance,
+                        available: userData.fiatBalanceNum, invested: userData.tradingBalance,
                         copyTrading: userData.copyTradingBalance,
-                        totalProfit: get().balance.totalProfit,
-                        copySessions: get().balance.copySessions,
-                        totalTrades: get().balance.totalTrades,
-                        winRate: get().balance.winRate,
+                        totalProfit: get().balance.totalProfit, copySessions: get().balance.copySessions,
+                        totalTrades: get().balance.totalTrades, winRate: get().balance.winRate,
                         maxDrawdown: get().balance.maxDrawdown
                     };
 
-                    // ── PHASE 2: Render Immediately — set user + balance, clear profile loading ──
                     set({
-                        user: userData as any,
-                        balance: balanceData,
-                        isLoading: false,
+                        user: userData as any, balance: balanceData, isLoading: false,
                         loadingStates: { ...get().loadingStates, profile: false },
                         errorStates: { ...get().errorStates, profile: null },
                     });
 
+                    console.log("[Store] Phase 2 complete. Dashboard unblocked.");
+
+                    // ── PHASE 3+: Non-blocking parallel fetches ──
                     const isAdmin = profile.role === 'admin';
 
-                    console.log("[Store] Phase 3: Fetching Critical Parallel Data (Trades, Sessions, ProTraders)...");
-                    // Trades
                     supabase.from('trades').select('*').eq('user_id', targetId).order('created_at', { ascending: false })
                         .then(({ data: trades, error }) => {
-                            console.log(`[Store] Trades fetch complete. Records: ${trades?.length || 0}`);
-                            if (error) {
-                                set(s => ({
-                                    loadingStates: { ...s.loadingStates, trades: false },
-                                    errorStates: { ...s.errorStates, trades: 'Failed to load trades' }
-                                }));
-                                return;
-                            }
-                            if (trades) {
+                            if (!error && trades) {
                                 setTradeHistory(trades);
                                 setActiveTrades(trades.filter((t: any) => t.status === 'Open'));
                                 setBalanceStats({ totalTrades: trades.length + get().balance.copySessions });
                             }
                             set(s => ({ loadingStates: { ...s.loadingStates, trades: false } }));
-                        }, err => {
-                            console.warn("Trades fetch failed", err);
-                            set(s => ({
-                                loadingStates: { ...s.loadingStates, trades: false },
-                                errorStates: { ...s.errorStates, trades: 'Trades unavailable' }
-                            }));
-                        });
+                        }, () => set(s => ({ loadingStates: { ...s.loadingStates, trades: false }, errorStates: { ...s.errorStates, trades: 'Trades unavailable' } })));
 
-                    // Copy Trading Sessions + Pro Traders (parallel batch)
                     Promise.all([
                         supabase.from('active_sessions').select('*').eq('user_id', targetId).in('status', ['active', 'paused']),
                         supabase.from('copy_traders').select('*').order('created_at', { ascending: false })
-                    ]).then(([{ data: sessions, error: sessErr }, { data: proTraders, error: ptErr }]) => {
+                    ]).then(([{ data: sessions }, { data: proTraders }]) => {
                         if (proTraders) set({ proTraders });
                         if (sessions) {
                             setActiveSessions(sessions.map(s => {
                                 const trader = proTraders?.find((t: any) => t.id === s.trader_id);
-                                return {
-                                    ...s,
-                                    trader_name: s.trader_name || trader?.name,
-                                    avatar_url: s.avatar_url || trader?.avatar_url,
-                                    ranking_level: s.ranking_level || trader?.ranking_level
-                                };
+                                return { ...s, trader_name: s.trader_name || trader?.name, avatar_url: s.avatar_url || trader?.avatar_url, ranking_level: s.ranking_level || trader?.ranking_level };
                             }));
                             setBalanceStats({ copySessions: sessions.length, totalTrades: sessions.length + get().tradeHistory.length });
                         }
-                        if (sessErr) {
-                            set(s => ({ errorStates: { ...s.errorStates, sessions: 'Sessions unavailable' } }));
-                        }
                         set(s => ({ loadingStates: { ...s.loadingStates, sessions: false } }));
-                    }).catch(err => {
-                        console.warn("Sessions fetch failed", err);
-                        set(s => ({
-                            loadingStates: { ...s.loadingStates, sessions: false },
-                            errorStates: { ...s.errorStates, sessions: 'Sessions unavailable' }
-                        }));
-                    });
+                    }).catch(() => set(s => ({ loadingStates: { ...s.loadingStates, sessions: false }, errorStates: { ...s.errorStates, sessions: 'Sessions unavailable' } })));
 
-                    console.log("[Store] Phase 4: Fetching Deferred Data (Transactions, Deposits, Notifs, Referrals)...");
-                    // Transactions
                     supabase.from('transactions').select('*').eq('user_id', targetId).order('created_at', { ascending: false })
-                        .then(({ data: transactions, error }) => {
-                            console.log(`[Store] Transactions fetch complete. Records: ${transactions?.length || 0}`);
-                            if (!error && transactions) {
-                                set({ transactions: transactions.map((t: any) => ({ ...t, date: t.created_at || t.date })) });
-                            }
-                            if (error) {
-                                set(s => ({ errorStates: { ...s.errorStates, transactions: 'Transactions unavailable' } }));
-                            }
+                        .then(({ data: txns, error }) => {
+                            if (!error && txns) set({ transactions: txns.map((t: any) => ({ ...t, date: t.created_at || t.date })) });
                             set(s => ({ loadingStates: { ...s.loadingStates, transactions: false } }));
-                        }, err => {
-                            console.warn("Transactions fetch failed", err);
-                            set(s => ({
-                                loadingStates: { ...s.loadingStates, transactions: false },
-                                errorStates: { ...s.errorStates, transactions: 'Transactions unavailable' }
-                            }));
-                        });
+                        }, () => set(s => ({ loadingStates: { ...s.loadingStates, transactions: false } })));
 
-                    // Crypto Deposits
                     supabase.from('crypto_deposits').select('*').eq('user_id', targetId).order('created_at', { ascending: false })
-                        .then(({ data: deposits, error }) => {
-                            if (!error && deposits) {
-                                set({ cryptoDeposits: deposits });
-                            }
-                        });
+                        .then(({ data: deposits }) => { if (deposits) set({ cryptoDeposits: deposits }); }, () => {});
 
-                    // Notifications
                     supabase.from('notifications').select('*')
                         .or(isAdmin ? `user_id.eq.${targetId},user_id.is.null` : `user_id.eq.${targetId},type.eq.GLOBAL`)
                         .order('created_at', { ascending: false }).limit(50)
                         .then(({ data: notifs, error }) => {
-                            if (!error && notifs) {
-                                setNotifications(notifs.filter((n: any) => !n.dismissed_by?.includes(targetId)));
-                            }
-                            if (error) {
-                                set(s => ({ errorStates: { ...s.errorStates, notifications: 'Notifications unavailable' } }));
-                            }
+                            if (!error && notifs) setNotifications(notifs.filter((n: any) => !n.dismissed_by?.includes(targetId)));
                             set(s => ({ loadingStates: { ...s.loadingStates, notifications: false } }));
-                        }, err => {
-                            console.warn("Notifs fetch failed", err);
-                            set(s => ({
-                                loadingStates: { ...s.loadingStates, notifications: false },
-                                errorStates: { ...s.errorStates, notifications: 'Notifications unavailable' }
-                            }));
-                        });
+                        }, () => set(s => ({ loadingStates: { ...s.loadingStates, notifications: false } })));
 
-                    // Referrals
                     supabase.from('referrals').select('*, referee:referee_id(name, email)').eq('referrer_id', targetId)
-                        .then(({ data: referrals, error }) => {
-                            if (!error && referrals) {
-                                set({ referrals });
-                            }
-                            if (error) {
-                                set(s => ({ errorStates: { ...s.errorStates, referrals: 'Referrals unavailable' } }));
-                            }
+                        .then(({ data: referrals }) => {
+                            if (referrals) set({ referrals });
                             set(s => ({ loadingStates: { ...s.loadingStates, referrals: false } }));
-                        }, err => {
-                            console.warn("Referrals fetch failed", err);
-                            set(s => ({
-                                loadingStates: { ...s.loadingStates, referrals: false },
-                                errorStates: { ...s.errorStates, referrals: 'Referrals unavailable' }
-                            }));
-                        });
+                        }, () => set(s => ({ loadingStates: { ...s.loadingStates, referrals: false } })));
 
-                    // ── PHASE 5: Admin-Only Data ──
                     if (isAdmin) {
-                        console.log("[Store] Phase 5: Executing Global Admin Synchronization...");
                         Promise.all([
                             supabase.from('profiles').select('*, balances(*)').order('created_at', { ascending: false }),
                             supabase.from('deposit_wallets').select('*'),
                             supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100),
                             supabase.from('trades').select('*').order('created_at', { ascending: false }),
                             supabase.from('active_sessions').select('*').order('created_at', { ascending: false }),
-                        ]).then(([{ data: users }, { data: wallets }, { data: logs }, { data: allTrades }, { data: allSessions }]) => {
+                        ]).then(([{ data: users }, { data: wallets }, { data: logs }]) => {
                             if (users) {
-                                const processedUsers = users.map(u => {
-                                    const b = Array.isArray(u.balances) ? u.balances[0] : u.balances;
-                                    const crypto = b?.crypto_balances || {};
-                                    return {
-                                        ...u,
-                                        balanceNum: Number(b?.fiat_balance || 0) + Number(b?.trading_balance || 0) + Number(b?.copy_trading_balance || 0) + calcCryptoTotal(crypto),
-                                        balances: crypto
-                                    };
-                                });
-                                set({ users: processedUsers });
+                                set({ users: users.map(u => {
+                                    const bal = Array.isArray(u.balances) ? u.balances[0] : u.balances;
+                                    const cr = bal?.crypto_balances || {};
+                                    return { ...u, balanceNum: Number(bal?.fiat_balance || 0) + Number(bal?.trading_balance || 0) + Number(bal?.copy_trading_balance || 0) + calcCryptoTotal(cr), balances: cr };
+                                })});
                             }
                             if (wallets) set({ depositWallets: wallets });
                             if (logs) set({ auditLogs: logs });
-
-                            // Note: We keep global trades/sessions for admin analytics
                             set(s => ({ loadingStates: { ...s.loadingStates, adminData: false } }));
-                        }).catch(err => {
-                            console.warn("Admin data fetch failed", err);
-                            set(s => ({
-                                loadingStates: { ...s.loadingStates, adminData: false },
-                                errorStates: { ...s.errorStates, adminData: 'Admin data unavailable' }
-                            }));
-                        });
+                        }).catch(() => set(s => ({ loadingStates: { ...s.loadingStates, adminData: false } })));
                     } else {
                         set(s => ({ loadingStates: { ...s.loadingStates, adminData: false } }));
                     }
 
-                } catch (err) {
-                    console.error("Critical State Sync Error:", err);
-                    set({
-                        isLoading: false,
-                        loadingStates: { ...DEFAULT_LOADING },
-                        errorStates: { ...get().errorStates, profile: 'Unexpected error during data sync' }
-                    });
+                } catch (processingErr: any) {
+                    console.error("[Store] Profile processing error:", processingErr);
+                    set({ isLoading: false, loadingStates: { ...DEFAULT_LOADING } });
                 }
             },
 

@@ -128,7 +128,7 @@ const SetupAdmin = () => {
               </div>
               <Button
                 onClick={() => navigate("/admin/login")}
-                className="w-full mt-2 bg-white/10 hover:bg-white/15 text-white border border-white/10"
+                className="w-full mt-2 bg-background/10 hover:bg-background/15 text-white border border-white/10"
               >
                 Go to Admin Login
               </Button>
@@ -147,7 +147,7 @@ const SetupAdmin = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Platform Administrator"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50"
+                  className="bg-background/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50"
                 />
               </div>
               <div className="space-y-2">
@@ -157,7 +157,7 @@ const SetupAdmin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@clarity-trade.com"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50"
+                  className="bg-background/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50"
                 />
               </div>
               <div className="space-y-2">
@@ -167,7 +167,7 @@ const SetupAdmin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50"
+                  className="bg-background/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50"
                 />
               </div>
               <Button

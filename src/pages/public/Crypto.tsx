@@ -33,11 +33,11 @@ export default function Crypto() {
       />
 
       {/* Live Market Preview */}
-      <section className="section-bg-white" id="prices">
+      <section className="section-bg-background" id="prices">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Live Market Data</span>
-            <h2 className="title-hyip text-gray-900">Real-Time Crypto Prices</h2>
+            <h2 className="title-hyip text-foreground">Real-Time Crypto Prices</h2>
             <p className="p-hyip">Check the latest movements in the top cryptocurrency markets.</p>
           </div>
 
@@ -54,10 +54,10 @@ export default function Crypto() {
                         {asset.change}
                      </div>
                   </div>
-                  <h3 className="text-lg font-black text-gray-900 mb-1">{asset.name}</h3>
-                  <div className="text-xl font-bold text-gray-800 tabular-nums mb-4">{asset.price}</div>
+                  <h3 className="text-lg font-black text-foreground mb-1">{asset.name}</h3>
+                  <div className="text-xl font-bold text-foreground tabular-nums mb-4">{asset.price}</div>
                   <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
-                     <span className="text-[10px] uppercase font-bold text-gray-400">Cap: {asset.marketCap}</span>
+                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Cap: {asset.marketCap}</span>
                      <Link to="/auth/register" className="text-[#D4AF37] hover:scale-110 transition-transform"><ArrowUpRight className="w-4 h-4" /></Link>
                   </div>
                 </motion.div>
@@ -71,7 +71,7 @@ export default function Crypto() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-16">
             <span className="heading-gold">Why Choose Us?</span>
-            <h2 className="title-hyip text-gray-900">Institutional-Grade Crypto Infrastructure</h2>
+            <h2 className="title-hyip text-foreground">Institutional-Grade Crypto Infrastructure</h2>
             <p className="p-hyip">
               We aggregate liquidity from the world's deepest crypto pools, giving you tighter spreads, 
               faster execution, and zero slippage on major pairs.
@@ -86,7 +86,7 @@ export default function Crypto() {
                 <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6 border border-[#D4AF37]/20 group-hover:bg-[#D4AF37] transition-all">
                   <item.icon className="w-6 h-6 text-[#D4AF37] group-hover:text-white transition-colors" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#D4AF37] transition-colors">{item.title}</h3>
+                <h3 className="text-xl font-bold text-foreground mb-4 group-hover:text-[#D4AF37] transition-colors">{item.title}</h3>
                 <p className="p-hyip text-sm">{item.desc}</p>
               </motion.div>
             ))}
@@ -95,11 +95,11 @@ export default function Crypto() {
       </section>
 
       {/* Educational Section - Half-Dark Split */}
-      <section className="bg-white overflow-hidden py-0">
+      <section className="bg-background overflow-hidden py-0">
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="lg:w-1/2 p-6 sm:p-12 lg:p-32 flex flex-col justify-center bg-[#F5F5F5]">
              <span className="heading-gold">Learn & Earn</span>
-             <h2 className="title-hyip text-gray-900 !text-left">New to Crypto Trading?</h2>
+             <h2 className="title-hyip text-foreground !text-left">New to Crypto Trading?</h2>
              <p className="p-hyip mb-10 !text-left">We provide all the tools for beginners to start their journey safely.</p>
              <div className="space-y-6 mb-12">
                 {[
@@ -110,7 +110,7 @@ export default function Crypto() {
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-4">
                     <CheckCircle2 className="w-6 h-6 text-green-500" />
-                    <span className="text-gray-700 font-bold text-base">{item}</span>
+                    <span className="text-foreground font-bold text-base">{item}</span>
                   </div>
                 ))}
              </div>

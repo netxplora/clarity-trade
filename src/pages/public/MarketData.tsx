@@ -63,7 +63,7 @@ export default function MarketData() {
       />
 
       {/* Market Stats */}
-      <section className="py-24 bg-white relative z-20 -mt-10">
+      <section className="py-24 bg-background relative z-20 -mt-10">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {[
@@ -73,13 +73,13 @@ export default function MarketData() {
               { icon: RefreshCw, value: "Real-time", label: "Updates" },
             ].map((stat, i) => (
               <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-4 p-8 rounded-3xl bg-white border border-gray-100 shadow-xl"
+                className="flex items-center gap-4 p-8 rounded-3xl bg-background border border-gray-100 shadow-xl"
               >
                 <div className="w-14 h-14 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center shrink-0 border border-[#D4AF37]/20">
                   <stat.icon className="w-7 h-7 text-[#D4AF37]" />
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-gray-900">{stat.value}</div>
+                  <div className="text-3xl font-black text-foreground">{stat.value}</div>
                   <div className="text-[10px] text-[#D4AF37] font-black uppercase tracking-widest">{stat.label}</div>
                 </div>
               </motion.div>
@@ -89,7 +89,7 @@ export default function MarketData() {
       </section>
 
       {/* Market Table */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-6">
           {/* Tabs & Search */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
@@ -119,13 +119,13 @@ export default function MarketData() {
 
           {/* Table */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={activeTab}
-            className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden"
+            className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden"
           >
             <div className="overflow-x-auto">
               {/* Mobile Stacked Cards */}
               <div className="md:hidden space-y-4 p-4 text-left">
                  {filteredData.map((item) => (
-                    <div key={item.symbol} className="bg-white border border-gray-100 rounded-xl p-4 space-y-3 shadow-sm">
+                    <div key={item.symbol} className="bg-background border border-gray-100 rounded-xl p-4 space-y-3 shadow-sm">
                        <div className="flex justify-between items-start">
                          <div className="flex items-center gap-3">
                            <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center font-bold text-xs text-primary shrink-0">
@@ -140,19 +140,19 @@ export default function MarketData() {
                        </div>
                        <div className="grid grid-cols-2 gap-2 text-sm border-t border-gray-50 pt-3">
                          <div>
-                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Change</span>
+                            <span className="text-muted-foreground font-bold block text-[10px] uppercase tracking-widest">Change</span>
                             <span className={`inline-flex items-center gap-1 font-semibold ${item.up ? "text-green-600" : "text-red-600"}`}>
                               {item.up ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                               {item.change}
                             </span>
                          </div>
                          <div>
-                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Volume</span>
+                            <span className="text-muted-foreground font-bold block text-[10px] uppercase tracking-widest">Volume</span>
                             <span className="text-muted-foreground font-semibold tabular-nums">{item.volume}</span>
                          </div>
                          {activeTab === "crypto" && (
                            <div className="col-span-2">
-                             <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Market Cap</span>
+                             <span className="text-muted-foreground font-bold block text-[10px] uppercase tracking-widest">Market Cap</span>
                              <span className="text-muted-foreground font-semibold tabular-nums">{item.marketCap}</span>
                            </div>
                          )}

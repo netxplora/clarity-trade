@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { validateWalletAddress } from "@/lib/wallet-validator";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,21 +38,22 @@ type MethodType = "crypto" | "fiat";
 
 const WalletPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>("deposit");
   
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get('tab') as Tab;
+    const tabParam = searchParams.get('tab') as Tab;
     if (tabParam && ["deposit", "transfer", "convert", "withdraw", "history"].includes(tabParam)) {
         setTab(tabParam);
     }
-  }, [window.location.search]);
+  }, [searchParams]);
 
   const [method, setMethod] = useState<MethodType>("crypto");
   const [selectedCoin, setSelectedCoin] = useState("BTC");
   const [selectedFiat, setSelectedFiat] = useState("USD");
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [fiatDepositAmount, setFiatDepositAmount] = useState("");
   const [fiatDepositType, setFiatDepositType] = useState<"selector" | "bank" | "card">("selector");
   
   const [transactions, setLocalTransactions] = useState<Transaction[]>([]);
@@ -74,18 +75,20 @@ const WalletPage = () => {
 
   useEffect(() => {
      fetchAppData();
+  }, []);
+
+  useEffect(() => {
      if (!user?.id) return;
      const fetchWallets = async () => {
        const { data: walletData } = await supabase.from('deposit_wallets').select('*').eq('status', 'Active');
        if (walletData) setDepositWallets(walletData);
      };
      fetchWallets();
-  }, [user?.id, fetchAppData]);
+  }, [user?.id]);
 
   const currentWallet = depositWallets.find(w => {
-    const symbolMap: Record<string, string> = { 'BTC': 'Bitcoin', 'ETH': 'Ethereum', 'USDT': 'USDT' };
-    const targetName = symbolMap[selectedCoin.toUpperCase()] || selectedCoin;
-    return w.coin.toUpperCase() === targetName.toUpperCase();
+    const coinField = (w.asset || w.coin || '').toUpperCase();
+    return coinField === selectedCoin.toUpperCase();
   });
 
   const fiatBal = user?.fiatBalanceNum || 0;
@@ -228,7 +231,6 @@ const WalletPage = () => {
 
            toast.success(`${method.toUpperCase()} Withdrawal request submitted successfully`);
            setWithdrawAddress("");
-           setWithdrawAddress("");
            setWithdrawAmount("");
            setTab("history");
         } else {
@@ -370,7 +372,7 @@ const WalletPage = () => {
                 </div>
 
                 <div className="p-6 md:p-10 flex-1">
-                   {tab !== 'history' && (
+                   {(tab === 'deposit' || tab === 'withdraw') && (
                      <div className="flex items-center gap-2 p-1.5 bg-secondary border border-border rounded-xl w-fit mb-8 mx-auto">
                         <button 
                            onClick={() => setMethod('crypto')}
@@ -456,10 +458,10 @@ const WalletPage = () => {
                                         </div>
                                         <div>
                                           <label className="text-xs font-semibold text-foreground mb-3 block">Amount To Deposit</label>
-                                          <Input placeholder="0.00" type="number" className="h-14 bg-card border-border rounded-xl text-lg font-bold text-foreground" />
+                                          <Input placeholder="0.00" type="number" value={fiatDepositAmount} onChange={(e) => setFiatDepositAmount(e.target.value)} className="h-14 bg-card border-border rounded-xl text-lg font-bold text-foreground" />
 
                                         </div>
-                                         <Button variant="outline" className="w-full h-14 rounded-xl border-primary text-primary font-semibold flex items-center justify-center">
+                                         <Button variant="outline" className="w-full h-14 rounded-xl border-primary text-primary font-semibold flex items-center justify-center" onClick={() => { if (!fiatDepositAmount || parseFloat(fiatDepositAmount) <= 0) { toast.error('Please enter a valid amount'); return; } setFiatDepositType('card'); }}>
                                            Continue
                                         </Button>
                                      </div>
@@ -516,9 +518,9 @@ const WalletPage = () => {
                                         </div>
                                         <div>
                                           <label className="text-xs font-semibold text-foreground mb-3 block">Amount To Deposit</label>
-                                          <Input placeholder="0.00" type="number" className="h-14 bg-card border-border rounded-xl text-lg font-bold" />
+                                          <Input placeholder="0.00" type="number" value={fiatDepositAmount} onChange={(e) => setFiatDepositAmount(e.target.value)} className="h-14 bg-card border-border rounded-xl text-lg font-bold" />
                                         </div>
-                                         <Button variant="outline" className="w-full h-14 rounded-xl border-primary text-primary font-semibold flex items-center justify-center">
+                                         <Button variant="outline" className="w-full h-14 rounded-xl border-primary text-primary font-semibold flex items-center justify-center" onClick={() => { if (!fiatDepositAmount || parseFloat(fiatDepositAmount) <= 0) { toast.error('Please enter a valid amount'); return; } toast.success('Bank transfer request submitted. Processing takes 1-3 business days.'); setFiatDepositAmount(''); }}>
                                           Continue
                                         </Button>
                                     </div>
@@ -665,7 +667,7 @@ const WalletPage = () => {
                              </div>
                              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest pl-1">
                                 {method === 'crypto' 
-                                  ? `Ensue the address supports the ${selectedCoin} network.` 
+                                  ? `Ensure the address supports the ${selectedCoin} network.` 
                                   : `Processing takes 12-48 hours depending on your bank.`}
                              </p>
                           </div>

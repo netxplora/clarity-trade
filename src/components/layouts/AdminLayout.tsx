@@ -193,7 +193,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <SidebarContent onNavigate={() => setSidebarOpen(false)} />
               <button 
                  onClick={() => setSidebarOpen(false)} 
-                 className="absolute top-8 right-6 w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+                 className="absolute top-8 right-6 w-9 h-9 rounded-lg bg-background/10 flex items-center justify-center hover:bg-background/20 transition-all"
               >
                 <X className="w-4 h-4 text-white" />
               </button>

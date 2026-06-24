@@ -476,7 +476,7 @@ const AdminOverview = () => {
                       <div className="flex items-center justify-between mb-6">
                          <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-primary shadow-gold flex items-center justify-center text-white text-[11px] font-black uppercase tracking-widest relative overflow-hidden">
-                               <div className="absolute inset-0 bg-white/10 transform -skew-x-12 translate-x-full group-hover/tx:-translate-x-full transition-transform duration-700" />
+                               <div className="absolute inset-0 bg-background/10 transform -skew-x-12 translate-x-full group-hover/tx:-translate-x-full transition-transform duration-700" />
                                {w.asset}
                             </div>
                              <div>

@@ -41,7 +41,7 @@ export default function AboutUs() {
       />
 
       {/* Mission & Vision */}
-      <section className="section-bg-white" id="mission">
+      <section className="section-bg-background" id="mission">
         <div className="container mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
@@ -50,7 +50,7 @@ export default function AboutUs() {
               <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-8">
                 <Target className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Our Mission</h2>
+              <h2 className="text-2xl font-extrabold text-foreground mb-6">Our Mission</h2>
               <p className="p-hyip">
                 To democratize access to financial markets by providing institutional-grade trading technology, 
                 education, and tools to traders of all experience levels, regardless of their background or location.
@@ -62,7 +62,7 @@ export default function AboutUs() {
               <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-8">
                 <Eye className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Our Vision</h2>
+              <h2 className="text-2xl font-extrabold text-foreground mb-6">Our Vision</h2>
               <p className="p-hyip">
                 A world where anyone can participate in global financial markets confidently and fairly. 
                 Where technology levels the playing field and knowledge is shared freely within a secure ecosystem.
@@ -77,7 +77,7 @@ export default function AboutUs() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">What We Stand For</span>
-            <h2 className="title-hyip text-gray-900">Our Core Principles</h2>
+            <h2 className="title-hyip text-foreground">Our Core Principles</h2>
             <p className="p-hyip">
               Our values help to guide every product decision, every customer 
               interaction, and every single line of code we write into our platform.
@@ -91,7 +91,7 @@ export default function AboutUs() {
                 <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6 border border-[#D4AF37]/20 group-hover:bg-[#D4AF37] transition-all">
                   <v.icon className="w-6 h-6 text-[#D4AF37] group-hover:text-white transition-colors" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#D4AF37] transition-colors">{v.title}</h3>
+                <h3 className="text-xl font-bold text-foreground mb-4 group-hover:text-[#D4AF37] transition-colors">{v.title}</h3>
                 <p className="p-hyip text-sm">{v.desc}</p>
               </motion.div>
             ))}
@@ -100,11 +100,11 @@ export default function AboutUs() {
       </section>
 
       {/* Timeline */}
-      <section className="section-bg-white py-24" id="timeline">
+      <section className="section-bg-background py-24" id="timeline">
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-20 lg:mb-24">
             <span className="heading-gold">Our History</span>
-            <h2 className="title-hyip text-gray-900">The Journey So Far</h2>
+            <h2 className="title-hyip text-foreground">The Journey So Far</h2>
             <p className="p-hyip">From a small idea to a global trading infrastructure serving thousands.</p>
           </motion.div>
           <div className="max-w-4xl mx-auto space-y-0">
@@ -113,14 +113,14 @@ export default function AboutUs() {
                 className="flex gap-10 items-start pb-12 last:pb-0 relative"
               >
                 <div className="flex flex-col items-center shrink-0">
-                  <div className="w-16 h-16 rounded-full bg-white border-2 border-[#D4AF37] text-gray-900 flex items-center justify-center font-black text-sm shadow-gold relative z-10">
+                  <div className="w-16 h-16 rounded-full bg-background border-2 border-[#D4AF37] text-foreground flex items-center justify-center font-black text-sm shadow-gold relative z-10">
                     {m.year}
                   </div>
                   {i < milestones.length - 1 && <div className="w-0.5 h-full bg-[#D4AF37]/20 mt-2 z-0" />}
                 </div>
                 <div className="pt-4 px-6 py-8 rounded-xl bg-gray-50 border border-gray-100 flex-grow shadow-sm hover:shadow-md transition-shadow">
-                  <p className="text-gray-900 font-extrabold text-lg mb-2">{m.event}</p>
-                  <p className="text-gray-500 text-sm">Strategic milestone achieved in our global expansion roadmap.</p>
+                  <p className="text-foreground font-extrabold text-lg mb-2">{m.event}</p>
+                  <p className="text-muted-foreground text-sm">Strategic milestone achieved in our global expansion roadmap.</p>
                 </div>
               </motion.div>
             ))}
@@ -133,7 +133,7 @@ export default function AboutUs() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Our Experts</span>
-            <h2 className="title-hyip text-gray-900">The Leadership Team</h2>
+            <h2 className="title-hyip text-foreground">The Leadership Team</h2>
             <p className="p-hyip">Led by veterans from the world's top financial institutions and tech companies.</p>
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
@@ -142,10 +142,10 @@ export default function AboutUs() {
                 className="hyip-card !p-0 overflow-hidden text-center group"
               >
                 <div className="p-8 pb-4">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#D4AF37]/40 to-[#D4AF37]/10 text-gray-900 flex items-center justify-center text-3xl font-black mx-auto mb-6 shadow-md border border-white/50 group-hover:scale-110 transition-transform">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#D4AF37]/40 to-[#D4AF37]/10 text-foreground flex items-center justify-center text-3xl font-black mx-auto mb-6 shadow-md border border-white/50 group-hover:scale-110 transition-transform">
                     {member.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <h3 className="font-black text-gray-900 text-xl tracking-tight mb-1">{member.name}</h3>
+                  <h3 className="font-black text-foreground text-xl tracking-tight mb-1">{member.name}</h3>
                   <div className="text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-4">{member.role}</div>
                 </div>
                 <div className="p-6 bg-gray-50 border-t border-gray-100 h-full">
@@ -158,14 +158,14 @@ export default function AboutUs() {
       </section>
 
       {/* Technology & Security */}
-      <section className="py-24 bg-white" id="tech">
+      <section className="py-24 bg-background" id="tech">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="lg:w-1/2 space-y-8">
               <span className="heading-gold">Our Technology</span>
-              <h2 className="title-hyip text-gray-900 leading-tight">Institutional-Grade Infrastructure for Every Trader</h2>
+              <h2 className="title-hyip text-foreground leading-tight">Institutional-Grade Infrastructure for Every Trader</h2>
               <p className="p-hyip text-lg">
-                Our proprietary trading system, <span className="text-gray-900 font-bold italic">Clarity Core v3.0</span>, was built from the ground up to handle peak market volatility with sub-millisecond latency.
+                Our proprietary trading system, <span className="text-foreground font-bold italic">Clarity Core v3.0</span>, was built from the ground up to handle peak market volatility with sub-millisecond latency.
               </p>
               <div className="grid grid-cols-2 gap-6 pt-4">
                 {[
@@ -175,9 +175,9 @@ export default function AboutUs() {
                   { label: "Global Data Centers", value: "14", desc: "Localized low-latency access." }
                 ].map((stat) => (
                   <div key={stat.label} className="p-5 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-black text-gray-900 mb-1">{stat.value}</div>
+                    <div className="text-2xl font-black text-foreground mb-1">{stat.value}</div>
                     <div className="text-[10px] text-[#D4AF37] font-black uppercase tracking-widest">{stat.label}</div>
-                    <div className="text-[11px] text-gray-400 mt-2 italic">{stat.desc}</div>
+                    <div className="text-[11px] text-muted-foreground mt-2 italic">{stat.desc}</div>
                   </div>
                 ))}
               </div>
@@ -199,24 +199,24 @@ export default function AboutUs() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Beyond the Markets</span>
-            <h2 className="title-hyip text-gray-900">Trading for a Sustainable Tomorrow</h2>
+            <h2 className="title-hyip text-foreground">Trading for a Sustainable Tomorrow</h2>
             <p className="p-hyip">Sustainability and financial literacy are core to our identity as a global financial leader.</p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div className="hyip-card">
               <CheckCircle2 className="w-10 h-10 text-[#D4AF37] mb-6" />
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Carbon Neutral Trading</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">We offset 100% of the carbon footprint generated by our data centers through verified reforestation projects.</p>
+              <h3 className="text-lg font-bold text-foreground mb-4">Carbon Neutral Trading</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">We offset 100% of the carbon footprint generated by our data centers through verified reforestation projects.</p>
             </div>
             <div className="hyip-card">
               <Sparkles className="w-10 h-10 text-[#D4AF37] mb-6" />
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Financial Literacy Fund</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">0.1% of every trade fee goes into our global education fund, providing free trading courses to underprivileged communities.</p>
+              <h3 className="text-lg font-bold text-foreground mb-4">Financial Literacy Fund</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">0.1% of every trade fee goes into our global education fund, providing free trading courses to underprivileged communities.</p>
             </div>
             <div className="hyip-card">
               <Rocket className="w-10 h-10 text-[#D4AF37] mb-6" />
-              <h3 className="text-lg font-bold text-gray-900 mb-4">FinTech Scholarships</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">Supporting upcoming engineers with over 50 scholarships annually for students pursuing financial technology.</p>
+              <h3 className="text-lg font-bold text-foreground mb-4">FinTech Scholarships</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">Supporting upcoming engineers with over 50 scholarships annually for students pursuing financial technology.</p>
             </div>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function AboutUs() {
                viewport={{ once: true }}
                className="mb-10 text-[#D4AF37]"
              >
-                <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center animate-float">
+                <div className="w-24 h-24 rounded-full bg-background/5 border border-white/10 flex items-center justify-center animate-float">
                     <Globe className="w-12 h-12" />
                 </div>
              </motion.div>

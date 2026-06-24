@@ -5,9 +5,11 @@ import { TrendingUp, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useStore } from "@/store/useStore";
 
 const Register = () => {
   const location = useLocation();
+  const { hasActiveSession } = useStore();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -18,10 +20,10 @@ const Register = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/dashboard");
-    });
-  }, [navigate]);
+    if (hasActiveSession) {
+      navigate("/dashboard");
+    }
+  }, [hasActiveSession, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -109,6 +111,7 @@ const Register = () => {
                      required
                      value={firstName}
                      onChange={(e) => setFirstName(e.target.value)}
+                     autoComplete="given-name"
                      placeholder="John" 
                      className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                   />
@@ -120,6 +123,7 @@ const Register = () => {
                      required
                      value={lastName}
                      onChange={(e) => setLastName(e.target.value)}
+                     autoComplete="family-name"
                      placeholder="Doe" 
                       className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                    />
@@ -146,6 +150,7 @@ const Register = () => {
                      required
                      value={password}
                      onChange={(e) => setPassword(e.target.value)}
+                     autoComplete="new-password"
                      placeholder="••••••••" 
                      className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 pr-12 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all text-sm tracking-widest text-foreground placeholder:text-muted-foreground/30 shadow-sm" 
                   />

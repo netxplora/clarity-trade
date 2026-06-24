@@ -30,7 +30,7 @@ export default function Wallet() {
                  whileInView={{ opacity: 1, y: 0 }}
                  viewport={{ once: true }}
                  transition={{ delay: i * 0.1 }}
-                 className="p-8 rounded-3xl border border-border bg-white hover:border-primary/30 hover:shadow-gold transition-all duration-300 group"
+                 className="p-8 rounded-3xl border border-border bg-background hover:border-primary/30 hover:shadow-gold transition-all duration-300 group"
               >
                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-gradient-gold group-hover:text-white transition-all duration-300 shadow-sm mb-6">
                     <f.icon className="w-7 h-7" />
@@ -58,7 +58,7 @@ export default function Wallet() {
                          { title: "Real-Time Monitoring", desc: "24/7 AI-driven threat detection monitoring for suspicious withdrawal patterns." },
                          { title: "Insured Deposits", desc: "Fiat balances are held in segregated accounts at top-tier international banks." }
                       ].map((item) => (
-                         <div key={item.title} className="p-6 rounded-2xl bg-white border border-border group hover:bg-secondary/20 transition-all">
+                         <div key={item.title} className="p-6 rounded-2xl bg-background border border-border group hover:bg-secondary/20 transition-all">
                             <h4 className="font-bold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">{item.title}</h4>
                             <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                          </div>
@@ -85,7 +85,7 @@ export default function Wallet() {
                     { title: "Instant Card", desc: "Fund your wallet instantly using Visa, Mastercard, or American Express.", time: "Immediate" },
                     { title: "Crypto Bridge", desc: "Deposit BTC, ETH, USDT, and 50+ other networks with zero platform fees.", time: "Network Speed" }
                 ].map((method) => (
-                    <div key={method.title} className="p-8 rounded-3xl bg-secondary/10 border border-border hover:bg-white hover:shadow-gold transition-all group">
+                    <div key={method.title} className="p-8 rounded-3xl bg-secondary/10 border border-border hover:bg-background hover:shadow-gold transition-all group">
                         <div className="text-xs font-black text-primary uppercase tracking-widest mb-4">{method.time}</div>
                         <h3 className="text-xl font-bold text-foreground mb-3 uppercase italic tracking-tight">{method.title}</h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">{method.desc}</p>
@@ -96,7 +96,7 @@ export default function Wallet() {
 
         <div className="text-center">
             <div className="inline-block p-1 rounded-2xl bg-gradient-gold shadow-gold mb-12">
-               <div className="bg-white px-10 py-12 rounded-xl text-center max-w-2xl">
+               <div className="bg-background px-10 py-12 rounded-xl text-center max-w-2xl">
                   <h3 className="text-2xl font-black text-foreground uppercase italic tracking-tight mb-4">Start Your <span className="text-primary">Digital Journey</span> Today</h3>
                   <p className="text-muted-foreground mb-8 font-medium">Create your secure wallet in less than 2 minutes and join over 12,000 global traders.</p>
                   <Button variant="hero" className="h-14 px-12 text-lg text-white shadow-gold rounded-xl uppercase font-black">

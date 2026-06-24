@@ -975,7 +975,7 @@ const FinancialManagement = () => {
                       <h3 className="text-xl font-bold text-white">Manage Wallets</h3>
                       <p className="text-muted-foreground text-xs mt-1">Add or remove wallet addresses for user deposits.</p>
                     </div>
-                    <Button onClick={() => setIsAddingWallet(true)} className="bg-primary hover:bg-primary/80 text-black font-bold h-10 px-6 rounded-xl">
+                    <Button onClick={() => setIsAddingWallet(true)} className="bg-primary hover:bg-primary/80 text-foreground font-bold h-10 px-6 rounded-xl">
                        Add New Wallet
                     </Button>
                   </div>
@@ -1029,7 +1029,7 @@ const FinancialManagement = () => {
                       <div key={w.id} className="bg-card p-6 sm:p-10 rounded-[3rem] border border-border shadow-huge relative group hover:shadow-gold-lg transition-all flex flex-col md:flex-row items-center gap-10">
                           <div className="relative group/qr">
                              <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-75 group-hover/qr:scale-110 transition-transform opacity-0 group-hover/qr:opacity-100" />
-                             <div className="relative w-40 h-40 rounded-[2.5rem] bg-white p-5 shadow-2xl shrink-0 border-4 border-card flex items-center justify-center overflow-hidden">
+                             <div className="relative w-40 h-40 rounded-[2.5rem] bg-background p-5 shadow-2xl shrink-0 border-4 border-card flex items-center justify-center overflow-hidden">
                                 <img 
                                   src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${w.address}`} 
                                   alt="Wallet QR" 
@@ -1041,7 +1041,7 @@ const FinancialManagement = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-5">
                                 <div className="w-16 h-16 rounded-2xl bg-primary shadow-gold flex items-center justify-center text-white font-black text-sm relative overflow-hidden group-hover:rotate-6 transition-transform">
-                                   <div className="absolute inset-0 bg-white/20 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000" />
+                                   <div className="absolute inset-0 bg-background/20 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000" />
                                    {w.coin?.substring(0, 3).toUpperCase()}
                                 </div>
                                 <div>

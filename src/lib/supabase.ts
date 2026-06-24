@@ -7,4 +7,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use the browser's native fetch — no custom timeout wrapper.
+// The previous 10s AbortController was killing requests that Supabase
+// needed more time for (auth token refresh, large queries), which caused
+// unrecoverable JavaScript exceptions that bypassed all error handling.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});

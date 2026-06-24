@@ -23,7 +23,7 @@ export default function Analytics() {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 order-2 md:order-1">
                {tools.map((t) => (
-                  <div key={t.title} className="p-6 rounded-3xl bg-white border border-border group hover:border-primary/30 transition-all hover:shadow-gold">
+                  <div key={t.title} className="p-6 rounded-3xl bg-background border border-border group hover:border-primary/30 transition-all hover:shadow-gold">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-gradient-gold group-hover:text-white transition-all shadow-sm mb-4">
                         <t.icon className="w-6 h-6" />
                     </div>

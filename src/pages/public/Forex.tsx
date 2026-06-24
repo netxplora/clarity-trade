@@ -33,11 +33,11 @@ export default function Forex() {
       />
 
       {/* Forex Live Spreads */}
-      <section className="section-bg-white" id="prices">
+      <section className="section-bg-background" id="prices">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Real-Time Spreads</span>
-            <h2 className="title-hyip text-gray-900">Global Currency Markets</h2>
+            <h2 className="title-hyip text-foreground">Global Currency Markets</h2>
             <p className="p-hyip">Explore deep liquidity and tight spreads on the world's most traded forex pairs.</p>
           </div>
 
@@ -46,26 +46,26 @@ export default function Forex() {
                 {/* Mobile Stacked Cards */}
                 <div className="md:hidden space-y-4 p-4">
                   {forexPairs.map((p, i) => (
-                    <div key={p.pair} className="bg-white border text-left border-gray-100 rounded-xl p-4 space-y-3 shadow-sm">
+                    <div key={p.pair} className="bg-background border text-left border-gray-100 rounded-xl p-4 space-y-3 shadow-sm">
                       <div className="flex justify-between items-start">
-                         <div className="font-black text-gray-900 text-lg">{p.pair}</div>
+                         <div className="font-black text-foreground text-lg">{p.pair}</div>
                          <div className={`font-bold flex items-center gap-1 ${p.up ? 'text-green-500' : 'text-red-500'}`}>
                            {p.up ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />} {p.change}
                          </div>
                       </div>
                       <div className="flex justify-between items-center border-t border-gray-50 pt-3 text-sm">
                          <div>
-                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Bid</span>
-                            <span className="tabular-nums font-bold text-gray-800">{p.bid}</span>
+                            <span className="text-muted-foreground font-bold block text-[10px] uppercase tracking-widest">Bid</span>
+                            <span className="tabular-nums font-bold text-foreground">{p.bid}</span>
                          </div>
                          <div className="text-right">
-                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Ask</span>
-                            <span className="tabular-nums font-bold text-gray-800">{p.ask}</span>
+                            <span className="text-muted-foreground font-bold block text-[10px] uppercase tracking-widest">Ask</span>
+                            <span className="tabular-nums font-bold text-foreground">{p.ask}</span>
                          </div>
                       </div>
                       <div className="flex justify-between items-center text-sm">
                          <div>
-                            <span className="text-gray-500 font-bold block text-[10px] uppercase tracking-widest">Spread</span>
+                            <span className="text-muted-foreground font-bold block text-[10px] uppercase tracking-widest">Spread</span>
                             <span className="tabular-nums font-black text-[#D4AF37]">{p.spread}</span>
                          </div>
                          <Link to="/auth/register" className="btn-gold !py-1.5 !px-4 text-[10px] uppercase font-bold tracking-widest">Trade</Link>
@@ -89,9 +89,9 @@ export default function Forex() {
                    <tbody className="divide-y divide-gray-50">
                       {forexPairs.map((p, i) => (
                         <tr key={p.pair} className="hover:bg-gray-50/50 transition-colors group">
-                           <td className="px-8 py-6 font-black text-gray-900 group-hover:text-[#D4AF37] transition-colors">{p.pair}</td>
-                           <td className="px-8 py-6 tabular-nums font-bold text-gray-800">{p.bid}</td>
-                           <td className="px-8 py-6 tabular-nums font-bold text-gray-800">{p.ask}</td>
+                           <td className="px-8 py-6 font-black text-foreground group-hover:text-[#D4AF37] transition-colors">{p.pair}</td>
+                           <td className="px-8 py-6 tabular-nums font-bold text-foreground">{p.bid}</td>
+                           <td className="px-8 py-6 tabular-nums font-bold text-foreground">{p.ask}</td>
                            <td className="px-8 py-6 tabular-nums font-black text-[#D4AF37]">{p.spread}</td>
                            <td className={`px-8 py-6 font-bold flex items-center gap-2 ${p.up ? 'text-green-500' : 'text-red-500'}`}>
                               {p.up ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />} {p.change}
@@ -113,7 +113,7 @@ export default function Forex() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Why Choose Forex?</span>
-            <h2 className="title-hyip text-gray-900">Unmatched Trading Conditions</h2>
+            <h2 className="title-hyip text-foreground">Unmatched Trading Conditions</h2>
             <p className="p-hyip">Experience low-latency execution and the depth of liquidity built for professional scalpers and swing traders.</p>
           </motion.div>
           
@@ -125,7 +125,7 @@ export default function Forex() {
                 <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6 border border-[#D4AF37]/20 group-hover:bg-[#D4AF37] transition-all">
                   <item.icon className="w-6 h-6 text-[#D4AF37] group-hover:text-white transition-colors" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#D4AF37] transition-colors">{item.title}</h3>
+                <h3 className="text-xl font-bold text-foreground mb-4 group-hover:text-[#D4AF37] transition-colors">{item.title}</h3>
                 <p className="p-hyip text-sm">{item.desc}</p>
               </motion.div>
             ))}
@@ -160,7 +160,7 @@ export default function Forex() {
                 ].map((stat) => (
                   <div key={stat.label} className="border-l-2 border-[#D4AF37] pl-6 py-2">
                      <div className="text-2xl font-black text-white">{stat.value}</div>
-                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{stat.label}</div>
+                     <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{stat.label}</div>
                   </div>
                 ))}
              </div>
@@ -223,14 +223,14 @@ export default function Forex() {
       <section className="bg-gradient-to-b from-gray-50 to-white py-24 lg:py-32" id="safety">
         <div className="container mx-auto px-6 text-center max-w-4xl mx-auto">
            <Lock className="w-16 h-16 text-[#D4AF37] mx-auto mb-10" />
-           <h2 className="title-hyip text-gray-900 mb-8">Your Safety is Our <span className="text-[#D4AF37]">Top Priority</span></h2>
+           <h2 className="title-hyip text-foreground mb-8">Your Safety is Our <span className="text-[#D4AF37]">Top Priority</span></h2>
            <p className="p-hyip mb-12 text-lg">
               We employ segregated bank accounts and advanced financial monitoring 
               to ensure your capital is protected and always available within regulatory guidelines.
            </p>
            <div className="flex flex-col sm:flex-row justify-center gap-6">
               <Link to="/auth/register" className="btn-gold !px-12 flex items-center justify-center gap-2 shadow-2xl">Create Trading Account <ArrowRight className="w-4 h-4" /></Link>
-              <Link to="/contact" className="border-2 border-gray-200 text-gray-600 font-bold uppercase tracking-widest text-xs py-4 px-12 rounded hover:bg-gray-900 hover:text-white transition-all">Contact Expert</Link>
+              <Link to="/contact" className="border-2 border-gray-200 text-muted-foreground font-bold uppercase tracking-widest text-xs py-4 px-12 rounded hover:bg-gray-900 hover:text-white transition-all">Contact Expert</Link>
            </div>
         </div>
       </section>

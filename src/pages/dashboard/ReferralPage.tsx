@@ -258,7 +258,7 @@ const ReferralPage = () => {
                       <div className="relative z-10">
                         <h4 className="font-bold text-sm mb-1 italic">Pro Affiliate?</h4>
                         <p className="text-[10px] opacity-90 leading-relaxed mb-4">Are you an influencer? Contact us for custom rates up to 25%.</p>
-                        <button className="w-full h-10 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                        <button className="w-full h-10 rounded-lg bg-background/20 hover:bg-background/30 transition-all text-xs font-bold uppercase tracking-wider backdrop-blur-md">
                           Apply Now
                         </button>
                       </div>

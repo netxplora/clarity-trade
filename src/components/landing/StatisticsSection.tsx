@@ -27,7 +27,7 @@ const StatisticsSection = () => {
                 <stat.icon className="w-6 h-6 text-[#D4AF37]" />
               </div>
               <h3 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "Inter, sans-serif" }}>{stat.value}</h3>
-              <p className="text-sm text-gray-400 font-medium" style={{ fontFamily: "Inter, sans-serif" }}>{stat.label}</p>
+              <p className="text-sm text-muted-foreground font-medium" style={{ fontFamily: "Inter, sans-serif" }}>{stat.label}</p>
             </motion.div>
           ))}
         </div>

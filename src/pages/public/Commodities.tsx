@@ -44,11 +44,11 @@ export default function Commodities() {
       />
 
       {/* Live Commodity Prices */}
-      <section className="section-bg-white" id="prices">
+      <section className="section-bg-background" id="prices">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Real-Time Assets</span>
-            <h2 className="title-hyip text-gray-900">Global Material Markets</h2>
+            <h2 className="title-hyip text-foreground">Global Material Markets</h2>
             <p className="p-hyip">Check the latest movements in essential raw materials and energy resources.</p>
           </div>
 
@@ -65,10 +65,10 @@ export default function Commodities() {
                         {c.change}
                      </div>
                   </div>
-                  <h3 className="text-lg font-black text-gray-900 mb-1">{c.name}</h3>
-                  <div className="text-xl font-bold text-gray-800 tabular-nums mb-4">{c.price}</div>
+                  <h3 className="text-lg font-black text-foreground mb-1">{c.name}</h3>
+                  <div className="text-xl font-bold text-foreground tabular-nums mb-4">{c.price}</div>
                   <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
-                     <span className="text-[10px] uppercase font-bold text-gray-400">{c.category}</span>
+                     <span className="text-[10px] uppercase font-bold text-muted-foreground">{c.category}</span>
                      <Link to="/auth/register" className="text-[#D4AF37] hover:scale-110 transition-transform"><ArrowUpRight className="w-4 h-4" /></Link>
                   </div>
                 </motion.div>
@@ -82,7 +82,7 @@ export default function Commodities() {
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
             <span className="heading-gold">Market Sectors</span>
-            <h2 className="title-hyip text-gray-900">Major Commodity Sectors</h2>
+            <h2 className="title-hyip text-foreground">Major Commodity Sectors</h2>
             <p className="p-hyip">Explore the different classes of commodities available for institutional-grade trading.</p>
           </motion.div>
           
@@ -94,13 +94,13 @@ export default function Commodities() {
                 <div className="w-16 h-16 rounded-2xl bg-[#D4AF37] flex items-center justify-center mb-8 shadow-gold-sm">
                   <cat.icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-4">{cat.title}</h3>
+                <h3 className="text-2xl font-black text-foreground mb-4">{cat.title}</h3>
                 <p className="p-hyip text-sm mb-8 flex-grow">{cat.desc}</p>
                 <div className="space-y-3 pt-6 border-t border-gray-100">
                   {cat.items.map((item) => (
                     <div key={item} className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                      <span className="text-sm text-gray-700 font-bold">{item}</span>
+                      <span className="text-sm text-foreground font-bold">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -115,7 +115,7 @@ export default function Commodities() {
         <div className="flex flex-col lg:flex-row items-stretch">
           <div className="lg:w-1/2 p-6 sm:p-12 lg:p-32 flex flex-col justify-center bg-[#F5F5F5]">
              <span className="heading-gold !text-left">Market Hedge</span>
-             <h2 className="title-hyip text-gray-900 !text-left">The Ultimate <span className="text-[#D4AF37]">Safe Haven</span></h2>
+             <h2 className="title-hyip text-foreground !text-left">The Ultimate <span className="text-[#D4AF37]">Safe Haven</span></h2>
              <p className="p-hyip mb-10 !text-left">
                 Commodities provide a natural hedge against inflation and currency devaluation. 
                 Move your capital into hard assets during times of global economic uncertainty.
@@ -129,7 +129,7 @@ export default function Commodities() {
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-4">
                     <CheckCircle2 className="w-6 h-6 text-green-600" />
-                    <span className="text-gray-800 font-bold text-base">{item}</span>
+                    <span className="text-foreground font-bold text-base">{item}</span>
                   </div>
                 ))}
              </div>
@@ -149,10 +149,10 @@ export default function Commodities() {
       </section>
 
       {/* Safety - White Section */}
-      <section className="section-bg-white py-24" id="safety">
+      <section className="section-bg-background py-24" id="safety">
         <div className="container mx-auto px-6 text-center max-w-4xl mx-auto">
            <ShieldCheck className="w-16 h-16 text-[#D4AF37] mx-auto mb-10" />
-           <h2 className="title-hyip text-gray-900 mb-8">SECURE ASSET MANAGEMENT</h2>
+           <h2 className="title-hyip text-foreground mb-8">SECURE ASSET MANAGEMENT</h2>
            <p className="p-hyip mb-12 text-lg">
              We ensure that all commodity trades are executed with extreme precision, using segregated 
              custodial accounts to protect your capital and ensure liquidity at all times.

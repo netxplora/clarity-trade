@@ -380,7 +380,7 @@ const CryptoProviderManagement = () => {
                         onClick={() => setRedirectSettings({...redirectSettings, redirectEnabled: !redirectSettings.redirectEnabled})}
                         className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.redirectEnabled ? 'bg-primary shadow-glow' : 'bg-muted opacity-40'}`}
                      >
-                       <div className="w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: redirectSettings.redirectEnabled ? 'translateX(1.5rem)' : 'translateX(0)' }} />
+                       <div className="w-6 h-6 rounded-full bg-background transition-transform" style={{ transform: redirectSettings.redirectEnabled ? 'translateX(1.5rem)' : 'translateX(0)' }} />
                      </button>
                  </div>
 
@@ -417,7 +417,7 @@ const CryptoProviderManagement = () => {
                         onClick={() => setRedirectSettings({...redirectSettings, autoRedirect: !redirectSettings.autoRedirect})}
                         className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.autoRedirect ? 'bg-green-500 shadow-glow' : 'bg-muted opacity-40'}`}
                      >
-                       <div className="w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: redirectSettings.autoRedirect ? 'translateX(1.5rem)' : 'translateX(0)' }} />
+                       <div className="w-6 h-6 rounded-full bg-background transition-transform" style={{ transform: redirectSettings.autoRedirect ? 'translateX(1.5rem)' : 'translateX(0)' }} />
                      </button>
                  </div>
 
@@ -430,7 +430,7 @@ const CryptoProviderManagement = () => {
                         onClick={() => setRedirectSettings({...redirectSettings, showMessage: !redirectSettings.showMessage})}
                         className={`w-14 h-8 rounded-full transition-colors flex items-center shrink-0 px-1 border border-border ${redirectSettings.showMessage ? 'bg-primary shadow-glow' : 'bg-muted opacity-40'}`}
                      >
-                       <div className="w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: redirectSettings.showMessage ? 'translateX(1.5rem)' : 'translateX(0)' }} />
+                       <div className="w-6 h-6 rounded-full bg-background transition-transform" style={{ transform: redirectSettings.showMessage ? 'translateX(1.5rem)' : 'translateX(0)' }} />
                      </button>
                  </div>
 

@@ -15,7 +15,7 @@ export function SoundToggle({ className = "", variant = 'dashboard' }: SoundTogg
         onClick={toggleMute}
         className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${className} ${
           isMuted 
-          ? "bg-gray-100 text-gray-400 hover:bg-gray-200" 
+          ? "bg-gray-100 text-muted-foreground hover:bg-gray-200" 
           : "bg-blue-50 text-blue-600 hover:bg-blue-100"
         }`}
         title={isMuted ? "Enable Sounds" : "Mute Sounds"}

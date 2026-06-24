@@ -276,9 +276,9 @@ const ReferralManagement = () => {
                     { name: "Alice Johnson", code: "ALICE123", earned: 3240, refs: 89 },
                     { name: "Carol White", code: "CAROL789", earned: 2150, refs: 56 },
                  ].map((top, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
+                    <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-background/5 border border-white/5 hover:bg-background/10 transition-all cursor-pointer">
                        <div className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === 0 ? "bg-primary text-white" : "bg-white/10 text-white/50"}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === 0 ? "bg-primary text-white" : "bg-background/10 text-white/50"}`}>
                              {i + 1}
                           </div>
                           <div>

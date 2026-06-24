@@ -25,17 +25,17 @@ export default function TermsOfService() {
         title="Terms of Service"
         description="The legally binding agreement between you and Clarity Trade Limited regarding your use of our platform and services. Last updated: March 1, 2026."
         icon={FileText}
-        image="/images/security-hero.png"
+        image="/images/terms_of_service_hero_1777447583144.png"
       />
 
-      <section className="bg-white py-24">
+      <section className="bg-background py-24">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <div className="space-y-12">
               {sections.map((section, i) => (
                 <motion.div key={section.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <h2 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight">{section.title}</h2>
-                  <div className="text-gray-500 font-medium leading-relaxed whitespace-pre-line">{section.content}</div>
+                  <h2 className="text-2xl font-black text-foreground mb-4 uppercase tracking-tight">{section.title}</h2>
+                  <div className="text-muted-foreground font-medium leading-relaxed whitespace-pre-line">{section.content}</div>
                 </motion.div>
               ))}
             </div>

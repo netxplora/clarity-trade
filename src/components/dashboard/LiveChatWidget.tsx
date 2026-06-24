@@ -191,7 +191,7 @@ const LiveChatWidget = () => {
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 bg-primary text-white shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-background/20 flex items-center justify-center">
                 <MessageSquare className="w-4 h-4" />
               </div>
               <div>
@@ -206,7 +206,7 @@ const LiveChatWidget = () => {
                 </p>
               </div>
             </div>
-            <button onClick={() => setChatOpen(false)} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+            <button onClick={() => setChatOpen(false)} className="w-8 h-8 rounded-lg bg-background/10 flex items-center justify-center hover:bg-background/20 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>

@@ -1,4 +1,8 @@
-import { validateWalletBackend } from "./api";
+/**
+ * Crypto Wallet Address Validator
+ * Uses client-side regex validation with optional backend verification.
+ * Falls back gracefully if backend is unavailable.
+ */
 
 /**
  * Basic Crypto Wallet Address Validator (Sync)
@@ -26,6 +30,24 @@ export const validateWalletAddressSync = (address: string, coin: string): { isVa
     return { isValid: true };
   }
 
+  // Solana
+  if (coinUpper === 'SOL') {
+    const solRegex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+    if (!solRegex.test(address)) {
+      return { isValid: false, error: "Invalid SOL address format" };
+    }
+    return { isValid: true };
+  }
+
+  // XRP / Ripple
+  if (coinUpper === 'XRP') {
+    const xrpRegex = /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/;
+    if (!xrpRegex.test(address)) {
+      return { isValid: false, error: "Invalid XRP address format (should start with 'r')" };
+    }
+    return { isValid: true };
+  }
+
   // Generic fallback
   if (address.length < 20 || address.length > 100) {
     return { isValid: false, error: "Wallet address length appears invalid" };
@@ -35,15 +57,40 @@ export const validateWalletAddressSync = (address: string, coin: string): { isVa
 };
 
 /**
- * Enhanced Wallet Validation with Backend Check
+ * Enhanced Wallet Validation — uses sync check first,
+ * then optionally calls backend. If backend is unreachable,
+ * the sync result is used instead of blocking the user.
  */
-export const validateWalletAddress = async (address: string, coin: string, network?: string): Promise<{ isValid: boolean; error?: string }> => {
-  // 1. Sync check (fast)
+export const validateWalletAddress = async (address: string, coin: string, _network?: string): Promise<{ isValid: boolean; error?: string }> => {
+  // 1. Sync check (fast, always available)
   const syncResult = validateWalletAddressSync(address, coin);
   if (!syncResult.isValid) return syncResult;
 
-  // 2. Async Backend check (thorough)
-  const backendResult = await validateWalletBackend(address, coin, network);
-  return backendResult;
-};
+  // 2. Backend check (optional, non-blocking)
+  try {
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001/api';
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000); // 3s timeout
 
+    const response = await fetch(`${BACKEND_URL}/user/validate-wallet`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, coin, network: _network }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      // Backend returned error — fall through to sync result
+      console.warn('[WalletValidator] Backend returned non-OK status, using client-side validation');
+      return syncResult;
+    }
+
+    return await response.json();
+  } catch (err) {
+    // Backend unreachable — use sync validation result instead of blocking
+    console.warn('[WalletValidator] Backend unreachable, using client-side validation only');
+    return syncResult;
+  }
+};

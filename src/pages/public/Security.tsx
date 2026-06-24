@@ -32,11 +32,11 @@ export default function Security() {
         title="Institutional-Grade Security"
         description="We protect your assets with the same technology used by the world's largest banks and financial institutions. Multiple layers of security ensure your funds and data are always safe."
         icon={Shield}
-        image="/images/security-hero.png"
+        image="/images/privacy_policy_hero_1777447623458.png"
       />
 
       {/* Insurance Banner */}
-      <section className="py-16 bg-white relative z-20 -mt-10">
+      <section className="py-16 bg-background relative z-20 -mt-10">
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="bg-[#0B0F14] rounded-3xl border border-[#D4AF37]/20 p-10 flex flex-col lg:flex-row items-center gap-10 shadow-2xl"
@@ -53,18 +53,18 @@ export default function Security() {
             </div>
             <div className="text-center shrink-0 lg:border-l border-white/10 lg:pl-10">
               <div className="text-4xl font-black text-[#D4AF37] mb-1">$250M</div>
-              <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Insured Fund</div>
+              <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Insured Fund</div>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* Security Layers */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-4xl font-display font-black text-gray-900 mb-6 uppercase tracking-tight">Multi-Layer Security</h2>
-            <p className="text-lg text-gray-500 font-semibold leading-relaxed">
+            <h2 className="text-4xl font-display font-black text-foreground mb-6 uppercase tracking-tight">Multi-Layer Security</h2>
+            <p className="text-lg text-muted-foreground font-semibold leading-relaxed">
               We don't rely on a single line of defense. Our security architecture uses six independent 
               layers to protect your assets and personal data.
             </p>
@@ -72,21 +72,20 @@ export default function Security() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {securityLayers.map((layer, i) => (
               <motion.div key={layer.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-3xl bg-white border border-border shadow-sm hover:shadow-xl hover:border-green-200 transition-all duration-500 group"
+                className="p-8 rounded-3xl bg-background border border-border shadow-sm hover:shadow-xl hover:border-green-200 transition-all duration-500 group"
               >
                 <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mb-6 group-hover:bg-green-600 transition-all">
                   <layer.icon className="w-7 h-7 text-green-600 group-hover:text-white transition-colors" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3 font-display uppercase tracking-tight">{layer.title}</h3>
-                <p className="text-gray-500 font-medium leading-relaxed">{layer.desc}</p>
+                <h3 className="text-xl font-bold text-foreground mb-3 font-display uppercase tracking-tight">{layer.title}</h3>
+                <p className="text-muted-foreground font-medium leading-relaxed">{layer.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Protect Your Account */}
-      <section className="py-24 bg-[hsl(40,20%,98%)]">
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
@@ -115,7 +114,7 @@ export default function Security() {
               <h3 className="text-2xl font-playfair font-bold text-foreground mb-8">Certifications & Compliance</h3>
               <div className="space-y-4">
                 {certifications.map((cert) => (
-                  <div key={cert.name} className="p-6 rounded-2xl bg-white border border-border shadow-sm flex items-center gap-4">
+                  <div key={cert.name} className="p-6 rounded-2xl bg-background border border-border shadow-sm flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <ShieldCheck className="w-6 h-6 text-primary" />
                     </div>
@@ -132,10 +131,10 @@ export default function Security() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="bg-gradient-to-br from-green-50 to-white rounded-3xl border border-green-200 p-16 text-center shadow-lg"
+            className="bg-card rounded-3xl border border-border p-16 text-center shadow-lg"
           >
             <h2 className="text-4xl font-playfair font-bold text-foreground mb-6">Trade with Confidence</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">

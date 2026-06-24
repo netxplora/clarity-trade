@@ -24,10 +24,10 @@ export default function RiskDisclosure() {
         title="Risk Disclosure"
         description="Important information regarding the risks associated with trading financial instruments, including cryptocurrency, forex, and commodities. Please read carefully."
         icon={AlertTriangle}
-        image="/images/security-hero.png"
+        image="/images/risk_disclosure_hero_1777448014924.png"
       />
 
-      <section className="bg-white py-24">
+      <section className="bg-background py-24">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-16">
@@ -52,8 +52,8 @@ export default function RiskDisclosure() {
             <div className="space-y-12">
               {sections.map((section, i) => (
                 <motion.div key={section.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <h2 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight">{section.title}</h2>
-                  <div className="text-gray-500 font-medium leading-relaxed whitespace-pre-line">{section.content}</div>
+                  <h2 className="text-2xl font-black text-foreground mb-4 uppercase tracking-tight">{section.title}</h2>
+                  <div className="text-muted-foreground font-medium leading-relaxed whitespace-pre-line">{section.content}</div>
                 </motion.div>
               ))}
             </div>

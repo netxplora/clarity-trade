@@ -619,7 +619,7 @@ export default function BuyCryptoModule() {
 
                 {/* QR Code */}
                 <div className="flex flex-col items-center gap-3 pt-2">
-                  <div className="p-3 bg-white shadow-lg rounded-2xl w-36 h-36 border border-border">
+                  <div className="p-3 bg-background shadow-lg rounded-2xl w-36 h-36 border border-border">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentWallet.address}`}
                       alt="Deposit QR"

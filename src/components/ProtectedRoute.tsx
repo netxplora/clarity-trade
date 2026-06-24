@@ -1,8 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,61 +9,37 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, adminOnly: requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, isAuthInitialized, hasActiveSession, isLoading } = useStore();
+  const { user, isAuthInitialized, isLoading } = useStore();
   const location = useLocation();
 
+  // Failsafe: if auth hangs for more than 20 seconds, force-initialize so
+  // the user at least gets redirected to login instead of staring at a spinner forever.
   useEffect(() => {
-    // Failsafe: if the AuthListener hangs for more than 15 seconds, manually mark it initialized.
     const failsafe = setTimeout(() => {
       const state = useStore.getState();
       if (!state.isAuthInitialized) {
-        console.warn("Auth initialization took too long. Forcing initialization...");
+        console.warn("[ProtectedRoute] Auth initialization timed out after 20s. Force-initializing.");
         useStore.setState({ isAuthInitialized: true, isLoading: false });
       }
-    }, 15000);
+    }, 20000);
     return () => clearTimeout(failsafe);
   }, []);
 
-  // We only block the route if auth hasn't initialized its very first check 
-  // This gracefully waits for the session without flashing intrusive loaders or errors.
-  if (!isAuthInitialized) {
+  // While auth is initializing or profile data is loading, show a spinner.
+  // This is the ONLY blocking state — everything else resolves to a redirect or render.
+  if (!isAuthInitialized || isLoading) {
     return (
-      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center">
-         {/* Silent background loading state, no intrusive blocking UI */}
+      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-8 h-8 text-primary/50 animate-spin" />
+        <p className="text-xs text-muted-foreground font-medium animate-pulse">Loading your account...</p>
       </div>
     );
   }
 
-  // If the profile is completely missing but the user has an active session,
-  // do not redirect to login (it causes an infinite loop). Show an error instead.
-  if (!user && hasActiveSession) {
-    return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] p-4 text-center">
-        <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-2xl max-w-md">
-          <h2 className="text-xl font-bold text-red-500 mb-2">Profile Initialization Failed</h2>
-          <p className="text-muted-foreground text-sm mb-6">
-            Your account exists, but we couldn't load your profile data. This can happen if database triggers are delayed or if you lack sufficient database permissions.
-          </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Retry Loading
-          </button>
-          <button 
-            onClick={async () => {
-              await supabase.auth.signOut();
-              window.location.href = '/auth/login';
-            }}
-            className="px-6 py-2 mt-4 ml-4 bg-secondary text-white font-bold rounded-lg border border-border hover:bg-secondary/80 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // No user in store after initialization → redirect to login.
+  // This covers both "no session" AND "session exists but profile failed to load".
+  // The previous version showed a permanent error screen here which deadlocked users.
+  // Now they simply get redirected to login, which will re-trigger the auth flow cleanly.
   if (!user) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }

@@ -26,10 +26,10 @@ export default function CookiePolicy() {
         title="Cookie Policy"
         description="Transparent information on how we use cookies and tracking technologies to enhance your trading experience. Last updated: March 1, 2026."
         icon={Cookie}
-        image="/images/security-hero.png"
+        image="/images/cookie_policy_hero_1777447721700.png"
       />
 
-      <section className="bg-white py-24">
+      <section className="bg-background py-24">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <div className="space-y-12">
