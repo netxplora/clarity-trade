@@ -11,6 +11,7 @@ import {
 import { useStore } from "@/store/useStore";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { validateUploadFile } from "@/lib/file-validator";
 
 interface KYCSubmission {
   id: string;
@@ -125,8 +126,16 @@ const KYCPage = () => {
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
     if (!user?.id) return null;
+
+    // Validate file before uploading
+    const validation = validateUploadFile(file);
+    if (!validation.isValid) {
+      toast.error("Invalid file", { description: validation.error || undefined });
+      return null;
+    }
+
     const timestamp = Date.now();
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split('.').pop()?.toLowerCase();
     const path = `${user.id}/${folder}_${timestamp}.${ext}`;
     const { error } = await supabase.storage.from("kyc-documents").upload(path, file, { upsert: true });
     if (error) { console.error("Upload error:", error); return null; }
@@ -204,7 +213,17 @@ const KYCPage = () => {
     <div className="space-y-2">
       <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{label}</Label>
       <div className="relative group cursor-pointer border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary/40 transition-all bg-secondary/20">
-        <input type="file" accept={accept} onChange={(e) => e.target.files?.[0] && onFileChange(e.target.files[0])} className="absolute inset-0 opacity-0 cursor-pointer" />
+        <input type="file" accept={accept} onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (!f) return;
+          const validation = validateUploadFile(f);
+          if (!validation.isValid) {
+            toast.error("Invalid file", { description: validation.error || undefined });
+            e.target.value = ''; // Reset the input
+            return;
+          }
+          onFileChange(f);
+        }} className="absolute inset-0 opacity-0 cursor-pointer" />
         <Upload className="w-6 h-6 mx-auto text-muted-foreground group-hover:text-primary transition-colors mb-2" />
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
           {file ? file.name : "Choose File"}

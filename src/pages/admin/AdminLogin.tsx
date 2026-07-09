@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShieldCheck, Eye, EyeOff, Lock, User, ArrowRight, Zap } from "lucide-react";
+import { ShieldCheck, Eye, EyeOff, Lock, User, ArrowRight, Zap, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useStore } from "@/store/useStore";
+import {
+  isLockedOut,
+  getSecondsUntilUnlock,
+  getProgressiveDelay,
+  recordFailedAttempt,
+  clearAttempts,
+  getLockoutMessage,
+  getRemainingAttempts,
+} from "@/lib/auth-rate-limiter";
+
+const RATE_LIMIT_KEY = 'admin_login';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -14,10 +25,38 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
+
+  // Check lockout status on mount and update the countdown
+  useEffect(() => {
+    const checkLockout = () => {
+      const msg = getLockoutMessage(RATE_LIMIT_KEY);
+      setLockoutMessage(msg);
+    };
+    checkLockout();
+    const interval = setInterval(checkLockout, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if locked out
+    if (isLockedOut(RATE_LIMIT_KEY)) {
+      const seconds = getSecondsUntilUnlock(RATE_LIMIT_KEY);
+      toast.error("Admin Access Locked", {
+        description: `Too many failed attempts. Try again in ${seconds} seconds.`,
+      });
+      return;
+    }
+
     setIsLoading(true);
+
+    // Apply progressive delay
+    const delay = getProgressiveDelay(RATE_LIMIT_KEY);
+    if (delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -26,7 +65,18 @@ const AdminLogin = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        const failCount = recordFailedAttempt(RATE_LIMIT_KEY);
+        const remaining = getRemainingAttempts(RATE_LIMIT_KEY);
+
+        if (remaining > 0) {
+          toast.error(error.message, {
+            description: `${remaining} attempt${remaining !== 1 ? 's' : ''} remaining before temporary lockout.`,
+          });
+        } else {
+          toast.error("Admin Access Locked", {
+            description: "Too many failed login attempts. Please wait 5 minutes.",
+          });
+        }
         setIsLoading(false);
         return;
       }
@@ -40,23 +90,27 @@ const AdminLogin = () => {
 
       if (profileError || !profile || profile.role !== 'admin') {
         await supabase.auth.signOut();
+        recordFailedAttempt(RATE_LIMIT_KEY);
         toast.error("Unauthorized Access", { description: "This portal is reserved for platform administrators only." });
         setIsLoading(false);
         return;
       }
 
+      // Successful admin login — clear rate limiter
+      clearAttempts(RATE_LIMIT_KEY);
       toast.success("Login Successful", { description: `Welcome back, Admin ${profile.name.split(' ')[0]}.` });
       
       // Update global state
       setUser({
         ...profile,
         id: profile.id,
-        balanceNum: 0, // Admin doesn't need personal balance in store root usually
+        balanceNum: 0,
         fiatBalanceNum: 0
       } as any);
 
       navigate("/admin");
     } catch (err: any) {
+      recordFailedAttempt(RATE_LIMIT_KEY);
       toast.error(err.message || "An error occurred during authentication.");
       setIsLoading(false);
     }
@@ -83,6 +137,14 @@ const AdminLogin = () => {
             <h1 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">Admin Login</h1>
             <p className="text-muted-foreground text-xs font-bold tracking-[0.2em] uppercase">Administrator Authentication</p>
           </div>
+
+          {/* Lockout Warning Banner */}
+          {lockoutMessage && (
+            <div className="mb-6 flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400">
+              <ShieldAlert className="w-5 h-5 shrink-0" />
+              <p className="text-xs font-bold">{lockoutMessage}</p>
+            </div>
+          )}
 
           <form onSubmit={handleAdminLogin} className="space-y-6">
             <div className="space-y-2">
@@ -122,12 +184,12 @@ const AdminLogin = () => {
 
             <Button 
               type="submit" 
-              disabled={isLoading} 
+              disabled={isLoading || !!lockoutMessage} 
               variant="hero" 
               className="w-full h-14 rounded-2xl text-white font-black uppercase tracking-widest text-xs shadow-gold mt-4 group"
             >
-              {isLoading ? "Logging in..." : "Login"}
-              {!isLoading && <Zap className="w-3.5 h-3.5 ml-2 group-hover:animate-pulse" />}
+              {isLoading ? "Logging in..." : lockoutMessage ? "Temporarily Locked" : "Login"}
+              {!isLoading && !lockoutMessage && <Zap className="w-3.5 h-3.5 ml-2 group-hover:animate-pulse" />}
             </Button>
           </form>
 

@@ -1,7 +1,8 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, adminOnly: requireAdmin = false }: ProtectedRouteProps) => {
   const { user, isAuthInitialized, isLoading } = useStore();
   const location = useLocation();
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
 
   // Failsafe: if auth hangs for more than 20 seconds, force-initialize so
   // the user at least gets redirected to login instead of staring at a spinner forever.
@@ -24,6 +26,21 @@ const ProtectedRoute = ({ children, adminOnly: requireAdmin = false }: Protected
     }, 20000);
     return () => clearTimeout(failsafe);
   }, []);
+
+  // Check email verification status from the Supabase session
+  useEffect(() => {
+    const checkEmail = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setEmailVerified(!!session.user.email_confirmed_at);
+      } else {
+        setEmailVerified(null);
+      }
+    };
+    if (isAuthInitialized && user) {
+      checkEmail();
+    }
+  }, [isAuthInitialized, user]);
 
   // While auth is initializing or profile data is loading, show a spinner.
   // This is the ONLY blocking state — everything else resolves to a redirect or render.
@@ -44,6 +61,21 @@ const ProtectedRoute = ({ children, adminOnly: requireAdmin = false }: Protected
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
+  // Email not verified → redirect to verification page
+  if (emailVerified === false) {
+    return <Navigate to="/auth/verify-email" state={{ from: location }} replace />;
+  }
+
+  // Still checking email verification
+  if (emailVerified === null) {
+    return (
+      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-8 h-8 text-primary/50 animate-spin" />
+        <p className="text-xs text-muted-foreground font-medium animate-pulse">Verifying your account...</p>
+      </div>
+    );
+  }
+
   if (requireAdmin && user.role !== "admin") {
     return <Navigate to="/dashboard" replace />;
   }
@@ -52,3 +84,4 @@ const ProtectedRoute = ({ children, adminOnly: requireAdmin = false }: Protected
 };
 
 export default ProtectedRoute;
+

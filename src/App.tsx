@@ -19,6 +19,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
 
 // Public Pages
 import Trading from "./pages/public/Trading";
@@ -123,6 +124,9 @@ const AnimatedRoutes = () => {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/help" element={<Help />} />
           <Route path="/support" element={<Help />} />
+
+          {/* Email Verification */}
+          <Route path="/auth/verify-email" element={<VerifyEmail />} />
 
           {/* User Dashboard */}
           <Route path="/dashboard" element={<ProtectedRoute><Overview /></ProtectedRoute>} />

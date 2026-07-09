@@ -182,60 +182,33 @@ const WalletPage = () => {
 
 
     try {
-        const { data: b, error: fetchError } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
-        if (fetchError || !b) throw new Error("Could not fetch balance data");
-
-        if (method === 'fiat') {
-            const currentFiat = Number(b.fiat_balance || 0);
-            if (amount > currentFiat) {
-                toast.error(`Insufficient ${selectedFiat} balance`);
-                return;
-            }
-
-            await supabase.from('balances').update({
-                fiat_balance: Math.max(0, currentFiat - amount)
-            }).eq('user_id', user?.id);
-        } else {
-            const crypto = b.crypto_balances || {};
-            const coinKey = selectedCoin.toLowerCase();
-            const currentCrypto = Number(crypto[coinKey] || 0);
-
-            if (amount > currentCrypto) {
-                toast.error(`Insufficient ${selectedCoin} balance`);
-                return;
-            }
-
-            const updatedCrypto = { ...crypto, [coinKey]: Math.max(0, currentCrypto - amount) };
-            await supabase.from('balances').update({
-                crypto_balances: updatedCrypto
-            }).eq('user_id', user?.id);
-        }
-
-        const { error } = await supabase.from('transactions').insert({
-            user_id: user?.id,
-            type: "Withdrawal",
-            amount: amount,
-            asset: method === 'crypto' ? selectedCoin : selectedFiat,
-            status: 'Pending'
+        // Use server-side RPC for atomic withdrawal with hold pattern.
+        // The RPC validates KYC, enforces limits, checks balance, creates the
+        // hold, and inserts the transaction — all in one atomic operation.
+        // On admin rejection, the held funds are automatically refunded.
+        const { data: result, error: rpcError } = await supabase.rpc('request_withdrawal', {
+            p_user_id: user?.id,
+            p_amount: amount,
+            p_asset: method === 'crypto' ? selectedCoin : selectedFiat,
+            p_method: method === 'crypto' ? selectedCoin : 'Bank/Card',
+            p_destination: withdrawAddress,
         });
-        
-        if (!error) {
-           // Notify Admin
-           await supabase.from('notifications').insert({
-               user_id: null,
-               title: `New Withdrawal Request`,
-               message: `${user?.name || 'User'} requested withdrawal of ${formatCurrency(amount, method === 'crypto' ? selectedCoin : selectedFiat)} via ${method === 'crypto' ? selectedCoin : 'Bank/Card'}.`,
-               type: 'WITHDRAWAL',
-               is_read: false
-           });
 
-           toast.success(`${method.toUpperCase()} Withdrawal request submitted successfully`);
-           setWithdrawAddress("");
-           setWithdrawAmount("");
-           setTab("history");
-        } else {
-           toast.error(error.message);
+        if (rpcError) {
+            toast.error("Withdrawal request failed", { description: rpcError.message });
+            return;
         }
+
+        if (result && !result.success) {
+            toast.error("Withdrawal rejected", { description: result.error });
+            return;
+        }
+
+        toast.success(`${method.toUpperCase()} Withdrawal request submitted successfully`);
+        setWithdrawAddress("");
+        setWithdrawAmount("");
+        setTab("history");
+        await fetchAppData();
     } catch(err: any) {
         console.error("Withdrawal error:", err);
         toast.error(err.message || "Withdrawal request failed.");

@@ -221,61 +221,40 @@ const TradingPage = () => {
     }
 
     const tradeTotal = parseFloat(amount) * currentPair.price;
-    const { data: b } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
-
-    if (side === "buy" && tradeTotal > (b?.fiat_balance || 0)) {
-      toast.error("Insufficient fiat balance to open position");
-      return;
-    }
-
-    if (side === "sell" && (b?.fiat_balance || 0) < tradeTotal * 0.1) {
-      toast.error("Insufficient margin (fiat) to open sell position");
-      return;
-    }
+    const isPending = orderType !== "market";
 
     try {
         setIsTradeLoading(true);
-        const isPending = orderType !== "market";
-        
-        // 1. Update balances
-        const updateB: any = {};
-        if (side === "buy") {
-            // For both market and limit buys, we lock the cash
-            updateB.fiat_balance = Math.max(0, (b?.fiat_balance || 0) - tradeTotal);
-            if (!isPending) updateB.trading_balance = (b?.trading_balance || 0) + tradeTotal;
-        } else {
-            // Sell logic: We still use 10% fiat as maintenance margin for shorts
-            const marginRequired = tradeTotal * 0.1;
-            updateB.fiat_balance = Math.max(0, (b?.fiat_balance || 0) - marginRequired);
-            if (!isPending) updateB.trading_balance = (b?.trading_balance || 0) + tradeTotal;
-        }
-        
-        if (Object.keys(updateB).length > 0) {
-            await supabase.from('balances').update(updateB).eq('user_id', user?.id);
+
+        // Use server-side RPC for atomic trade execution with row-level locking.
+        // This prevents race conditions and client-side balance manipulation.
+        const { data: result, error: rpcError } = await supabase.rpc('execute_trade', {
+            p_user_id: user?.id,
+            p_pair: selectedPair,
+            p_side: side === "buy" ? "Buy" : "Sell",
+            p_amount: tradeTotal,
+            p_entry_price: isPending ? parseFloat(price) : currentPair.price,
+            p_current_price: currentPair.price,
+            p_order_type: orderType,
+            p_status: isPending ? 'Pending' : 'Open',
+        });
+
+        if (rpcError) {
+            toast.error("Trade execution failed", { description: rpcError.message });
+            return;
         }
 
-        const { error } = await supabase.from('trades').insert({
-            user_id: user?.id,
-            pair: selectedPair,
-            type: side === "buy" ? "Buy" : "Sell",
-            amount: tradeTotal,
-            entry_price: isPending ? parseFloat(price) : currentPair.price,
-            current_price: currentPair.price,
-            order_type: orderType,
-            status: isPending ? 'Pending' : 'Open',
-            time: new Date().toISOString()
-        });
-        
-        if (!error) {
-           toast.success(isPending ? "Limit Order Placed" : `${side === "buy" ? "Buy" : "Sell"} order executed`, {
-               description: isPending ? `Searching for liquidity at ${price}...` : `Successfully filled ${amount} ${selectedPair.split('/')[0]}.`
-           });
-           setAmount("");
-           await fetchUserTrades();
-           await fetchAppData(); // Sync UI balances immediately
-        } else {
-           toast.error(error.message);
+        if (result && !result.success) {
+            toast.error("Trade rejected", { description: result.error });
+            return;
         }
+
+        toast.success(isPending ? "Limit Order Placed" : `${side === "buy" ? "Buy" : "Sell"} order executed`, {
+            description: isPending ? `Searching for liquidity at ${price}...` : `Successfully filled ${amount} ${selectedPair.split('/')[0]}.`
+        });
+        setAmount("");
+        await fetchUserTrades();
+        await fetchAppData();
     } catch(err: any) {
         toast.error("Executing trade failed.");
     } finally {
@@ -289,29 +268,29 @@ const TradingPage = () => {
         const trade = activeTrades.find(t => t.id === tradeId);
         if (!trade) return;
 
-        // 1. Calculate PnL and return to fiat balance
-        const { data: b } = await supabase.from('balances').select('*').eq('user_id', user?.id).maybeSingle();
         const pnl = trade.pnl || 0;
-        const totalReturn = trade.amount + pnl;
 
-        await supabase.from('balances').update({
-            fiat_balance: Math.max(0, (b?.fiat_balance || 0) + totalReturn),
-            trading_balance: Math.max(0, (b?.trading_balance || 0) - trade.amount)
-        }).eq('user_id', user?.id);
+        // Use server-side RPC for atomic trade closure with row-level locking.
+        const { data: result, error: rpcError } = await supabase.rpc('close_trade', {
+            p_user_id: user?.id,
+            p_trade_id: tradeId,
+            p_close_price: trade.currentPrice,
+            p_pnl: pnl,
+        });
 
-        const { error } = await supabase.from('trades').update({ 
-           status: 'Closed',
-           pnl: pnl,
-           current_price: trade.currentPrice
-        }).eq('id', tradeId);
-
-        if (!error) {
-           toast.success("Position Closed", { description: `Trade settled at ${formatCurrency(trade.currentPrice)}.` });
-           await fetchUserTrades();
-           await fetchAppData();
-        } else {
-           toast.error(error.message);
+        if (rpcError) {
+            toast.error("Failed to close position", { description: rpcError.message });
+            return;
         }
+
+        if (result && !result.success) {
+            toast.error("Close trade rejected", { description: result.error });
+            return;
+        }
+
+        toast.success("Position Closed", { description: `Trade settled at ${formatCurrency(trade.currentPrice)}.` });
+        await fetchUserTrades();
+        await fetchAppData();
     } catch(err: any) {
         toast.error("Failed to close position");
     } finally {

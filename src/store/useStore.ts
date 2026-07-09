@@ -726,11 +726,11 @@ export const useStore = create<AppState>()(
         {
             name: 'clarity-trade-storage',
             storage: createJSONStorage(() => localStorage),
+            // SECURITY: Only persist non-sensitive display preferences.
+            // NEVER persist user identity, role, or balance data in localStorage.
+            // These must always be fetched from the server on session restore.
             partialize: (state) => ({
-                user: state.user,
-                balance: state.balance,
                 displayCurrency: state.displayCurrency,
-                theme_preference: state.user?.theme_preference
             }),
         }
     ));

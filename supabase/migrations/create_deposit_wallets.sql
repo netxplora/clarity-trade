@@ -37,11 +37,9 @@ CREATE POLICY "Admins have full access to deposit_wallets"
     )
   );
 
--- Sample Data (Standard Wallets)
-INSERT INTO deposit_wallets (asset, network, wallet_address, status, label, priority)
-VALUES 
-('BTC', 'Bitcoin', '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'Active', 'Legacy Bitcoin', 10),
-('ETH', 'ERC20', '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', 'Active', 'Ethereum Mainnet', 10),
-('USDT', 'ERC20', '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', 'Active', 'USDT ERC20', 10),
-('USDT', 'TRC20', 'TR7NHqJfy2tzh3hsz4wYX33C1y31iNDJ68', 'Active', 'USDT TRC20', 10),
-('USDT', 'BEP20', '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', 'Active', 'USDT BEP20', 10);
+-- Sample Data: REMOVED for production safety.
+-- Wallet addresses MUST be configured by administrators through the Admin Panel.
+-- DO NOT hardcode wallet addresses in migrations.
+-- The following addresses were removed because they included test/sample addresses
+-- that could result in permanent loss of user funds if used in production.
+

@@ -1,16 +1,29 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TrendingUp, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { TrendingUp, Eye, EyeOff, ArrowRight, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useStore } from "@/store/useStore";
+import {
+  isLockedOut,
+  getSecondsUntilUnlock,
+  getProgressiveDelay,
+  recordFailedAttempt,
+  clearAttempts,
+  getLockoutMessage,
+  getRemainingAttempts,
+} from "@/lib/auth-rate-limiter";
+
+const RATE_LIMIT_KEY = 'user_login';
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { hasActiveSession, user } = useStore();
 
@@ -21,9 +34,36 @@ const Login = () => {
     }
   }, [hasActiveSession, user, navigate]);
 
+  // Check lockout status on mount and update the countdown
+  useEffect(() => {
+    const checkLockout = () => {
+      const msg = getLockoutMessage(RATE_LIMIT_KEY);
+      setLockoutMessage(msg);
+    };
+    checkLockout();
+    const interval = setInterval(checkLockout, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if locked out
+    if (isLockedOut(RATE_LIMIT_KEY)) {
+      const seconds = getSecondsUntilUnlock(RATE_LIMIT_KEY);
+      toast.error("Account Temporarily Locked", {
+        description: `Too many failed attempts. Try again in ${seconds} seconds.`,
+      });
+      return;
+    }
+
     setIsLoading(true);
+
+    // Apply progressive delay
+    const delay = getProgressiveDelay(RATE_LIMIT_KEY);
+    if (delay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -32,15 +72,29 @@ const Login = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        const failCount = recordFailedAttempt(RATE_LIMIT_KEY);
+        const remaining = getRemainingAttempts(RATE_LIMIT_KEY);
+
+        if (remaining > 0) {
+          toast.error(error.message, {
+            description: `${remaining} attempt${remaining !== 1 ? 's' : ''} remaining before temporary lockout.`,
+          });
+        } else {
+          toast.error("Account Temporarily Locked", {
+            description: "Too many failed login attempts. Please wait 5 minutes.",
+          });
+        }
         return;
       }
 
+      // Successful login — clear rate limiter
+      clearAttempts(RATE_LIMIT_KEY);
       toast.success("Successfully authenticated!");
       
       // Use window.location.href to ensure full store re-initialization
       window.location.href = "/dashboard";
     } catch (err: any) {
+       recordFailedAttempt(RATE_LIMIT_KEY);
        toast.error(err.message || "An error occurred during authentication.");
     } finally {
        setIsLoading(false);
@@ -87,6 +141,14 @@ const Login = () => {
             <p className="text-muted-foreground text-sm max-w-[280px] font-medium">Enter your email and password to access your account.</p>
           </div>
 
+          {/* Lockout Warning Banner */}
+          {lockoutMessage && (
+            <div className="mb-6 flex items-center gap-3 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive">
+              <ShieldAlert className="w-5 h-5 shrink-0" />
+              <p className="text-xs font-bold">{lockoutMessage}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2.5">
                <label className="text-[13px] font-bold text-foreground">Email address</label>
@@ -103,8 +165,8 @@ const Login = () => {
 
             <div className="space-y-2.5">
                <div className="flex items-center justify-between">
-                  <label className="text-[13px] font-bold text-foreground">Password</label>
-                  <Link to="/auth/forgot-password" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">Forgot password?</Link>
+                 <label className="text-[13px] font-bold text-foreground">Password</label>
+                 <Link to="/auth/forgot-password" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">Forgot password?</Link>
                </div>
                <div className="relative">
                  <input 
@@ -122,9 +184,13 @@ const Login = () => {
                </div>
             </div>
 
-            <Button variant="hero" disabled={isLoading} className="w-full h-12 rounded-xl text-white shadow-gold mt-4 font-semibold text-sm">
-                {isLoading ? "Authenticating..." : "Sign In"}
-                {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
+            <Button
+              variant="hero"
+              disabled={isLoading || !!lockoutMessage}
+              className="w-full h-12 rounded-xl text-white shadow-gold mt-4 font-semibold text-sm"
+            >
+                {isLoading ? "Authenticating..." : lockoutMessage ? "Temporarily Locked" : "Sign In"}
+                {!isLoading && !lockoutMessage && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           </form>
 

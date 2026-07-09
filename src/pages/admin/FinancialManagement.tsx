@@ -129,50 +129,70 @@ const FinancialManagement = () => {
 
   const handleAction = async (id: string, action: "Completed" | "Rejected") => {
     try {
-      if (action === "Completed") {
-        const tx = transactions.find(t => t.id === id);
-        if (tx && tx.status !== 'Completed') {
-           const isDeposit = tx.type === 'Deposit';
-           const amount = parseFloat(tx.amount || 0);
+      const tx = transactions.find(t => t.id === id);
+      if (!tx) throw new Error("Transaction not found");
 
-           const { data: userBalance } = await supabase.from('balances').select('*').eq('user_id', tx.user_id).maybeSingle();
-           
-           const isFiat = ['USD', 'EUR', 'GBP'].includes(tx.asset?.toUpperCase());
-           let updateData: any = { user_id: tx.user_id };
+      // For withdrawals, use the server-side RPC which handles refunds atomically
+      if (tx.type === 'Withdrawal') {
+        const { data: result, error: rpcError } = await supabase.rpc('process_withdrawal', {
+          p_transaction_id: id,
+          p_action: action,
+        });
 
-           if (isFiat) {
-             const current = userBalance?.fiat_balance || 0;
-             updateData.fiat_balance = isDeposit ? current + amount : current - amount;
-           } else {
-             const cryptoBalances = userBalance?.crypto_balances || {};
-             const asset = tx.asset?.toUpperCase() || 'BTC';
-             const current = cryptoBalances[asset] || 0;
-             
-             const feePercent = platformSettings.fee || 0;
-             const feeAmount = parseFloat((amount * (feePercent / 100)).toFixed(8));
-             const netAmount = parseFloat((amount - feeAmount).toFixed(8));
+        if (rpcError) throw new Error(rpcError.message);
+        if (result && !result.success) throw new Error(result.error);
 
-             const actualDiff = isDeposit ? netAmount : -amount;
-             updateData.crypto_balances = { ...cryptoBalances, [asset]: current + actualDiff };
+        toast.success(`Withdrawal ${action.toLowerCase()}`, {
+          description: action === 'Rejected'
+            ? `Held funds have been refunded to the user's balance.`
+            : `ID: ${id.substring(0, 12)}...`
+        });
+        fetchData();
+        return;
+      }
 
-             if (isDeposit && feeAmount > 0) {
-                 await supabase.from('fee_ledger').insert([{
-                     transaction_id: tx.id,
-                     user_id: tx.user_id,
-                     gross_amount: amount,
-                     fee_percent: feePercent,
-                     fee_amount: feeAmount,
-                     net_amount: netAmount,
-                     asset: asset
-                 }]);
-             }
-           }
-           
-           if (userBalance) {
-               await supabase.from('balances').update(updateData).eq('user_id', tx.user_id);
-           } else {
-               await supabase.from('balances').insert([updateData]);
-           }
+      // For deposits and other transactions, process directly
+      if (action === "Completed" && tx.status !== 'Completed') {
+        const isDeposit = tx.type === 'Deposit';
+        const amount = parseFloat(tx.amount || 0);
+
+        const { data: userBalance } = await supabase.from('balances').select('*').eq('user_id', tx.user_id).maybeSingle();
+        
+        const isFiat = ['USD', 'EUR', 'GBP'].includes(tx.asset?.toUpperCase());
+        let updateData: any = { user_id: tx.user_id };
+
+        if (isFiat) {
+          const current = userBalance?.fiat_balance || 0;
+          updateData.fiat_balance = isDeposit ? current + amount : current - amount;
+        } else {
+          const cryptoBalances = userBalance?.crypto_balances || {};
+          const asset = tx.asset?.toUpperCase() || 'BTC';
+          const current = cryptoBalances[asset] || 0;
+          
+          const feePercent = platformSettings.fee || 0;
+          const feeAmount = parseFloat((amount * (feePercent / 100)).toFixed(8));
+          const netAmount = parseFloat((amount - feeAmount).toFixed(8));
+
+          const actualDiff = isDeposit ? netAmount : -amount;
+          updateData.crypto_balances = { ...cryptoBalances, [asset]: current + actualDiff };
+
+          if (isDeposit && feeAmount > 0) {
+              await supabase.from('fee_ledger').insert([{
+                  transaction_id: tx.id,
+                  user_id: tx.user_id,
+                  gross_amount: amount,
+                  fee_percent: feePercent,
+                  fee_amount: feeAmount,
+                  net_amount: netAmount,
+                  asset: asset
+              }]);
+          }
+        }
+        
+        if (userBalance) {
+            await supabase.from('balances').update(updateData).eq('user_id', tx.user_id);
+        } else {
+            await supabase.from('balances').insert([updateData]);
         }
       }
       

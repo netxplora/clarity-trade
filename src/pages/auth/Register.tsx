@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TrendingUp, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { TrendingUp, Eye, EyeOff, ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useStore } from "@/store/useStore";
+import { validatePassword, getStrengthLabel } from "@/lib/password-validator";
 
 const Register = () => {
   const location = useLocation();
@@ -31,8 +32,19 @@ const Register = () => {
     if (ref) setReferralCode(ref);
   }, [location]);
 
+  const passwordCheck = useMemo(() => validatePassword(password), [password]);
+  const strengthInfo = useMemo(() => getStrengthLabel(passwordCheck.score), [passwordCheck.score]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!passwordCheck.isValid) {
+      toast.error("Password too weak", {
+        description: "Please meet at least 4 of the 5 password requirements."
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -53,8 +65,8 @@ const Register = () => {
         return;
       }
 
-      toast.success("Account created securely. Dashboard initialized.");
-      window.location.href = "/dashboard";
+      toast.success("Account created. Please verify your email to continue.");
+      window.location.href = "/auth/verify-email";
     } catch (err: any) {
       toast.error(err.message || "An error occurred during registration.");
       setIsLoading(false);
@@ -158,7 +170,46 @@ const Register = () => {
                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5 ml-1 font-medium">Must be at least 8 characters.</p>
+
+                {/* Password Strength Meter */}
+                {password.length > 0 && (
+                  <div className="mt-3 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <div
+                            key={i}
+                            className={`flex-1 rounded-full transition-all duration-300 ${
+                              i <= passwordCheck.score ? strengthInfo.color : 'bg-secondary'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                        passwordCheck.score <= 2 ? 'text-red-500' :
+                        passwordCheck.score === 3 ? 'text-amber-500' : 'text-green-500'
+                      }`}>
+                        {strengthInfo.label}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                      {[
+                        { test: password.length >= 8, label: '8+ characters' },
+                        { test: /[A-Z]/.test(password), label: 'Uppercase' },
+                        { test: /[a-z]/.test(password), label: 'Lowercase' },
+                        { test: /[0-9]/.test(password), label: 'Number' },
+                        { test: /[^A-Za-z0-9]/.test(password), label: 'Special char' },
+                      ].map(({ test, label }) => (
+                        <div key={label} className={`flex items-center gap-1.5 text-[10px] font-medium transition-colors ${
+                          test ? 'text-green-500' : 'text-muted-foreground/50'
+                        }`}>
+                          {test ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
              </div>
 
              <div className="space-y-2.5">
